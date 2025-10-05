@@ -1,19 +1,20 @@
-name: unit-tests
-on: [pull_request]
+name: unit-tests-pr
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [ main ]
 
 jobs:
   test:
-    name: Unit tests on Node 20
+    name: Unit tests (PR)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      - name: Dummy test
-        run: echo "GitHub Actions works!"
-          
+      - run: npm install
+      - run: npm test
