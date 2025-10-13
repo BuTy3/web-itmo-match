@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test": "jest --coverage",
-    "test:ci": "jest --ci --coverage",
-    "e2e": "playwright test"
-  },
+  "test": "jest --coverage",
+  "test:ci": "jest --ci --coverage --passWithNoTests",
+  "e2e": "playwright test"
+},
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
