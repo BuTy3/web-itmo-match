@@ -1,0 +1,16 @@
+{
+  "name": "web-itmo-match",
+  "version": "1.0.0",
+  "description": "Testing setup for web-itmo-match",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "@testing-library/react": "^14.2.1",
+    "@testing-library/jest-dom": "^6.4.1",
+    "supertest": "^6.3.3"
+  }
+}
