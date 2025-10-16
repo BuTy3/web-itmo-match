@@ -6,6 +6,7 @@
     "lint": "eslint .",
     "prettier:write": "prettier -w .",
     "prettier:check": "prettier -c .",
+    "stylelint": "stylelint \"**/*.{css,scss}\" --config stylelint.config.mjs --ignore-pattern \"coverage/**\" --allow-empty-input",
     "test": "jest --coverage",
     "test:ci": "jest --ci --coverage",
     "e2e": "playwright test"
