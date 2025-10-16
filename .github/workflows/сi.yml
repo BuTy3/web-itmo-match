@@ -1,23 +1,26 @@
-name: CI
+name: Lint
 
 on: [push, pull_request]
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: "20", cache: "npm" }
-      - run: npm ci
   lint:
-    needs: setup
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with: { node-version: "20", cache: "npm" }
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run prettier:check
-      - run: npm run stylelint
+
+      - name: Install dependencies (npm ci)
+        run: npm ci
+
+      - name: ESLint run
+        run: npm run lint
+
+      - name: Prettier run
+        run: npm run prettier:check
+
+      - name: Stylelint run
+        run: npm run stylelint
