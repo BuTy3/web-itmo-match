@@ -5,7 +5,10 @@
   "scripts": {
     "lint": "eslint .",
     "prettier:write": "prettier -w .",
-    "prettier:check": "prettier -c ."
+    "prettier:check": "prettier -c .",
+    "test": "jest --coverage",
+    "test:ci": "jest --ci --coverage",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@mui/material": "^5.14.0",
