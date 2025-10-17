@@ -21,7 +21,7 @@ jobs:
           CI: true
 
       - name: Run frontend unit tests
-        run: npm run test -- --ci --passWithNoTests
+        run: npm run test -- --ci
         env:
           CI: true
 
