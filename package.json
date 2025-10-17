@@ -3,22 +3,46 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test": "jest --coverage",
-    "test:ci": "jest --ci --coverage --passWithNoTests",
+    "lint": "eslint .",
+    "prettier:write": "prettier -w .",
+    "prettier:check": "prettier -c .",
+    "stylelint": "stylelint \"**/*.{css,scss}\" --config stylelint.config.mjs --ignore-pattern \"coverage/**\" --allow-empty-input",
+    "test": "jest --coverage --passWithNoTests",
+    "test:ci": "jest --ci --coverage",
+    "e2e:install": "playwright install --with-deps",
+    "postinstall": "playwright install --with-deps",
     "e2e": "playwright test"
   },
   "dependencies": {
+    "@mui/material": "^5.14.0",
+    "@reduxjs/toolkit": "^1.9.5",
+    "msw": "^1.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "@reduxjs/toolkit": "^1.9.5",
-    "react-redux": "^8.1.1",
-    "msw": "^1.2.1",
-    "@mui/material": "^5.14.0"
+    "react-redux": "^8.1.1"
   },
   "devDependencies": {
-    "jest": "^29.7.0",
-    "supertest": "^6.3.3",
+    "@babel/core": "^7.28.4",
+    "@babel/preset-env": "^7.28.3",
+    "@babel/preset-react": "^7.27.1",
+    "@eslint/js": "^9.37.0",
+    "@playwright/test": "^1.56.1",
     "@testing-library/react": "^14.0.0",
-    "playwright": "^1.43.0"
+    "babel-jest": "^30.2.0",
+    "eslint": "^9.37.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.0",
+    "eslint-plugin-unused-imports": "^4.2.0",
+    "globals": "^16.4.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "playwright": "^1.43.0",
+    "prettier": "^3.6.2",
+    "stylelint": "^16.25.0",
+    "stylelint-config-standard": "^39.0.1",
+    "supertest": "^6.3.3"
   }
 }
