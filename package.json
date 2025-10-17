@@ -7,7 +7,7 @@
     "prettier:write": "prettier -w .",
     "prettier:check": "prettier -c .",
     "stylelint": "stylelint \"**/*.{css,scss}\" --config stylelint.config.mjs --ignore-pattern \"coverage/**\" --allow-empty-input",
-    "test": "jest --coverage --passWithNoTests",
+    "test": "jest --coverage",
     "test:ci": "jest --ci --coverage",
     "e2e:install": "playwright install --with-deps",
     "postinstall": "playwright install --with-deps",

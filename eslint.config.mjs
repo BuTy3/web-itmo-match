@@ -31,4 +31,17 @@ export default [
       "react/react-in-jsx-scope": "off",
     },
   },
+  {
+    files: ["**/*.test.{js,jsx}", "**/*.spec.{js,jsx}"],
+    languageOptions: {
+      globals: { ...globals.jest, ...globals.node },
+    },
+  },
+
+  {
+    files: ["tests-e2e/**/*.spec.js"],
+    languageOptions: {
+      globals: { ...globals.jest, ...globals.node },
+    },
+  },
 ];
