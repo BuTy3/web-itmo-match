@@ -12,7 +12,10 @@ app.use(bodyParser.json());
 app.use("/auth", authRoutes); // Routes
 app.use("/api", authenticate, proxyToSpring); // Proxy: to Spring Boot with authentication
 
-const PORT = 3000;
+// Health check
+app.get('/health', (req, res) => res.status(200).send('OK'));
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Node.js server running on http://localhost:${PORT}`);
+  console.log(`Node.js server running on port ${PORT}`);
 });
