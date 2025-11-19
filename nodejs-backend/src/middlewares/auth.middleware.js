@@ -1,3 +1,4 @@
+// Auth middleware
 import { verifyToken } from '../security/jwt.js';
 
 // API Middleware (return JSON)
@@ -8,12 +9,12 @@ export function authApiRequired(req, res, next) {
     return res.status(401).json({ ok: false, message: 'Unauthorized' });
   }
 
-  const token = authHeader.slice(7); // bỏ "Bearer "
+  const token = authHeader.slice(7); // clear "Bearer "
 
   try {
     const payload = verifyToken(token);
 
-    // Lưu thông tin user vào req
+    // Send to next handler
     req.user = {
       id: payload.userId,
       login: payload.login,
