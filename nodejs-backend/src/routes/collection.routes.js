@@ -2,16 +2,16 @@
 import { Router } from 'express';
 import { authApiRequired } from '../middlewares/auth.middleware.js';
 import {
-  checkConstructor,
+  getConstructor,
   // saveConstructor,
 } from '../controllers/collection.controller.js';
 
 const collectionRouter = Router();
 
-// [POST] collections/constructor/check
+// [POST] collections/constructor
 // authentication
-// check the constructor (collection draft)
-collectionRouter.post('/constructor/check', authApiRequired, checkConstructor);
+// create collection
+collectionRouter.post('/constructor', authApiRequired, getConstructor);
 
 // // [POST] collections/constructor/:new_id
 // collectionRouter.post('/constructor/:new_id', authApiRequired, saveConstructor);

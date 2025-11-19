@@ -1,12 +1,35 @@
-// collection controller
+// controllers/collection.controller.js
 import {
-  getDraftIdInConstructor
+  getNewCollection
 } from '../services/collection/collection.service.js';
 
-// check the constructor, which has collection draft
-export function checkConstructor(req, res) {
-  const userId = req.user.id;
+// call service creates collection
+export function getConstructor(req, res) {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        ok: false,
+        message: 'User is not authenticated',
+      });
+    }
 
-  const new_id = getDraftIdInConstructor(userId);
-  return res.json({ ok: true, new_id });
+    const userId = req.user.id;
+
+    const new_id = getNewCollection(userId); // call service
+
+    if (!new_id) {
+      return res.status(500).json({
+        ok: false,
+        message: 'Cannot create collection draft',
+      });
+    }
+
+    return res.json({ ok: true, new_id });
+  } catch (err) {
+    console.error('Error in getConstructor:', err);
+    return res.status(500).json({
+      ok: false,
+      message: 'Internal server error while creating collection',
+    });
+  }
 }
