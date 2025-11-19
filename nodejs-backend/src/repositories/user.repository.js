@@ -1,10 +1,9 @@
-// src/userStore.js
+// user's repository
 
 // Map login -> user
 const users = new Map();
 
-// user's fields:
-// { id, login, passwordHash, ukey }
+// user = { id, login, passwordHash, ukey }
 
 export function findUserByLogin(login) {
   return users.get(login) || null;

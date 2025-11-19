@@ -1,7 +1,7 @@
 // Auth api
 import { Router } from 'express';
 import bcrypt from 'bcrypt';
-import { findUserByLogin, saveUser } from '../repositories/user.repository.js';
+import {findUserByLogin, saveUser} from '../repositories/user.repository.js';
 import { createToken } from '../security/jwt.js';
 
 const router = Router();

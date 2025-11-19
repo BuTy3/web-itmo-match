@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 
 import authRoutes from './routes/auth.routes.js';
 import collectionRoutes from './routes/collection.routes.js';
+import { authPageRequired } from './middlewares/auth.middleware.js';
 
 const app = express();
 
@@ -19,6 +20,8 @@ app.use('/auth', authRoutes);
 
 // Collections (constructor + items)
 app.use('/collections', collectionRoutes);
+
+// Trang login / home demo (giữ nguyên nếu bạn đã có)
 app.get('/login', (req, res) => {
   res.send('<h1>Login page</h1>');
 });
