@@ -21,7 +21,7 @@ app.use('/auth', authRoutes);
 // Collections (constructor + items)
 app.use('/collections', collectionRoutes);
 
-// Trang login / home demo (giữ nguyên nếu bạn đã có)
+// login page / home demo
 app.get('/login', (req, res) => {
   res.send('<h1>Login page</h1>');
 });
