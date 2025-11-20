@@ -22,7 +22,8 @@ collectionRouter.post('/constructor/item', authApiRequired, createItem);
 // [POST] collections/constructor/:new_id
 // new_id - draft collection's id
 // authentication
-// load draft collection's state
+// load draft collection's state (if request's body is empty)
+// if req.body {url_image, image, description} -> save metadata collection
 collectionRouter.post('/constructor/:new_id', authApiRequired, loadConstructor);
 
 export default collectionRouter;

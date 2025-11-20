@@ -4,6 +4,7 @@ import {
   addItemToDraft,
   getDraftForUser,
   getConstructorState, 
+  updateConstructorMeta, 
 } from '../services/collection/collection.service.js';
 
 // call service creates draft collection, return new_id
@@ -37,8 +38,8 @@ export function getConstructor(req, res) {
 }
 
 // [POST] /collections/constructor/:new_id
-// check if constructor is already exits, if not -> create a new one
-// return next item's id in this constructor
+// mode 1: save collection's metadata
+// mode 2: load collection's state {collection's id; next item's id}
 export function loadConstructor(req, res) {
   try {
     if (!req.user || !req.user.id) {
@@ -52,8 +53,44 @@ export function loadConstructor(req, res) {
 
     const paramNewId = Number(req.params.new_id);
 
-    // At this step we only LOAD constructor state,
-    // we DO NOT create any item here.
+    // Body: { url_image, image, description }
+    const { url_image, image, description } = req.body || {};
+
+    // detect if this request is for "saving collection metadata"
+    const hasMetaPayload =
+      url_image !== undefined ||
+      image !== undefined ||
+      description !== undefined;
+
+    if (hasMetaPayload) {
+      // --- MODE 1: save collection metadata ---
+
+      // update draft collection metadata in service
+      const collectionId = updateConstructorMeta(userId, {
+        urlImage: url_image,
+        imagePath: image,
+        description,
+      });
+
+      // comparate with paramNewId
+      // dont trust new_id, which sent from FE
+      if (paramNewId && paramNewId !== collectionId) {
+        console.warn(
+          `Warning: URL new_id=${paramNewId} != draft collectionId=${collectionId}`
+        );
+      }
+
+      // success: collection metadata saved
+      // For now we return only { ok, new_id }, FE can call
+      // loadConstructor again (without body) to get item_id for items.
+      return res.json({
+        ok: true,
+        new_id: collectionId,
+      });
+    }
+
+    // --- MODE 2: load constructor state (no metadata in body) ---
+
     const { collectionId, nextItemId } = getConstructorState(userId);
 
     // comparate with paramNewId

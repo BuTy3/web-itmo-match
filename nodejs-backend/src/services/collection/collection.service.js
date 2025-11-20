@@ -75,6 +75,46 @@ export function getConstructorState(userId) {
 }
 
 /**
+ * Update draft collection metadata (url_image, image, description).
+ * Used when saving collection info itself (not items).
+ *
+ * Used by:
+ *  [POST] /collections/constructor/:new_id
+ *  when body contains { url_image, image, description }
+ */
+export function updateConstructorMeta(userId, { urlImage, imagePath, description }) {
+  const draft = getOrCreateDraft(userId);
+
+  // simple validation for collection description
+  if (!description || !description.trim()) {
+    const err = new Error('Collection description is required');
+    err.code = 'VALIDATION_ERROR';
+    throw err;
+  }
+
+  if (description.length > 1000) {
+    const err = new Error('Collection description is too long');
+    err.code = 'VALIDATION_ERROR';
+    throw err;
+  }
+
+  if (urlImage && !isValidUrl(urlImage)) {
+    const err = new Error('url_image is not a valid URL');
+    err.code = 'VALIDATION_ERROR';
+    throw err;
+  }
+
+  // store metadata on draft collection
+  draft.urlImage = urlImage || null;
+  draft.imagePath = imagePath || null;
+  draft.description = description.trim();
+  draft.updatedAt = new Date();
+
+  return draft.id;
+}
+
+
+/**
  * Add item to draft
  * [POST] /collections/constructor/:new_id
  *
