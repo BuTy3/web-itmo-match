@@ -3,18 +3,20 @@ import { Router } from 'express';
 import { authApiRequired } from '../middlewares/auth.middleware.js';
 import {
   getConstructor,
-  saveConstructor,
+  loadConstructor,
 } from '../controllers/collection.controller.js';
 
 const collectionRouter = Router();
 
 // [POST] collections/constructor
 // authentication
-// create collection
+// get draft collection (or create a new draft if it's not existed)
 collectionRouter.post('/constructor', authApiRequired, getConstructor);
 
 // [POST] collections/constructor/:new_id
-// insert item into draft collection
-collectionRouter.post('/constructor/:new_id', authApiRequired, saveConstructor);
+// new_id - draft collection's id
+// authentication
+// load draft collection's state
+collectionRouter.post('/constructor/:new_id', authApiRequired, loadConstructor);
 
 export default collectionRouter;

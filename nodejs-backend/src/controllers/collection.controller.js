@@ -1,8 +1,8 @@
 // controllers/collection.controller.js
 import {
-  getNewCollection,
-  addItemToDraft,
+  checkConstructor,
   getDraftForUser,
+  getConstructorState, 
 } from '../services/collection/collection.service.js';
 
 // call service creates draft collection, return new_id
@@ -16,7 +16,7 @@ export function getConstructor(req, res) {
     }
 
     const userId = req.user.id;
-    const new_id = getNewCollection(userId);
+    const new_id = checkConstructor(userId);
 
     if (!new_id) {
       return res.status(500).json({
@@ -35,9 +35,8 @@ export function getConstructor(req, res) {
   }
 }
 
-// insert items into draft
 // [POST] /collections/constructor/:new_id
-export function saveConstructor(req, res) {
+export function loadConstructor(req, res) {
   try {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
@@ -50,34 +49,28 @@ export function saveConstructor(req, res) {
 
     const paramNewId = Number(req.params.new_id);
 
-    // Body: { token, url_image, image, description }
-    const { url_image, image, description } = req.body;
+    // At this step we only LOAD constructor state,
+    // we DO NOT create any item here.
+    const { collectionId, nextItemId } = getConstructorState(userId);
 
-    // insert item into draft trước
-    const { collectionId, itemId } = addItemToDraft(userId, {
-      urlImage: url_image,
-      imagePath: image,
-      description,
-    });
-
-    // rồi mới so sánh với paramNewId
+    // comparate with paramNewId
     // dont trust new_id, which sent from FE
     if (paramNewId && paramNewId !== collectionId) {
       console.warn(
         `Warning: URL new_id=${paramNewId} != draft collectionId=${collectionId}`
       );
-      // tuỳ yêu cầu, có thể return lỗi ở đây nếu muốn strict hơn
     }
 
-    return res.json({  // success
+    // success: return draft collection id and NEXT item id (for future creation)
+    return res.json({
       ok: true,
       new_id: collectionId,
-      new_item_id: itemId,
+      item_id: nextItemId,
     });
   } catch (err) {
-    console.error('Error in saveConstructor:', err);
+    console.error('Error in loadConstructor:', err);
 
-    // Send new_id again
+    // Send new_id again (if possible)
     let newId = null;
     if (req.user && req.user.id) {
       const draft = getDraftForUser(req.user.id);
@@ -90,7 +83,7 @@ export function saveConstructor(req, res) {
     // { "ok": false, "message": <message>, "new_id": <new_id> }
     return res.status(isValidation ? 400 : 500).json({
       ok: false,
-      message: err.message || 'Internal server error while saving item',
+      message: err.message || 'Internal server error while loading constructor',
       new_id: newId,
     });
   }
