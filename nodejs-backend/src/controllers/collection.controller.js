@@ -1,6 +1,7 @@
 // controllers/collection.controller.js
 import {
   checkConstructor,
+  addItemToDraft,
   getDraftForUser,
   getConstructorState, 
 } from '../services/collection/collection.service.js';
@@ -91,3 +92,56 @@ export function loadConstructor(req, res) {
   }
 }
 
+/**
+ * [POST] /collections/constructor/item
+ * Create new item inside current draft collection.
+ * Body: { url_image, image, description }
+ */
+export function createItem(req, res) {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        ok: false,
+        message: 'User is not authenticated',
+      });
+    }
+
+    const userId = req.user.id;
+
+    // Body: { url_image, image, description }
+    const { url_image, image, description } = req.body;
+
+    // reuse service helper to insert item into draft
+    const { collectionId, itemId } = addItemToDraft(userId, {
+      urlImage: url_image,
+      imagePath: image,
+      description,
+    });
+
+    // success
+    // here itemId is the id of the item that was just created
+    return res.json({
+      ok: true,
+      new_id: collectionId,
+      item_id: itemId,
+    });
+  } catch (err) {
+    console.error('Error in createItem:', err);
+
+    // try to send back new_id again if draft exists
+    let newId = null;
+    if (req.user && req.user.id) {
+      const draft = getDraftForUser(req.user.id);
+      if (draft) newId = draft.id;
+    }
+
+    const isValidation = err.code === 'VALIDATION_ERROR';
+
+    // { "ok": false, "message": <message>, "new_id": <new_id> }
+    return res.status(isValidation ? 400 : 500).json({
+      ok: false,
+      message: err.message || 'Internal server error while creating item',
+      new_id: newId,
+    });
+  }
+}
