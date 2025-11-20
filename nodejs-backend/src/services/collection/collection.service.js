@@ -26,7 +26,9 @@ export function checkConstructor(userId) {
  * Get or create draft collection
  */
 export function getOrCreateDraft(userId) {
-  let draft = draftCollections.get(userId);
+  const userKey = String(userId);
+
+  let draft = draftCollections.get(userKey);
   if (!draft) {
     const now = new Date();
     draft = new Collection({
@@ -39,7 +41,7 @@ export function getOrCreateDraft(userId) {
     draft.items = new Map(); 
     draft.lastItemId = 0;
 
-    draftCollections.set(userId, draft);
+    draftCollections.set(userKey, draft);
   }
   return draft;
 }
@@ -48,7 +50,8 @@ export function getOrCreateDraft(userId) {
  * Get draft for user (if has)
  */
 export function getDraftForUser(userId) {
-  return draftCollections.get(userId) || null;
+  const userKey = String(userId);
+  return draftCollections.get(userKey) || null;
 }
 
 /**
