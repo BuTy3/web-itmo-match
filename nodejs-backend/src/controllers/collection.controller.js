@@ -95,7 +95,15 @@ export function loadConstructor(req, res) {
 /**
  * [POST] /collections/constructor/item
  * Create new item inside current draft collection.
- * Body: { url_image, image, description }
+ * Body:
+ *  {
+ *    item_id,      // optional, FE sends "expected" item id
+ *    url_image,
+ *    image,
+ *    description,
+ *    next,         // create more items
+ *    save_exit     // save and finish constructor
+ *  }
  */
 export function createItem(req, res) {
   try {
@@ -108,17 +116,28 @@ export function createItem(req, res) {
 
     const userId = req.user.id;
 
-    // Body: { url_image, image, description }
-    const { url_image, image, description } = req.body;
+    // Body: { item_id, url_image, image, description, next, save_exit }
+    const { item_id, url_image, image, description, next, save_exit } = req.body;
 
     // reuse service helper to insert item into draft
-    const { collectionId, itemId } = addItemToDraft(userId, {
+    const { collectionId, itemId, saveExit } = addItemToDraft(userId, {
+      itemIdFromClient: item_id,
       urlImage: url_image,
       imagePath: image,
       description,
+      next,
+      saveExit: save_exit,
     });
 
-    // success
+    // if user chose "save & exit": return collection_id only
+    if (saveExit) {
+      return res.json({
+        ok: true,
+        collection_id: collectionId,
+      });
+    }
+
+    // success (continue editing / creating)
     // here itemId is the id of the item that was just created
     return res.json({
       ok: true,
@@ -142,6 +161,8 @@ export function createItem(req, res) {
       ok: false,
       message: err.message || 'Internal server error while creating item',
       new_id: newId,
+      // You can also echo item_id back if needed:
+      item_id: req.body?.item_id,
     });
   }
 }

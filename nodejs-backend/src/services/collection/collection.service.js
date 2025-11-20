@@ -77,13 +77,16 @@ export function getConstructorState(userId) {
 /**
  * Add item to draft
  * [POST] /collections/constructor/:new_id
- * 
+ *
  * NOTE:
- *   In the new flow, this helper will be used by a dedicated
- *   "create item" endpoint (for example: POST /collections/constructor/item).
- *   loadConstructor() should NOT use this function anymore.
+ *   Now this helper is also used by:
+ *   [POST] /collections/constructor/item
+ *   It handles "item_id", "next" and "save_exit" logic.
  */
-export function addItemToDraft(userId, { urlImage, imagePath, description }) {
+export function addItemToDraft(
+  userId,
+  { itemIdFromClient, urlImage, imagePath, description, next, saveExit }
+) {
   const draft = getOrCreateDraft(userId);
 
   // simple validation
@@ -105,26 +108,57 @@ export function addItemToDraft(userId, { urlImage, imagePath, description }) {
     throw err;
   }
 
-  // insert item
-  const itemId = ++draft.lastItemId;
+  // --- item_id validation (according to spec) ---
+  // itemIdFromClient comes from "item_id" in request body.
+  let requestedId = parseInt(itemIdFromClient, 10);
+
+  if (Number.isNaN(requestedId) || requestedId <= 0) {
+    // if item_id is invalid, but we already have items,
+    // use the last valid item_id
+    if (draft.lastItemId > 0) {
+      requestedId = draft.lastItemId;
+    } else {
+      // if there is no item yet, start from 1
+      requestedId = 1;
+    }
+  }
+
+  // if this item_id is already used -> error
+  if (draft.items.has(requestedId)) {
+    const err = new Error(`item_id ${requestedId} is already used`);
+    err.code = 'VALIDATION_ERROR';
+    throw err;
+  }
+
+  // insert item with chosen requestedId
+  const itemId = requestedId;
 
   const item = new Item({
     id: itemId,
     collectionId: draft.id,
     urlImage: urlImage || null,
-    imagePath: imagePath || null, 
+    imagePath: imagePath || null,
     description: description.trim(),
   });
 
   draft.items.set(itemId, item);
+
+  // update lastItemId if needed
+  if (itemId > draft.lastItemId) {
+    draft.lastItemId = itemId;
+  }
+
   draft.updatedAt = new Date();
 
   return {
     collectionId: draft.id,
     itemId,
     item,
+    next: !!next,
+    saveExit: !!saveExit,
   };
 }
+
 
 // --- Helper ---
 
