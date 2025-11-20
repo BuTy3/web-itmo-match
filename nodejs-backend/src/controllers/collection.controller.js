@@ -36,6 +36,8 @@ export function getConstructor(req, res) {
 }
 
 // [POST] /collections/constructor/:new_id
+// check if constructor is already exits, if not -> create a new one
+// return next item's id in this constructor
 export function loadConstructor(req, res) {
   try {
     if (!req.user || !req.user.id) {
