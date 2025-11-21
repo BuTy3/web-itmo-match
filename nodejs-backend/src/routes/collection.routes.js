@@ -4,7 +4,8 @@ import { authApiRequired } from '../middlewares/auth.middleware.js';
 import {
   getConstructor,
   loadConstructor,
-  createItem
+  createItem,
+  getCollection,   
 } from '../controllers/collection.controller.js';
 
 const collectionRouter = Router();
@@ -25,5 +26,9 @@ collectionRouter.post('/constructor/item', authApiRequired, createItem);
 // load draft collection's state (if request's body is empty)
 // if req.body {url_image, image, description} -> save metadata collection
 collectionRouter.post('/constructor/:new_id', authApiRequired, loadConstructor);
+
+// [GET] /collections/:id
+// Private: only owner can access collection data
+collectionRouter.get('/:id', authApiRequired, getCollection);
 
 export default collectionRouter;

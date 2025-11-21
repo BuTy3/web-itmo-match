@@ -6,6 +6,7 @@ import {
   getConstructorState, 
   updateConstructorMeta, 
   finalizeDraft, 
+  getCollectionById, 
 } from '../services/collection.service.js';
 
 // call service creates draft collection, return new_id
@@ -226,3 +227,88 @@ export function createItem(req, res) {
     });
   }
 }
+
+/**
+ * [GET] /collections/:id
+ * Private endpoint: only owner can access the collection.
+ *
+ * On success:
+ *  {
+ *    "ok": true,
+ *    "collection": { ... }
+ *  }
+ *
+ * On failure:
+ *  { "ok": false, "message": "<text>" }
+ */
+export function getCollection(req, res) {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        ok: false,
+        message: 'User is not authenticated',
+      });
+    }
+
+    const userId = req.user.id;
+    const paramId = req.params.id;
+
+    console.log('getCollection: userId =', userId, 'paramId =', paramId);
+
+    const collection = getCollectionById(paramId);
+
+    if (!collection) {
+      return res.status(404).json({
+        ok: false,
+        message: 'Collection not found',
+      });
+    }
+
+    // Private access: only owner can see the collection
+    if (collection.ownerId !== userId) {
+      console.warn(
+        `getCollection: access denied. userId=${userId}, ownerId=${collection.ownerId}, collectionId=${collection.id}`
+      );
+
+      return res.status(403).json({
+        ok: false,
+        message: 'Access denied',
+      });
+    }
+
+    // Build response object (you can filter out internal fields if needed)
+    const items = collection.items
+      ? Array.from(collection.items.values()).map((item) => ({
+          id: item.id,
+          collectionId: item.collectionId,
+          urlImage: item.urlImage,
+          imagePath: item.imagePath,
+          description: item.description,
+        }))
+      : [];
+
+    const collectionDto = {
+      id: collection.id,
+      ownerId: collection.ownerId,
+      urlImage: collection.urlImage || null,
+      imagePath: collection.imagePath || null,
+      description: collection.description || null,
+      createdAt: collection.createdAt,
+      updatedAt: collection.updatedAt,
+      items,
+    };
+
+    return res.json({
+      ok: true,
+      collection: collectionDto,
+    });
+  } catch (err) {
+    console.error('Error in getCollection:', err);
+
+    return res.status(500).json({
+      ok: false,
+      message: err.message || 'Internal server error while getting collection',
+    });
+  }
+}
+

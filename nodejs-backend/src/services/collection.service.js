@@ -237,6 +237,15 @@ export function addItemToDraft(
   };
 }
 
+/**
+ * Get finalized collection by id.
+ * Used by: GET /collections/:id
+ */
+export function getCollectionById(collectionId) {
+  const id = Number(collectionId);
+  if (!Number.isFinite(id)) return null;
+  return collectionsStore.get(id) || null;
+}
 
 // --- Helper ---
 
