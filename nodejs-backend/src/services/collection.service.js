@@ -9,6 +9,8 @@ let nextCollectionId = 1;
 
 // Map userId -> draft Collection 
 const draftCollections = new Map();
+// Map collectionId -> finalized Collection (not a draft anymore)
+const collectionsStore = new Map();
 
 /**
  * Create (or receive) draft collection for the user.
@@ -113,6 +115,42 @@ export function updateConstructorMeta(userId, { urlImage, imagePath, description
   return draft.id;
 }
 
+/**
+ * Finalize draft collection for the given user:
+ *  - move it from draftCollections to collectionsStore
+ *  - mark it as non-draft
+ *  - return finalized collection
+ *
+ * Used when user chooses "save & exit".
+ */
+export function finalizeDraft(userId) {
+  const userKey = String(userId);
+
+  const draft = draftCollections.get(userKey);
+  if (!draft) {
+    const err = new Error('Draft collection not found for user');
+    err.code = 'NO_DRAFT';
+    throw err;
+  }
+
+  // Mark this collection as finalized (not needed for logic, but useful)
+  draft.isDraft = false;
+
+  // Save to finalized store (we reuse the same id and object for now)
+  collectionsStore.set(draft.id, draft);
+
+  // Remove draft from draftCollections
+  draftCollections.delete(userKey);
+
+  console.log(
+    'finalizeDraft: finalized collectionId =',
+    draft.id,
+    'for userId =',
+    userId
+  );
+
+  return draft;
+}
 
 /**
  * Add item to draft

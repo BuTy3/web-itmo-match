@@ -5,6 +5,7 @@ import {
   getDraftForUser,
   getConstructorState, 
   updateConstructorMeta, 
+  finalizeDraft, 
 } from '../services/collection.service.js';
 
 // call service creates draft collection, return new_id
@@ -166,13 +167,35 @@ export function createItem(req, res) {
       saveExit: save_exit,
     });
 
-    // if user chose "save & exit": return collection_id only
+    // for debug
+    console.log('createItem: result =', {
+      collectionId,
+      itemId,
+      saveExit,
+    });
+
+    // if user chose "save & exit": finalize draft and return collection_id
     if (saveExit) {
-      return res.json({
-        ok: true,
-        collection_id: collectionId,
-      });
+      try {
+        const finalized = finalizeDraft(userId);
+
+        return res.json({
+          ok: true,
+          collection_id: finalized.id,
+        });
+      } catch (finalizeErr) {
+        console.error('Error in finalizeDraft:', finalizeErr);
+
+        const isValidation = finalizeErr.code === 'NO_DRAFT';
+
+        return res.status(isValidation ? 400 : 500).json({
+          ok: false,
+          message:
+            finalizeErr.message || 'Internal server error while finalizing collection',
+        });
+      }
     }
+
 
     // success (continue editing / creating)
     // here itemId is the id of the item that was just created
