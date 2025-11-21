@@ -7,6 +7,7 @@ import {
   updateConstructorMeta, 
   finalizeDraft, 
   getCollectionById, 
+  updateCollection, 
 } from '../services/collection.service.js';
 
 // call service creates draft collection, return new_id
@@ -311,4 +312,93 @@ export function getCollection(req, res) {
     });
   }
 }
+
+/**
+ * [PUT] /collections/:id
+ * Private endpoint: only owner can update collection metadata.
+ *
+ * Body: {
+ *   "url_image": "<string|null|undefined>",
+ *   "image": "<string|null|undefined>",
+ *   "description": "<string|null|undefined>"
+ * }
+ *
+ * On success:
+ *   { "ok": true, "collection": { ... } }
+ *
+ * On failure:
+ *   { "ok": false, "message": "<text>" }
+ */
+export function updateCollectionController(req, res) {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        ok: false,
+        message: 'User is not authenticated',
+      });
+    }
+
+    const userId = req.user.id;
+    const paramId = req.params.id;
+
+    // Expect frontend to send url_image, image (imagePath), description
+    const { url_image, image, description } = req.body || {};
+
+    console.log('updateCollectionController:', {
+      userId,
+      paramId,
+      url_image,
+      image,
+      description,
+    });
+
+    const updated = updateCollection(userId, paramId, {
+      urlImage: url_image,
+      imagePath: image,
+      description,
+    });
+
+    // Build DTO similar to getCollection response
+    const items = updated.items
+      ? Array.from(updated.items.values()).map((item) => ({
+          id: item.id,
+          collectionId: item.collectionId,
+          urlImage: item.urlImage,
+          imagePath: item.imagePath,
+          description: item.description,
+        }))
+      : [];
+
+    const collectionDto = {
+      id: updated.id,
+      ownerId: updated.ownerId,
+      urlImage: updated.urlImage || null,
+      imagePath: updated.imagePath || null,
+      description: updated.description || null,
+      createdAt: updated.createdAt,
+      updatedAt: updated.updatedAt,
+      items,
+    };
+
+    return res.json({
+      ok: true,
+      collection: collectionDto,
+    });
+  } catch (err) {
+    console.error('Error in updateCollectionController:', err);
+
+    const code = err.code;
+    let status = 500;
+
+    if (code === 'VALIDATION_ERROR') status = 400;
+    else if (code === 'NOT_FOUND') status = 404;
+    else if (code === 'FORBIDDEN') status = 403;
+
+    return res.status(status).json({
+      ok: false,
+      message: err.message || 'Internal server error while updating collection',
+    });
+  }
+}
+
 

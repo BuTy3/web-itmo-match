@@ -247,6 +247,84 @@ export function getCollectionById(collectionId) {
   return collectionsStore.get(id) || null;
 }
 
+/**
+ * Update finalized collection metadata (urlImage, imagePath, description).
+ * Only the owner is allowed to update.
+ *
+ * Used by:
+ *   [PUT] /collections/:id
+ *
+ * @param {number} userId - id of the user performing update
+ * @param {number|string} collectionId - id of the collection to update
+ * @param {object} payload - { urlImage, imagePath, description }
+ * @returns {object} updated collection
+ * @throws Error with code:
+ *   - 'NOT_FOUND' if collection does not exist
+ *   - 'FORBIDDEN' if user is not the owner
+ *   - 'VALIDATION_ERROR' if validation failed
+ */
+export function updateCollection(userId, collectionId, { urlImage, imagePath, description }) {
+  const id = Number(collectionId);
+  if (!Number.isFinite(id)) {
+    const err = new Error('Invalid collection id');
+    err.code = 'VALIDATION_ERROR';
+    throw err;
+  }
+
+  const collection = collectionsStore.get(id);
+  if (!collection) {
+    const err = new Error('Collection not found');
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+
+  // Only owner can update
+  if (collection.ownerId !== userId) {
+    const err = new Error('Access denied');
+    err.code = 'FORBIDDEN';
+    throw err;
+  }
+
+  // Validation (similar to updateConstructorMeta)
+  if (description !== undefined) {
+    if (!description || !description.trim()) {
+      const err = new Error('Collection description is required');
+      err.code = 'VALIDATION_ERROR';
+      throw err;
+    }
+
+    if (description.length > 1000) {
+      const err = new Error('Collection description is too long');
+      err.code = 'VALIDATION_ERROR';
+      throw err;
+    }
+
+    collection.description = description.trim();
+  }
+
+  if (urlImage !== undefined && urlImage !== null && urlImage !== '') {
+    if (!isValidUrl(urlImage)) {
+      const err = new Error('url_image is not a valid URL');
+      err.code = 'VALIDATION_ERROR';
+      throw err;
+    }
+    collection.urlImage = urlImage;
+  } else if (urlImage === null) {
+    // explicit reset
+    collection.urlImage = null;
+  }
+
+  if (imagePath !== undefined) {
+    // imagePath is usually something like "/uploads/collections/xxx.png"
+    collection.imagePath = imagePath || null;
+  }
+
+  collection.updatedAt = new Date();
+
+  return collection;
+}
+
+
 // --- Helper ---
 
 function isValidUrl(url) {

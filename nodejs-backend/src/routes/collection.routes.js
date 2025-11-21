@@ -6,6 +6,7 @@ import {
   loadConstructor,
   createItem,
   getCollection,   
+  updateCollectionController,  
 } from '../controllers/collection.controller.js';
 
 const collectionRouter = Router();
@@ -30,5 +31,9 @@ collectionRouter.post('/constructor/:new_id', authApiRequired, loadConstructor);
 // [GET] /collections/:id
 // Private: only owner can access collection data
 collectionRouter.get('/:id', authApiRequired, getCollection);
+
+// [PUT] /collections/:id
+// Private: only owner can update collection metadata
+collectionRouter.put('/:id', authApiRequired, updateCollectionController);
 
 export default collectionRouter;
