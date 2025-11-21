@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 
 import authRoutes from './routes/auth.routes.js';
 import collectionRoutes from './routes/collection.routes.js';
+import drawingRoutes from './routes/drawing.routes.js';
 import { authPageRequired } from './middlewares/auth.middleware.js';
 
 const app = express();
@@ -20,6 +21,9 @@ app.use('/auth', authRoutes);
 
 // Collections (constructor + items)
 app.use('/collections', collectionRoutes);
+
+// Drawing (public)
+app.use('/drawing', drawingRoutes);
 
 // login page / home demo
 app.get('/login', (req, res) => {

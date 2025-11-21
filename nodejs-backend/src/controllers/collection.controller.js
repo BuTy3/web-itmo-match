@@ -5,7 +5,7 @@ import {
   getDraftForUser,
   getConstructorState, 
   updateConstructorMeta, 
-} from '../services/collection/collection.service.js';
+} from '../services/collection.service.js';
 
 // call service creates draft collection, return new_id
 export function getConstructor(req, res) {

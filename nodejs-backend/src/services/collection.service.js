@@ -1,8 +1,8 @@
-// services/collection/collection.service.js
+// services/collection.service.js
 // This layer contains all in-memory "draft" logic for collections and items.
 
-import { Collection } from '../../models/collection.model.js';
-import { Item } from '../../models/item.model.js';
+import { Collection } from '../models/collection.model.js';
+import { Item } from '../models/item.model.js';
 
 // Auto-increment id
 let nextCollectionId = 1;
