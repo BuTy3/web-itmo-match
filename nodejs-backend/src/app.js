@@ -4,6 +4,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
 
 import authRoutes from './routes/auth.routes.js';
 import collectionRoutes from './routes/collection.routes.js';
@@ -13,6 +15,8 @@ import { authPageRequired } from './middlewares/auth.middleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+// Load OpenAPI specification from YAML file (root folder)
+const swaggerDocument = YAML.load(path.join(__dirname, '..', 'openapi.yaml'));
 
 const app = express();
 
@@ -27,6 +31,10 @@ app.use(
   '/uploads',
   express.static(path.join(__dirname, '..', '..', 'uploads'))
 );
+
+// Swagger UI for OpenAPI documentation (static YAML)
+// Available at: GET /api-docs
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Upload routes (images)
 app.use('/upload', uploadRoutes);
