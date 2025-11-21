@@ -2,8 +2,14 @@
 // Routes for image upload 
 
 import { Router } from 'express';
-import { uploadCollectionImage } from '../middlewares/upload.middleware.js';
-import { uploadCollectionImageHandler } from '../controllers/upload.controller.js';
+import {
+  uploadCollectionImage,
+  uploadItemImage,
+} from '../middlewares/upload.middleware.js';
+import {
+  uploadCollectionImageHandler,
+  uploadItemImageHandler,
+} from '../controllers/upload.controller.js';
 
 const uploadRouter = Router();
 
@@ -14,6 +20,14 @@ uploadRouter.post(
   '/collection-image',
   uploadCollectionImage.single('image'),  // create middleware from multer's instance (uploadCollectionImage)
   uploadCollectionImageHandler
+);
+
+// [POST] /upload/item-image
+// multipart/form-data, field name: "image"
+uploadRouter.post(
+  '/item-image',
+  uploadItemImage.single('image'),
+  uploadItemImageHandler
 );
 
 export default uploadRouter;
