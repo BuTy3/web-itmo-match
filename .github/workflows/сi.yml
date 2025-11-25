@@ -4,16 +4,17 @@ on:
   pull_request:
     branches: [ main, master, develop ]
 
+# All npm commands run inside nodejs-backend by default
+defaults:
+  run:
+    working-directory: nodejs-backend
+
 jobs:
   # =========================
   # Backend: setup + install
   # =========================
   backend-setup:
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: nodejs-backend
 
     steps:
       - name: Checkout code
@@ -35,10 +36,6 @@ jobs:
   backend-lint:
     needs: backend-setup
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: nodejs-backend
 
     steps:
       - name: Checkout code
@@ -67,10 +64,6 @@ jobs:
     needs: backend-setup
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: nodejs-backend
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -88,42 +81,41 @@ jobs:
       - name: Run backend unit tests with coverage
         run: npm test -- --coverage
 
-  # =====================================
-  # Frontend (placeholder / future use)
-  # =====================================
-  # This job runs only if there is a package.json at repo root,
-  # so it won't break your CI now if you don't have a frontend yet.
-  frontend-lint-and-unit:
-    if: ${{ hashFiles('package.json') != '' }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js (frontend)
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: package-lock.json
-
-      - name: Install frontend dependencies
-        run: npm ci
-        env:
-          CI: true
-
-      - name: Run frontend lint (if script exists)
-        run: npm run lint || echo "No frontend lint script"
-        env:
-          CI: true
-
-      - name: Run frontend Prettier check (if script exists)
-        run: npm run prettier:check || echo "No frontend prettier:check script"
-        env:
-          CI: true
-
-      - name: Run frontend unit tests (if script exists)
-        run: npm run test -- --ci --passWithNoTests || echo "No frontend test script"
-        env:
-          CI: true
+  # =====================================================
+  # Frontend placeholder (for future use, currently off)
+  # =====================================================
+  # Uncomment and adapt when you actually add a frontend:
+  #
+  # frontend-lint-and-unit:
+  #   runs-on: ubuntu-latest
+  #
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Setup Node.js (frontend)
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 20
+  #         cache: npm
+  #         cache-dependency-path: package-lock.json
+  #
+  #     - name: Install frontend dependencies
+  #       run: npm ci
+  #       env:
+  #         CI: true
+  #
+  #     - name: Run frontend lint (if script exists)
+  #       run: npm run lint || echo "No frontend lint script"
+  #       env:
+  #         CI: true
+  #
+  #     - name: Run frontend Prettier check (if script exists)
+  #       run: npm run prettier:check || echo "No frontend prettier:check script"
+  #       env:
+  #         CI: true
+  #
+  #     - name: Run frontend unit tests (if script exists)
+  #       run: npm run test -- --ci --passWithNoTests || echo "No frontend test script"
+  #       env:
+  #         CI: true
