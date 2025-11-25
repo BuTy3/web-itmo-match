@@ -5,7 +5,10 @@
   "description": "Backend of vode 2d app",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
+    "prettier:check": "prettier --check .",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -29,6 +32,11 @@
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "jest": "^30.2.0",
+    "nodemon": "^3.1.11",
+    "prettier": "^3.6.2"
   }
 }
