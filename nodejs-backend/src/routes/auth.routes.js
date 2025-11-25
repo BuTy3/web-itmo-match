@@ -1,27 +1,27 @@
 // Auth api
-import { Router } from 'express';
-import bcrypt from 'bcrypt';
-import {findUserByLogin, saveUser} from '../repositories/user.repository.js';
-import { createToken } from '../security/jwt.js';
+import { Router } from "express";
+import bcrypt from "bcrypt";
+import { findUserByLogin, saveUser } from "../repositories/user.repository.js";
+import { createToken } from "../security/jwt.js";
 
 const router = Router();
 
 // [POST] /auth/register
-router.post('/register', async (req, res) => {
+router.post("/register", async (req, res) => {
   const { token, login, password } = req.body;
 
   // Validate login and password
   if (!login || !password) {
     return res.json({
       ok: false,
-      message: 'Login and password are required',
+      message: "Login and password are required",
     });
   }
 
   if (password.length < 4) {
     return res.json({
       ok: false,
-      message: 'Password must be at least 4 characters',
+      message: "Password must be at least 4 characters",
     });
   }
 
@@ -29,7 +29,7 @@ router.post('/register', async (req, res) => {
   if (existing) {
     return res.json({
       ok: false,
-      message: 'Login is already taken',
+      message: "Login is already taken",
     });
   }
 
@@ -52,13 +52,13 @@ router.post('/register', async (req, res) => {
 });
 
 // [POST] /auth/login
-router.post('/login', async (req, res) => {
+router.post("/login", async (req, res) => {
   const { token, login, password } = req.body;
 
   if (!login || !password) {
     return res.json({
       ok: false,
-      message: 'Login and password are required',
+      message: "Login and password are required",
     });
   }
 
@@ -66,7 +66,7 @@ router.post('/login', async (req, res) => {
   if (!user) {
     return res.json({
       ok: false,
-      message: 'Invalid login or password',
+      message: "Invalid login or password",
     });
   }
 
@@ -74,7 +74,7 @@ router.post('/login', async (req, res) => {
   if (!ok) {
     return res.json({
       ok: false,
-      message: 'Invalid login or password',
+      message: "Invalid login or password",
     });
   }
 

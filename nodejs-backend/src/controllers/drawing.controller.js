@@ -1,7 +1,7 @@
 // controllers/drawing.controller.js
 // Controller for local drawing topics (public, no authentication).
 
-import { getRandomTopic } from '../services/drawing.service.js';
+import { getRandomTopic } from "../services/drawing.service.js";
 
 /**
  * [GET] /drawing/topic
@@ -32,11 +32,11 @@ export function getDrawingTopic(req, res) {
       topic,
     });
   } catch (err) {
-    console.error('Error in getDrawingTopic:', err);
+    console.error("Error in getDrawingTopic:", err);
 
     return res.status(500).json({
       ok: false,
-      message: err.message || 'Internal server error while getting topic',
+      message: err.message || "Internal server error while getting topic",
     });
   }
 }

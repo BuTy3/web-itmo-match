@@ -4,16 +4,16 @@
 // Static pool of topics for drawing.
 // You can extend or replace this list later.
 const TOPIC_POOL = [
-  'Cat on the roof',
-  'Dog with a hat',
-  'Space rocket on the moon',
-  'Castle near the sea',
-  'Forest at night',
-  'City skyline',
-  'Mountain with river',
-  'Robot playing guitar',
-  'Tree in the wind',
-  'Car on the highway',
+  "Cat on the roof",
+  "Dog with a hat",
+  "Space rocket on the moon",
+  "Castle near the sea",
+  "Forest at night",
+  "City skyline",
+  "Mountain with river",
+  "Robot playing guitar",
+  "Tree in the wind",
+  "Car on the highway",
 ];
 
 /**
@@ -28,12 +28,12 @@ const TOPIC_POOL = [
  * @throws Error if there is no suitable topic
  */
 export function getRandomTopic(lastTopic) {
-  const normalizedLast = (lastTopic ?? '').toString().trim();
+  const normalizedLast = (lastTopic ?? "").toString().trim();
 
   // If pool is empty -> nothing to return
   if (!TOPIC_POOL.length) {
-    const err = new Error('Topic pool is empty');
-    err.code = 'NO_TOPICS';
+    const err = new Error("Topic pool is empty");
+    err.code = "NO_TOPICS";
     throw err;
   }
 
@@ -42,8 +42,8 @@ export function getRandomTopic(lastTopic) {
 
   // If nothing left, we cannot provide a different topic
   if (candidates.length === 0) {
-    const err = new Error('No alternative topics available');
-    err.code = 'NO_ALTERNATIVES';
+    const err = new Error("No alternative topics available");
+    err.code = "NO_ALTERNATIVES";
     throw err;
   }
 

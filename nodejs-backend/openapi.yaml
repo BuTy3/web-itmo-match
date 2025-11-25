@@ -115,7 +115,7 @@ components:
 
     CollectionFull:
       allOf:
-        - $ref: '#/components/schemas/CollectionMeta'
+        - $ref: "#/components/schemas/CollectionMeta"
         - type: object
           properties:
             createdAt:
@@ -129,7 +129,7 @@ components:
             items:
               type: array
               items:
-                $ref: '#/components/schemas/CollectionItem'
+                $ref: "#/components/schemas/CollectionItem"
 
     DraftConstructorResponse:
       type: object
@@ -237,7 +237,6 @@ components:
           nullable: true
           example: "No topics available"
 
-
 paths:
   /auth/register:
     post:
@@ -250,14 +249,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuthRequest'
+              $ref: "#/components/schemas/AuthRequest"
       responses:
-        '200':
+        "200":
           description: Register result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
+                $ref: "#/components/schemas/AuthResponse"
 
   /auth/login:
     post:
@@ -270,14 +269,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuthRequest'
+              $ref: "#/components/schemas/AuthRequest"
       responses:
-        '200':
+        "200":
           description: Login result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
+                $ref: "#/components/schemas/AuthResponse"
 
   /collections/constructor:
     post:
@@ -289,18 +288,18 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Draft collection id
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DraftConstructorResponse'
-        '401':
+                $ref: "#/components/schemas/DraftConstructorResponse"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
   /collections/constructor/{new_id}:
     post:
@@ -325,26 +324,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ConstructorMetaRequest'
+              $ref: "#/components/schemas/ConstructorMetaRequest"
       responses:
-        '200':
+        "200":
           description: Metadata updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DraftConstructorResponse'
-        '400':
+                $ref: "#/components/schemas/DraftConstructorResponse"
+        "400":
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
   /collections/constructor/item:
     post:
@@ -361,28 +360,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateItemRequest'
+              $ref: "#/components/schemas/CreateItemRequest"
       responses:
-        '200':
+        "200":
           description: Item created/updated or collection finalized
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/CreateItemContinueResponse'
-                  - $ref: '#/components/schemas/CreateItemFinalizeResponse'
-        '400':
+                  - $ref: "#/components/schemas/CreateItemContinueResponse"
+                  - $ref: "#/components/schemas/CreateItemFinalizeResponse"
+        "400":
           description: Validation error while saving item
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
   /collections/{id}:
     get:
@@ -402,7 +401,7 @@ paths:
           required: true
           description: Collection id
       responses:
-        '200':
+        "200":
           description: Collection data
           content:
             application/json:
@@ -413,25 +412,25 @@ paths:
                     type: boolean
                     example: true
                   collection:
-                    $ref: '#/components/schemas/CollectionFull'
-        '401':
+                    $ref: "#/components/schemas/CollectionFull"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
           description: Access denied (not the owner)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
           description: Collection not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
     put:
       summary: Update finalized collection metadata
@@ -469,7 +468,7 @@ paths:
                   nullable: true
                   example: "Updated collection description"
       responses:
-        '200':
+        "200":
           description: Collection updated successfully
           content:
             application/json:
@@ -480,31 +479,31 @@ paths:
                     type: boolean
                     example: true
                   collection:
-                    $ref: '#/components/schemas/CollectionFull'
-        '400':
+                    $ref: "#/components/schemas/CollectionFull"
+        "400":
           description: Validation error while updating collection
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
           description: Access denied (not the owner)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
           description: Collection not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
   /upload/collection-image:
     post:
@@ -525,18 +524,18 @@ paths:
                   type: string
                   format: binary
       responses:
-        '200':
+        "200":
           description: Upload result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UploadImageResponse'
-        '400':
+                $ref: "#/components/schemas/UploadImageResponse"
+        "400":
           description: No image provided or invalid file
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
   /upload/item-image:
     post:
@@ -557,18 +556,18 @@ paths:
                   type: string
                   format: binary
       responses:
-        '200':
+        "200":
           description: Upload result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UploadImageResponse'
-        '400':
+                $ref: "#/components/schemas/UploadImageResponse"
+        "400":
           description: No image provided or invalid file
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
   /drawing/topic:
     get:
@@ -588,15 +587,15 @@ paths:
           required: false
           description: Last topic shown to the user (or null on first visit).
       responses:
-        '200':
+        "200":
           description: Drawing topic response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DrawingTopicResponse'
-        '500':
+                $ref: "#/components/schemas/DrawingTopicResponse"
+        "500":
           description: Internal server error while getting topic
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"

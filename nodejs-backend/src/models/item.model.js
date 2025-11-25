@@ -14,8 +14,8 @@ export class Item {
     this.collectionId = collectionId;
 
     // Item metadata
-    this.urlImage = urlImage;      // optional external image URL
-    this.imagePath = imagePath;    // optional local server image path
+    this.urlImage = urlImage; // optional external image URL
+    this.imagePath = imagePath; // optional local server image path
     this.description = description;
   }
 }

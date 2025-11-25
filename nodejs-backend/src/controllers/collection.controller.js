@@ -3,12 +3,12 @@ import {
   checkConstructor,
   addItemToDraft,
   getDraftForUser,
-  getConstructorState, 
-  updateConstructorMeta, 
-  finalizeDraft, 
-  getCollectionById, 
-  updateCollection, 
-} from '../services/collection.service.js';
+  getConstructorState,
+  updateConstructorMeta,
+  finalizeDraft,
+  getCollectionById,
+  updateCollection,
+} from "../services/collection.service.js";
 
 // call service creates draft collection, return new_id
 export function getConstructor(req, res) {
@@ -16,7 +16,7 @@ export function getConstructor(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: 'User is not authenticated',
+        message: "User is not authenticated",
       });
     }
 
@@ -26,16 +26,16 @@ export function getConstructor(req, res) {
     if (!new_id) {
       return res.status(500).json({
         ok: false,
-        message: 'Cannot create collection draft',
+        message: "Cannot create collection draft",
       });
     }
 
     return res.json({ ok: true, new_id });
   } catch (err) {
-    console.error('Error in getConstructor:', err);
+    console.error("Error in getConstructor:", err);
     return res.status(500).json({
       ok: false,
-      message: 'Internal server error while creating collection',
+      message: "Internal server error while creating collection",
     });
   }
 }
@@ -48,7 +48,7 @@ export function loadConstructor(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: 'User is not authenticated',
+        message: "User is not authenticated",
       });
     }
 
@@ -79,7 +79,7 @@ export function loadConstructor(req, res) {
       // dont trust new_id, which sent from FE
       if (paramNewId && paramNewId !== collectionId) {
         console.warn(
-          `Warning: URL new_id=${paramNewId} != draft collectionId=${collectionId}`
+          `Warning: URL new_id=${paramNewId} != draft collectionId=${collectionId}`,
         );
       }
 
@@ -100,7 +100,7 @@ export function loadConstructor(req, res) {
     // dont trust new_id, which sent from FE
     if (paramNewId && paramNewId !== collectionId) {
       console.warn(
-        `Warning: URL new_id=${paramNewId} != draft collectionId=${collectionId}`
+        `Warning: URL new_id=${paramNewId} != draft collectionId=${collectionId}`,
       );
     }
 
@@ -111,7 +111,7 @@ export function loadConstructor(req, res) {
       item_id: nextItemId,
     });
   } catch (err) {
-    console.error('Error in loadConstructor:', err);
+    console.error("Error in loadConstructor:", err);
 
     // Send new_id again (if possible)
     let newId = null;
@@ -120,13 +120,13 @@ export function loadConstructor(req, res) {
       if (draft) newId = draft.id;
     }
 
-    const isValidation = err.code === 'VALIDATION_ERROR';
+    const isValidation = err.code === "VALIDATION_ERROR";
 
     // false
     // { "ok": false, "message": <message>, "new_id": <new_id> }
     return res.status(isValidation ? 400 : 500).json({
       ok: false,
-      message: err.message || 'Internal server error while loading constructor',
+      message: err.message || "Internal server error while loading constructor",
       new_id: newId,
     });
   }
@@ -150,14 +150,15 @@ export function createItem(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: 'User is not authenticated',
+        message: "User is not authenticated",
       });
     }
 
     const userId = req.user.id;
 
     // Body: { item_id, url_image, image, description, next, save_exit }
-    const { item_id, url_image, image, description, next, save_exit } = req.body;
+    const { item_id, url_image, image, description, next, save_exit } =
+      req.body;
 
     // reuse service helper to insert item into draft
     const { collectionId, itemId, saveExit } = addItemToDraft(userId, {
@@ -170,7 +171,7 @@ export function createItem(req, res) {
     });
 
     // for debug
-    console.log('createItem: result =', {
+    console.log("createItem: result =", {
       collectionId,
       itemId,
       saveExit,
@@ -186,18 +187,18 @@ export function createItem(req, res) {
           collection_id: finalized.id,
         });
       } catch (finalizeErr) {
-        console.error('Error in finalizeDraft:', finalizeErr);
+        console.error("Error in finalizeDraft:", finalizeErr);
 
-        const isValidation = finalizeErr.code === 'NO_DRAFT';
+        const isValidation = finalizeErr.code === "NO_DRAFT";
 
         return res.status(isValidation ? 400 : 500).json({
           ok: false,
           message:
-            finalizeErr.message || 'Internal server error while finalizing collection',
+            finalizeErr.message ||
+            "Internal server error while finalizing collection",
         });
       }
     }
-
 
     // success (continue editing / creating)
     // here itemId is the id of the item that was just created
@@ -207,7 +208,7 @@ export function createItem(req, res) {
       item_id: itemId,
     });
   } catch (err) {
-    console.error('Error in createItem:', err);
+    console.error("Error in createItem:", err);
 
     // try to send back new_id again if draft exists
     let newId = null;
@@ -216,12 +217,12 @@ export function createItem(req, res) {
       if (draft) newId = draft.id;
     }
 
-    const isValidation = err.code === 'VALIDATION_ERROR';
+    const isValidation = err.code === "VALIDATION_ERROR";
 
     // { "ok": false, "message": <message>, "new_id": <new_id> }
     return res.status(isValidation ? 400 : 500).json({
       ok: false,
-      message: err.message || 'Internal server error while creating item',
+      message: err.message || "Internal server error while creating item",
       new_id: newId,
       // You can also echo item_id back if needed:
       item_id: req.body?.item_id,
@@ -247,33 +248,33 @@ export function getCollection(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: 'User is not authenticated',
+        message: "User is not authenticated",
       });
     }
 
     const userId = req.user.id;
     const paramId = req.params.id;
 
-    console.log('getCollection: userId =', userId, 'paramId =', paramId);
+    console.log("getCollection: userId =", userId, "paramId =", paramId);
 
     const collection = getCollectionById(paramId);
 
     if (!collection) {
       return res.status(404).json({
         ok: false,
-        message: 'Collection not found',
+        message: "Collection not found",
       });
     }
 
     // Private access: only owner can see the collection
     if (collection.ownerId !== userId) {
       console.warn(
-        `getCollection: access denied. userId=${userId}, ownerId=${collection.ownerId}, collectionId=${collection.id}`
+        `getCollection: access denied. userId=${userId}, ownerId=${collection.ownerId}, collectionId=${collection.id}`,
       );
 
       return res.status(403).json({
         ok: false,
-        message: 'Access denied',
+        message: "Access denied",
       });
     }
 
@@ -304,11 +305,11 @@ export function getCollection(req, res) {
       collection: collectionDto,
     });
   } catch (err) {
-    console.error('Error in getCollection:', err);
+    console.error("Error in getCollection:", err);
 
     return res.status(500).json({
       ok: false,
-      message: err.message || 'Internal server error while getting collection',
+      message: err.message || "Internal server error while getting collection",
     });
   }
 }
@@ -334,7 +335,7 @@ export function updateCollectionController(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: 'User is not authenticated',
+        message: "User is not authenticated",
       });
     }
 
@@ -344,7 +345,7 @@ export function updateCollectionController(req, res) {
     // Expect frontend to send url_image, image (imagePath), description
     const { url_image, image, description } = req.body || {};
 
-    console.log('updateCollectionController:', {
+    console.log("updateCollectionController:", {
       userId,
       paramId,
       url_image,
@@ -385,20 +386,18 @@ export function updateCollectionController(req, res) {
       collection: collectionDto,
     });
   } catch (err) {
-    console.error('Error in updateCollectionController:', err);
+    console.error("Error in updateCollectionController:", err);
 
     const code = err.code;
     let status = 500;
 
-    if (code === 'VALIDATION_ERROR') status = 400;
-    else if (code === 'NOT_FOUND') status = 404;
-    else if (code === 'FORBIDDEN') status = 403;
+    if (code === "VALIDATION_ERROR") status = 400;
+    else if (code === "NOT_FOUND") status = 404;
+    else if (code === "FORBIDDEN") status = 403;
 
     return res.status(status).json({
       ok: false,
-      message: err.message || 'Internal server error while updating collection',
+      message: err.message || "Internal server error while updating collection",
     });
   }
 }
-
-

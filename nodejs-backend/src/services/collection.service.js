@@ -1,13 +1,13 @@
 // services/collection.service.js
 // This layer contains all in-memory "draft" logic for collections and items.
 
-import { Collection } from '../models/collection.model.js';
-import { Item } from '../models/item.model.js';
+import { Collection } from "../models/collection.model.js";
+import { Item } from "../models/item.model.js";
 
 // Auto-increment id
 let nextCollectionId = 1;
 
-// Map userId -> draft Collection 
+// Map userId -> draft Collection
 const draftCollections = new Map();
 // Map collectionId -> finalized Collection (not a draft anymore)
 const collectionsStore = new Map();
@@ -40,7 +40,7 @@ export function getOrCreateDraft(userId) {
       updatedAt: now,
     });
 
-    draft.items = new Map(); 
+    draft.items = new Map();
     draft.lastItemId = 0;
 
     draftCollections.set(userKey, draft);
@@ -84,25 +84,28 @@ export function getConstructorState(userId) {
  *  [POST] /collections/constructor/:new_id
  *  when body contains { url_image, image, description }
  */
-export function updateConstructorMeta(userId, { urlImage, imagePath, description }) {
+export function updateConstructorMeta(
+  userId,
+  { urlImage, imagePath, description },
+) {
   const draft = getOrCreateDraft(userId);
 
   // simple validation for collection description
   if (!description || !description.trim()) {
-    const err = new Error('Collection description is required');
-    err.code = 'VALIDATION_ERROR';
+    const err = new Error("Collection description is required");
+    err.code = "VALIDATION_ERROR";
     throw err;
   }
 
   if (description.length > 1000) {
-    const err = new Error('Collection description is too long');
-    err.code = 'VALIDATION_ERROR';
+    const err = new Error("Collection description is too long");
+    err.code = "VALIDATION_ERROR";
     throw err;
   }
 
   if (urlImage && !isValidUrl(urlImage)) {
-    const err = new Error('url_image is not a valid URL');
-    err.code = 'VALIDATION_ERROR';
+    const err = new Error("url_image is not a valid URL");
+    err.code = "VALIDATION_ERROR";
     throw err;
   }
 
@@ -128,8 +131,8 @@ export function finalizeDraft(userId) {
 
   const draft = draftCollections.get(userKey);
   if (!draft) {
-    const err = new Error('Draft collection not found for user');
-    err.code = 'NO_DRAFT';
+    const err = new Error("Draft collection not found for user");
+    err.code = "NO_DRAFT";
     throw err;
   }
 
@@ -143,10 +146,10 @@ export function finalizeDraft(userId) {
   draftCollections.delete(userKey);
 
   console.log(
-    'finalizeDraft: finalized collectionId =',
+    "finalizeDraft: finalized collectionId =",
     draft.id,
-    'for userId =',
-    userId
+    "for userId =",
+    userId,
   );
 
   return draft;
@@ -163,26 +166,26 @@ export function finalizeDraft(userId) {
  */
 export function addItemToDraft(
   userId,
-  { itemIdFromClient, urlImage, imagePath, description, next, saveExit }
+  { itemIdFromClient, urlImage, imagePath, description, next, saveExit },
 ) {
   const draft = getOrCreateDraft(userId);
 
   // simple validation
   if (!description || !description.trim()) {
-    const err = new Error('Description is required');
-    err.code = 'VALIDATION_ERROR';
+    const err = new Error("Description is required");
+    err.code = "VALIDATION_ERROR";
     throw err;
   }
 
   if (description.length > 1000) {
-    const err = new Error('Description is too long');
-    err.code = 'VALIDATION_ERROR';
+    const err = new Error("Description is too long");
+    err.code = "VALIDATION_ERROR";
     throw err;
   }
 
   if (urlImage && !isValidUrl(urlImage)) {
-    const err = new Error('url_image is not a valid URL');
-    err.code = 'VALIDATION_ERROR';
+    const err = new Error("url_image is not a valid URL");
+    err.code = "VALIDATION_ERROR";
     throw err;
   }
 
@@ -204,7 +207,7 @@ export function addItemToDraft(
   // if this item_id is already used -> error
   if (draft.items.has(requestedId)) {
     const err = new Error(`item_id ${requestedId} is already used`);
-    err.code = 'VALIDATION_ERROR';
+    err.code = "VALIDATION_ERROR";
     throw err;
   }
 
@@ -263,49 +266,53 @@ export function getCollectionById(collectionId) {
  *   - 'FORBIDDEN' if user is not the owner
  *   - 'VALIDATION_ERROR' if validation failed
  */
-export function updateCollection(userId, collectionId, { urlImage, imagePath, description }) {
+export function updateCollection(
+  userId,
+  collectionId,
+  { urlImage, imagePath, description },
+) {
   const id = Number(collectionId);
   if (!Number.isFinite(id)) {
-    const err = new Error('Invalid collection id');
-    err.code = 'VALIDATION_ERROR';
+    const err = new Error("Invalid collection id");
+    err.code = "VALIDATION_ERROR";
     throw err;
   }
 
   const collection = collectionsStore.get(id);
   if (!collection) {
-    const err = new Error('Collection not found');
-    err.code = 'NOT_FOUND';
+    const err = new Error("Collection not found");
+    err.code = "NOT_FOUND";
     throw err;
   }
 
   // Only owner can update
   if (collection.ownerId !== userId) {
-    const err = new Error('Access denied');
-    err.code = 'FORBIDDEN';
+    const err = new Error("Access denied");
+    err.code = "FORBIDDEN";
     throw err;
   }
 
   // Validation (similar to updateConstructorMeta)
   if (description !== undefined) {
     if (!description || !description.trim()) {
-      const err = new Error('Collection description is required');
-      err.code = 'VALIDATION_ERROR';
+      const err = new Error("Collection description is required");
+      err.code = "VALIDATION_ERROR";
       throw err;
     }
 
     if (description.length > 1000) {
-      const err = new Error('Collection description is too long');
-      err.code = 'VALIDATION_ERROR';
+      const err = new Error("Collection description is too long");
+      err.code = "VALIDATION_ERROR";
       throw err;
     }
 
     collection.description = description.trim();
   }
 
-  if (urlImage !== undefined && urlImage !== null && urlImage !== '') {
+  if (urlImage !== undefined && urlImage !== null && urlImage !== "") {
     if (!isValidUrl(urlImage)) {
-      const err = new Error('url_image is not a valid URL');
-      err.code = 'VALIDATION_ERROR';
+      const err = new Error("url_image is not a valid URL");
+      err.code = "VALIDATION_ERROR";
       throw err;
     }
     collection.urlImage = urlImage;
@@ -323,7 +330,6 @@ export function updateCollection(userId, collectionId, { urlImage, imagePath, de
 
   return collection;
 }
-
 
 // --- Helper ---
 

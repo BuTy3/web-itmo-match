@@ -1,6 +1,6 @@
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-key";
 
 export function createToken(user) {
   const payload = {
@@ -9,7 +9,7 @@ export function createToken(user) {
     ukey: user.ukey,
   };
 
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
 }
 
 export function verifyToken(token) {
