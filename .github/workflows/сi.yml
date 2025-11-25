@@ -4,45 +4,120 @@ on:
   pull_request:
     branches: [ main, master, develop ]
 
-defaults:
-  run:
-    working-directory: nodejs-backend
-
 jobs:
-  setup:
+  # =========================
+  # Backend: setup + install
+  # =========================
+  backend-setup:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: nodejs-backend/package-lock.json
-      - run: npm ci
 
-  lint:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: nodejs-backend/package-lock.json
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run prettier:check
+    defaults:
+      run:
+        working-directory: nodejs-backend
 
-  unit:
-    needs: setup
-    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js for backend
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: 20
+          cache: npm
           cache-dependency-path: nodejs-backend/package-lock.json
-      - run: npm ci
-      - run: npm test -- --coverage
+
+      - name: Install backend dependencies
+        run: npm ci
+
+  # =========================
+  # Backend: lint + prettier
+  # =========================
+  backend-lint:
+    needs: backend-setup
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: nodejs-backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js for backend
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: nodejs-backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Run backend ESLint
+        run: npm run lint
+
+      - name: Run backend Prettier check
+        run: npm run prettier:check
+
+  # =========================
+  # Backend: unit tests
+  # =========================
+  backend-unit:
+    needs: backend-setup
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: nodejs-backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js for backend
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: nodejs-backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Run backend unit tests with coverage
+        run: npm test -- --coverage
+
+  # =================================================
+  # Frontend CI (placeholder – for future use / FE)
+  # =================================================
+  # This job is here as a "path for FE".
+  # It will only run if there is a package.json at the repo root.
+  # When you add frontend code and scripts (lint/test), adjust as needed.
+  frontend-lint-and-unit:
+    if: hashFiles('package.json') != ''
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js for frontend
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Run frontend lint (if defined)
+        run: npm run lint
+        env:
+          CI: true
+
+      - name: Run frontend Prettier check (if defined)
+        run: npm run prettier:check
+        env:
+          CI: true
