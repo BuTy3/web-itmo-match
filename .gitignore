@@ -1,3 +1,4 @@
 nodejs-backend/node_modules/**
 .DS_Store
 node_modules
+nodejs-backend/.env
