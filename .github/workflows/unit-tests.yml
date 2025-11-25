@@ -17,7 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js (backend)
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -30,23 +30,24 @@ jobs:
           CI: true
 
       - name: Run backend unit tests
-        run: npm test -- --ci --passWithNoTests
+        # Jest is configured with --passWithNoTests in package.json
+        run: npm test
         env:
           CI: true
 
   # =====================================
-  # Frontend unit tests 
+  # Frontend unit tests (optional / future)
   # =====================================
   frontend-unit-tests:
-    # run if package.json exist in root
-    if: hashFiles('package.json') != ''
+    # Run only if package.json exists in repo root
+    if: ${{ hashFiles('package.json') != '' }}
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js (frontend)
         uses: actions/setup-node@v4
         with:
           node-version: 20
