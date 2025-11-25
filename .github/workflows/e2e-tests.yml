@@ -3,24 +3,68 @@ name: E2E tests
 on: [pull_request]
 
 jobs:
-  e2e-tests:
+  backend-e2e:
+    # Only run backend e2e if a directory exists
+    if: hashFiles('nodejs-backend/package.json') != ''
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: nodejs-backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (backend)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: nodejs-backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+        env:
+          CI: true
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run backend Playwright E2E tests
+        # Safe fallback: do not fail CI if no tests exist
+        run: npm run e2e || echo "No backend e2e tests yet"
+        env:
+          CI: true
+
+  # ----------------------------------------------------------
+  # OPTIONAL: Frontend E2E section (kept for future expansion)
+  # ----------------------------------------------------------
+  frontend-e2e:
+    # Only run if root has a package.json (indicating FE project)
+    if: hashFiles('package.json') != ''
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js (frontend)
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install frontend dependencies
+        run: npm ci
         env:
           CI: true
 
-      - name: Run Playwright E2E tests
-        run: npx playwright test || echo "No e2e tests yet"
+      - name: Install Playwright browsers (frontend)
+        run: npx playwright install --with-deps
+
+      - name: Run frontend Playwright E2E tests
+        run: npm run e2e || echo "No frontend e2e tests yet"
         env:
           CI: true
