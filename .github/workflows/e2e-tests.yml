@@ -4,8 +4,8 @@ on: [pull_request]
 
 jobs:
   backend-e2e:
-    # Only run backend e2e if a directory exists
-    if: hashFiles('nodejs-backend/package.json') != ''
+    # Only run backend e2e if backend package.json exists
+    if: ${{ hashFiles('nodejs-backend/package.json') != '' }}
     runs-on: ubuntu-latest
 
     defaults:
@@ -42,7 +42,7 @@ jobs:
   # ----------------------------------------------------------
   frontend-e2e:
     # Only run if root has a package.json (indicating FE project)
-    if: hashFiles('package.json') != ''
+    if: ${{ hashFiles('package.json') != '' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -65,6 +65,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run frontend Playwright E2E tests
+        # Safe fallback: do not fail CI if no tests exist
         run: npm run e2e || echo "No frontend e2e tests yet"
         env:
           CI: true
