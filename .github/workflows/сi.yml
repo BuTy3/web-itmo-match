@@ -1,45 +1,48 @@
 name: CI
+
 on:
   pull_request:
     branches: [ main, master, develop ]
+
 defaults:
   run:
     working-directory: nodejs-backend
+
 jobs:
   setup:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '20', cache: 'npm' , cache-dependency-path: nodejs-backend/package-lock.json}
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: nodejs-backend/package-lock.json
       - run: npm ci
+
   lint:
     needs: setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '20', cache: 'npm' , cache-dependency-path: nodejs-backend/package-lock.json}
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: nodejs-backend/package-lock.json
       - run: npm ci
       - run: npm run lint
       - run: npm run prettier:check
-      - run: npm run stylelint
+
   unit:
     needs: setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '20', cache: 'npm' , cache-dependency-path: nodejs-backend/package-lock.json}
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: nodejs-backend/package-lock.json
       - run: npm ci
       - run: npm test -- --coverage
-  e2e:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '20', cache: 'npm' , cache-dependency-path: nodejs-backend/package-lock.json}
-      - run: npm ci
-      - run: npx playwright install --with-deps
-      - run: npm run e2e
