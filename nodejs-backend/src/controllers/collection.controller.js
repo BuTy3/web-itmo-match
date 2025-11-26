@@ -296,7 +296,6 @@ export async function getCollection(req, res) {
   }
 }
 
-
 /**
  * [PUT] /collections/:id
  * Private endpoint: only owner can update collection metadata.
@@ -363,4 +362,3 @@ export async function updateCollectionController(req, res) {
     });
   }
 }
-

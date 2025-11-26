@@ -12,7 +12,7 @@ import collectionRoutes from "./routes/collection.routes.js";
 import drawingRoutes from "./routes/drawing.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import { authPageRequired } from "./middlewares/auth.middleware.js";
-import { prisma } from './db.js';
+import { prisma } from "./db.js";
 import { bugsnagMiddleware } from "./bugsnag.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -65,14 +65,14 @@ app.get("/home", authPageRequired, (req, res) => {
   res.send(`<h1>Welcome, ${req.user.login}</h1>`);
 });
 
-app.get('/db-test', async (req, res) => {
+app.get("/db-test", async (req, res) => {
   try {
     // Very simple query: adjust table name later if needed
     // For now we just test connection
     await prisma.$queryRaw`SELECT 1`;
-    res.json({ ok: true, message: 'DB connection is OK' });
+    res.json({ ok: true, message: "DB connection is OK" });
   } catch (err) {
-    console.error('DB test error:', err);
+    console.error("DB test error:", err);
     res.status(500).json({ ok: false, message: err.message });
   }
 });

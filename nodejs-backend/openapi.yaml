@@ -143,7 +143,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/CollectionItem'
+            $ref: "#/components/schemas/CollectionItem"
 
     DraftConstructorResponse:
       type: object
@@ -340,7 +340,7 @@ paths:
             schema:
               $ref: "#/components/schemas/ConstructorMetaRequest"
       responses:
-        '200':
+        "200":
           description: Draft metadata saved or state loaded
           content:
             application/json:
@@ -356,13 +356,13 @@ paths:
                     type: integer
                     nullable: true
                     description: "Next item id when loading constructor state"
-        '400':
+        "400":
           description: Validation error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        '401':
+        "401":
           description: Unauthorized
           content:
             application/json:
@@ -421,7 +421,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Collection data
           content:
             application/json:
@@ -432,20 +432,20 @@ paths:
                     type: boolean
                     example: true
                   collection:
-                    $ref: '#/components/schemas/CollectionFull'
-        '401':
+                    $ref: "#/components/schemas/CollectionFull"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        '403':
+        "403":
           description: Access denied
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        '404':
+        "404":
           description: Collection not found
           content:
             application/json:
@@ -484,7 +484,7 @@ paths:
                   nullable: true
                   description: "Collection description; actually stored in DB"
       responses:
-        '200':
+        "200":
           description: Updated collection
           content:
             application/json:
@@ -494,26 +494,26 @@ paths:
                   ok:
                     type: boolean
                   collection:
-                    $ref: '#/components/schemas/CollectionFull'
-        '400':
+                    $ref: "#/components/schemas/CollectionFull"
+        "400":
           description: Validation error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        '401':
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        '403':
+        "403":
           description: Access denied
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        '404':
+        "404":
           description: Collection not found
           content:
             application/json:
