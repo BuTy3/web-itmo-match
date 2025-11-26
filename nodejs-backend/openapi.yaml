@@ -1,0 +1,616 @@
+openapi: 3.0.3
+info:
+  title: Guider Backend API
+  version: 1.0.0
+  description: >
+    API documentation for authentication, collections constructor,
+    items, uploads and finalized collections.
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AuthRequest:
+      type: object
+      required:
+        - login
+        - password
+      properties:
+        token:
+          type: string
+          nullable: true
+          description: Optional field, currently not used on backend side.
+        login:
+          type: string
+          example: testuser
+        password:
+          type: string
+          example: "1234"
+
+    AuthResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        token:
+          type: string
+          nullable: true
+          description: JWT token if operation is successful.
+        message:
+          type: string
+          nullable: true
+          description: Error message if ok is false.
+
+    ErrorResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Something went wrong"
+        new_id:
+          type: integer
+          nullable: true
+        item_id:
+          type: integer
+          nullable: true
+        collection_id:
+          type: integer
+          nullable: true
+
+    CollectionItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        collectionId:
+          type: integer
+          example: 1
+        urlImage:
+          type: string
+          nullable: true
+          example: "https://example.com/item-preview.png"
+        imagePath:
+          type: string
+          nullable: true
+          example: "/uploads/items/item-1700000000000.png"
+        description:
+          type: string
+          nullable: true
+          example: "Item description"
+
+    CollectionMeta:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        ownerId:
+          type: integer
+          example: 1
+        urlImage:
+          type: string
+          nullable: true
+          example: "https://example.com/collection-header.png"
+        imagePath:
+          type: string
+          nullable: true
+          example: "/uploads/collections/col-1700000000000.png"
+        description:
+          type: string
+          nullable: true
+          example: "My first collection"
+
+    CollectionFull:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 3
+        ownerId:
+          type: integer
+          example: 1
+        urlImage:
+          type: string
+          nullable: true
+          description: "Currently always null, collection images are not stored in DB"
+        imagePath:
+          type: string
+          nullable: true
+          description: "Currently always null, collection images are not stored in DB"
+        description:
+          type: string
+          nullable: true
+          example: "My first collection from draft"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CollectionItem"
+
+    DraftConstructorResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        new_id:
+          type: integer
+          example: 1
+
+    ConstructorMetaRequest:
+      type: object
+      properties:
+        url_image:
+          type: string
+          nullable: true
+          example: "https://example.com/collection-header.png"
+        image:
+          type: string
+          nullable: true
+          description: Local server image path returned by /upload/collection-image.
+          example: "/uploads/collections/col-1700000000000.png"
+        description:
+          type: string
+          nullable: true
+          example: "My first collection"
+
+    CreateItemRequest:
+      type: object
+      required:
+        - description
+      properties:
+        item_id:
+          type: integer
+          nullable: true
+          description: >
+            Desired item id from client. Backend may adjust it if invalid.
+        url_image:
+          type: string
+          nullable: true
+          example: "https://example.com/item-preview.png"
+        image:
+          type: string
+          nullable: true
+          description: Local server image path returned by /upload/item-image.
+          example: "/uploads/items/item-1700000000000.png"
+        description:
+          type: string
+          example: "Item description"
+        next:
+          type: boolean
+          description: If true, user wants to create another item.
+          example: true
+        save_exit:
+          type: boolean
+          description: If true, finalize collection and stop constructor.
+          example: false
+
+    CreateItemContinueResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        new_id:
+          type: integer
+          example: 1
+        item_id:
+          type: integer
+          example: 2
+
+    CreateItemFinalizeResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        collection_id:
+          type: integer
+          example: 1
+
+    UploadImageResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        imagePath:
+          type: string
+          example: "/uploads/collections/col-1700000000000.png"
+
+    DrawingTopicResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        topic:
+          type: string
+          nullable: true
+          example: "Draw a flying cat in the city"
+        message:
+          type: string
+          nullable: true
+          example: "No topics available"
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      description: Create a new user and return a JWT token.
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRequest"
+      responses:
+        "200":
+          description: Register result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+  /auth/login:
+    post:
+      summary: Login
+      description: Authenticate user and return a JWT token.
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRequest"
+      responses:
+        "200":
+          description: Login result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+  /collections/constructor:
+    post:
+      summary: Create or get draft collection
+      description: >
+        Create (or reuse) a draft collection for current user and return its id (new_id).  
+        Draft exists only in memory until user finalizes it.
+      tags:
+        - Collections
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Draft collection id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DraftConstructorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /collections/constructor/{new_id}:
+    post:
+      summary: Save or load draft collection constructor state
+      description: >
+        If body contains collection metadata (url_image, image, description) – saves metadata into draft.  
+        If body is empty – returns draft state with next item id.
+      tags:
+        - Collections
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: new_id
+          required: true
+          schema:
+            type: integer
+          description: Draft collection id (may be ignored on server side)
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConstructorMetaRequest"
+      responses:
+        "200":
+          description: Draft metadata saved or state loaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  new_id:
+                    type: integer
+                    description: "Draft collection id"
+                  item_id:
+                    type: integer
+                    nullable: true
+                    description: "Next item id when loading constructor state"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /collections/constructor/item:
+    post:
+      summary: Create or update item in draft collection
+      description: >
+        Create an item inside the current draft collection.  
+        If `save_exit` is true, the draft collection will be finalized and saved into PostgreSQL.
+      tags:
+        - Collections
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateItemRequest"
+      responses:
+        "200":
+          description: Item created or collection finalized
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/CreateItemContinueResponse"
+                  - $ref: "#/components/schemas/CreateItemFinalizeResponse"
+        "400":
+          description: Validation error while saving item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /collections/{id}:
+    get:
+      summary: Get finalized collection (private)
+      tags:
+        - Collections
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Collection data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  collection:
+                    $ref: "#/components/schemas/CollectionFull"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Collection not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    put:
+      summary: Update finalized collection metadata (private)
+      tags:
+        - Collections
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url_image:
+                  type: string
+                  nullable: true
+                  description: "Validated but not stored in DB yet"
+                image:
+                  type: string
+                  nullable: true
+                  description: "Validated but not stored in DB yet"
+                description:
+                  type: string
+                  nullable: true
+                  description: "Collection description; actually stored in DB"
+      responses:
+        "200":
+          description: Updated collection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  collection:
+                    $ref: "#/components/schemas/CollectionFull"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Collection not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /upload/collection-image:
+    post:
+      summary: Upload collection image
+      description: >
+        Upload a collection image file.  
+        Returns `imagePath` which can be used in collection metadata (constructor).
+      tags:
+        - Upload
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Upload result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadImageResponse"
+        "400":
+          description: No image provided or invalid file
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /upload/item-image:
+    post:
+      summary: Upload item image
+      description: >
+        Upload an item image file.  
+        Returns `imagePath` which can be used when creating items in constructor.
+      tags:
+        - Upload
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Upload result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadImageResponse"
+        "400":
+          description: No image provided or invalid file
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /drawing/topic:
+    get:
+      summary: Get a drawing topic
+      description: >
+        Return a drawing topic from the server-side pool.  
+        Frontend should provide last_topic (from local storage) so that
+        backend can try to avoid returning the same topic.
+      tags:
+        - Drawing
+      parameters:
+        - in: query
+          name: last_topic
+          schema:
+            type: string
+            nullable: true
+          required: false
+          description: Last topic shown to the user (or null on first visit).
+      responses:
+        "200":
+          description: Drawing topic response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DrawingTopicResponse"
+        "500":
+          description: Internal server error while getting topic
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
