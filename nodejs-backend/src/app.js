@@ -13,6 +13,7 @@ import drawingRoutes from "./routes/drawing.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import { authPageRequired } from "./middlewares/auth.middleware.js";
 import { prisma } from './db.js';
+import { bugsnagMiddleware } from "./bugsnag.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +21,12 @@ const __dirname = path.dirname(__filename);
 const swaggerDocument = YAML.load(path.join(__dirname, "..", "openapi.yaml"));
 
 const app = express();
+
+// Bugsnag request handler (if Bugsnag is enabled)
+// This middleware must be added before all other middlewares and routes.
+if (bugsnagMiddleware) {
+  app.use(bugsnagMiddleware.requestHandler);
+}
 
 // Global middleware
 app.use(cors());
@@ -69,5 +76,20 @@ app.get('/db-test', async (req, res) => {
     res.status(500).json({ ok: false, message: err.message });
   }
 });
+
+// Test route to trigger Bugsnag error manually
+app.get("/bugsnag-test", (req, res, next) => {
+  try {
+    throw new Error("Bugsnag test error from /bugsnag-test");
+  } catch (err) {
+    // Pass error to next middleware so Bugsnag can capture it
+    return next(err);
+  }
+});
+
+// Bugsnag error handler MUST be the last middleware
+if (bugsnagMiddleware) {
+  app.use(bugsnagMiddleware.errorHandler);
+}
 
 export default app;
