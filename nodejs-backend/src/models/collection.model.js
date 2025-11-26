@@ -1,5 +1,6 @@
-// models/collection.model.js
-// Domain model for a collection used in constructor and finalized storage.
+// collection.model.js
+// This model is used only for in-memory DRAFT collections (constructor step).
+// Finalized collections are stored in PostgreSQL and accessed via Prisma.
 
 export class Collection {
   constructor({

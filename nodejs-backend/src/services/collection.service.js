@@ -10,8 +10,6 @@ let nextCollectionId = 1;
 
 // Map userId -> draft Collection
 const draftCollections = new Map();
-// Map collectionId -> finalized Collection (not a draft anymore)
-const collectionsStore = new Map();
 
 /**
  * Create (or receive) draft collection for the user.

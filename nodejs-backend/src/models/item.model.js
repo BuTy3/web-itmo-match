@@ -1,5 +1,6 @@
-// models/item.model.js
-// Domain model for a collection item.
+// item.model.js
+// This model is used only for in-memory DRAFT items inside a draft collection.
+// Finalized items are stored in PostgreSQL and accessed via Prisma.
 
 export class Item {
   constructor({
