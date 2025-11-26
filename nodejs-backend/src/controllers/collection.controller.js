@@ -313,7 +313,7 @@ export async function getCollection(req, res) {
  * On failure:
  *   { "ok": false, "message": "<text>" }
  */
-export function updateCollectionController(req, res) {
+export async function updateCollectionController(req, res) {
   try {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
@@ -336,37 +336,16 @@ export function updateCollectionController(req, res) {
       description,
     });
 
-    const updated = updateCollection(userId, paramId, {
+    const updated = await updateCollection(userId, paramId, {
       urlImage: url_image,
       imagePath: image,
       description,
     });
 
-    // Build DTO similar to getCollection response
-    const items = updated.items
-      ? Array.from(updated.items.values()).map((item) => ({
-          id: item.id,
-          collectionId: item.collectionId,
-          urlImage: item.urlImage,
-          imagePath: item.imagePath,
-          description: item.description,
-        }))
-      : [];
-
-    const collectionDto = {
-      id: updated.id,
-      ownerId: updated.ownerId,
-      urlImage: updated.urlImage || null,
-      imagePath: updated.imagePath || null,
-      description: updated.description || null,
-      createdAt: updated.createdAt,
-      updatedAt: updated.updatedAt,
-      items,
-    };
-
+    // updated is already DTO from service (same shape as getCollection)
     return res.json({
       ok: true,
-      collection: collectionDto,
+      collection: updated,
     });
   } catch (err) {
     console.error("Error in updateCollectionController:", err);
@@ -384,3 +363,4 @@ export function updateCollectionController(req, res) {
     });
   }
 }
+

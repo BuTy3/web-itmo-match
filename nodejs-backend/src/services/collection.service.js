@@ -340,7 +340,7 @@ export async function getCollectionById(collectionId) {
 }
 
 /**
- * Update finalized collection metadata (urlImage, imagePath, description).
+ * Update finalized collection metadata in PostgreSQL.
  * Only the owner is allowed to update.
  *
  * Used by:
@@ -349,39 +349,47 @@ export async function getCollectionById(collectionId) {
  * @param {number} userId - id of the user performing update
  * @param {number|string} collectionId - id of the collection to update
  * @param {object} payload - { urlImage, imagePath, description }
- * @returns {object} updated collection
+ * @returns {Promise<object>} updated collection DTO (same shape as getCollectionById)
  * @throws Error with code:
- *   - 'NOT_FOUND' if collection does not exist
+ *   - 'NOT_FOUND' if collection does not exist in DB
  *   - 'FORBIDDEN' if user is not the owner
  *   - 'VALIDATION_ERROR' if validation failed
  */
-export function updateCollection(
+export async function updateCollection(
   userId,
   collectionId,
   { urlImage, imagePath, description },
 ) {
-  const id = Number(collectionId);
-  if (!Number.isFinite(id)) {
+  const idNum = Number(collectionId);
+  if (!Number.isFinite(idNum) || idNum <= 0) {
     const err = new Error("Invalid collection id");
     err.code = "VALIDATION_ERROR";
     throw err;
   }
 
-  const collection = collectionsStore.get(id);
-  if (!collection) {
+  const idBigInt = BigInt(idNum);
+
+  // Load collection from DB first
+  const dbCollection = await prisma.collection.findUnique({
+    where: { id: idBigInt },
+  });
+
+  if (!dbCollection) {
     const err = new Error("Collection not found");
     err.code = "NOT_FOUND";
     throw err;
   }
 
   // Only owner can update
-  if (collection.ownerId !== userId) {
+  if (Number(dbCollection.owner_id) !== userId) {
     const err = new Error("Access denied");
     err.code = "FORBIDDEN";
     throw err;
   }
 
-  // Validation (similar to updateConstructorMeta)
+  const dataToUpdate = {};
+
+  // Validation & updating description (and derived title)
   if (description !== undefined) {
     if (!description || !description.trim()) {
       const err = new Error("Collection description is required");
@@ -395,29 +403,41 @@ export function updateCollection(
       throw err;
     }
 
-    collection.description = description.trim();
+    const trimmed = description.trim();
+    dataToUpdate.description = trimmed;
+    // Title comes from description (first 100 chars)
+    dataToUpdate.title =
+      trimmed.length > 0 ? trimmed.slice(0, 100) : "Untitled collection";
   }
 
+  // For now we do NOT store urlImage / imagePath on collection level in DB,
+  // because schema does not have image columns.
+  // You can still validate urlImage here if you want, but it will not be saved.
   if (urlImage !== undefined && urlImage !== null && urlImage !== "") {
     if (!isValidUrl(urlImage)) {
       const err = new Error("url_image is not a valid URL");
       err.code = "VALIDATION_ERROR";
       throw err;
     }
-    collection.urlImage = urlImage;
-  } else if (urlImage === null) {
-    // explicit reset
-    collection.urlImage = null;
+    // No DB field to store it yet -> ignored.
   }
 
-  if (imagePath !== undefined) {
-    // imagePath is usually something like "/uploads/collections/xxx.png"
-    collection.imagePath = imagePath || null;
+  // imagePath is also ignored for now (no DB column on collection)
+
+  // If there is nothing to update, just return current state
+  if (Object.keys(dataToUpdate).length === 0) {
+    return await getCollectionById(idNum);
   }
 
-  collection.updatedAt = new Date();
+  // Apply update in DB
+  await prisma.collection.update({
+    where: { id: idBigInt },
+    data: dataToUpdate,
+  });
 
-  return collection;
+  // Return updated DTO
+  const updatedDto = await getCollectionById(idNum);
+  return updatedDto;
 }
 
 // --- Helper ---
