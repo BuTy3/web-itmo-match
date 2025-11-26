@@ -114,22 +114,36 @@ components:
           example: "My first collection"
 
     CollectionFull:
-      allOf:
-        - $ref: "#/components/schemas/CollectionMeta"
-        - type: object
-          properties:
-            createdAt:
-              type: string
-              format: date-time
-              example: "2025-11-21T10:00:00.000Z"
-            updatedAt:
-              type: string
-              format: date-time
-              example: "2025-11-21T10:05:00.000Z"
-            items:
-              type: array
-              items:
-                $ref: "#/components/schemas/CollectionItem"
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 3
+        ownerId:
+          type: integer
+          example: 1
+        urlImage:
+          type: string
+          nullable: true
+          description: "Currently always null, collection images are not stored in DB"
+        imagePath:
+          type: string
+          nullable: true
+          description: "Currently always null, collection images are not stored in DB"
+        description:
+          type: string
+          nullable: true
+          example: "My first collection from draft"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionItem'
 
     DraftConstructorResponse:
       type: object
@@ -282,6 +296,32 @@ paths:
     post:
       summary: Create or get draft collection
       description: >
+        Creates a new draft collection for the authenticated user
+        or returns existing draft id if it already exists. Draft is stored in memory only.
+      tags:
+        - Collections
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Draft collection id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  new_id:
+                    type: integer
+                    example: 1
+        '401':
+          description: Unauthorized
+
+    post:
+      summary: Create or get draft collection
+      description: >
         Create (or reuse) a draft collection for current user and return its id (new_id).
       tags:
         - Collections
@@ -302,6 +342,60 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
   /collections/constructor/{new_id}:
+    post:
+      summary: Save or load draft collection constructor state
+      description: >
+        If body contains collection metadata (url_image, image, description) – saves metadata into draft.  
+        If body is empty – returns draft state with next item id.
+      tags:
+        - Collections
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: new_id
+          required: true
+          schema:
+            type: integer
+          description: Draft collection id (may be ignored on server side)
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url_image:
+                  type: string
+                  nullable: true
+                image:
+                  type: string
+                  nullable: true
+                description:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: Draft metadata saved or state loaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  new_id:
+                    type: integer
+                    description: "Draft collection id"
+                  item_id:
+                    type: integer
+                    nullable: true
+                    description: "Next item id when loading constructor state"
+        '400':
+          description: Validation error
+        '401':
+          description: Unauthorized
+
     post:
       summary: Update draft collection metadata
       description: >
@@ -347,6 +441,65 @@ paths:
 
   /collections/constructor/item:
     post:
+      summary: Create item in draft collection
+      tags:
+        - Collections
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                item_id:
+                  type: integer
+                  nullable: true
+                url_image:
+                  type: string
+                  nullable: true
+                image:
+                  type: string
+                  nullable: true
+                description:
+                  type: string
+                next:
+                  type: boolean
+                  description: "If true, user will create another item"
+                save_exit:
+                  type: boolean
+                  description: "If true, finalize draft and save to DB"
+      responses:
+        '200':
+          description: Item created or collection finalized
+          content:
+            application/json:
+              schema:
+                type: object
+                oneOf:
+                  - properties:
+                      ok:
+                        type: boolean
+                        example: true
+                      new_id:
+                        type: integer
+                      item_id:
+                        type: integer
+                        description: "Created item id in draft"
+                  - properties:
+                      ok:
+                        type: boolean
+                        example: true
+                      collection_id:
+                        type: integer
+                        description: "Final collection id stored in DB"
+        '400':
+          description: Validation error
+        '401':
+          description: Unauthorized
+
+    post:
       summary: Create or update item in draft collection
       description: >
         Create (or update) an item inside the current draft collection.  
@@ -385,10 +538,7 @@ paths:
 
   /collections/{id}:
     get:
-      summary: Get finalized collection
-      description: >
-        Get full data of a finalized collection.  
-        Only the owner of the collection can access it.
+      summary: Get finalized collection (private)
       tags:
         - Collections
       security:
@@ -396,12 +546,11 @@ paths:
       parameters:
         - in: path
           name: id
+          required: true
           schema:
             type: integer
-          required: true
-          description: Collection id
       responses:
-        "200":
+        '200':
           description: Collection data
           content:
             application/json:
@@ -412,31 +561,16 @@ paths:
                     type: boolean
                     example: true
                   collection:
-                    $ref: "#/components/schemas/CollectionFull"
-        "401":
+                    $ref: '#/components/schemas/CollectionFull'
+        '401':
           description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: Access denied (not the owner)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+        '403':
+          description: Access denied
+        '404':
           description: Collection not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
 
     put:
-      summary: Update finalized collection metadata
-      description: >
-        Update metadata of a finalized collection (description, url_image, imagePath).  
-        Only the owner is allowed to update.
+      summary: Update finalized collection metadata (private)
       tags:
         - Collections
       security:
@@ -444,10 +578,9 @@ paths:
       parameters:
         - in: path
           name: id
+          required: true
           schema:
             type: integer
-          required: true
-          description: Collection id
       requestBody:
         required: true
         content:
@@ -458,18 +591,18 @@ paths:
                 url_image:
                   type: string
                   nullable: true
-                  example: "https://example.com/new-header.png"
+                  description: "Validated but not stored in DB yet"
                 image:
                   type: string
                   nullable: true
-                  example: "/uploads/collections/new-col-1700000000000.png"
+                  description: "Validated but not stored in DB yet"
                 description:
                   type: string
                   nullable: true
-                  example: "Updated collection description"
+                  description: "Collection description; actually stored in DB"
       responses:
-        "200":
-          description: Collection updated successfully
+        '200':
+          description: Updated collection
           content:
             application/json:
               schema:
@@ -477,33 +610,16 @@ paths:
                 properties:
                   ok:
                     type: boolean
-                    example: true
                   collection:
-                    $ref: "#/components/schemas/CollectionFull"
-        "400":
-          description: Validation error while updating collection
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                    $ref: '#/components/schemas/CollectionFull'
+        '400':
+          description: Validation error
+        '401':
           description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: Access denied (not the owner)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+        '403':
+          description: Access denied
+        '404':
           description: Collection not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
 
   /upload/collection-image:
     post:
