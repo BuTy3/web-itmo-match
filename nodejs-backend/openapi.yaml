@@ -296,33 +296,8 @@ paths:
     post:
       summary: Create or get draft collection
       description: >
-        Creates a new draft collection for the authenticated user
-        or returns existing draft id if it already exists. Draft is stored in memory only.
-      tags:
-        - Collections
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Draft collection id
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  ok:
-                    type: boolean
-                    example: true
-                  new_id:
-                    type: integer
-                    example: 1
-        '401':
-          description: Unauthorized
-
-    post:
-      summary: Create or get draft collection
-      description: >
-        Create (or reuse) a draft collection for current user and return its id (new_id).
+        Create (or reuse) a draft collection for current user and return its id (new_id).  
+        Draft exists only in memory until user finalizes it.
       tags:
         - Collections
       security:
@@ -363,17 +338,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                url_image:
-                  type: string
-                  nullable: true
-                image:
-                  type: string
-                  nullable: true
-                description:
-                  type: string
-                  nullable: true
+              $ref: "#/components/schemas/ConstructorMetaRequest"
       responses:
         '200':
           description: Draft metadata saved or state loaded
@@ -393,46 +358,11 @@ paths:
                     description: "Next item id when loading constructor state"
         '400':
           description: Validation error
-        '401':
-          description: Unauthorized
-
-    post:
-      summary: Update draft collection metadata
-      description: >
-        Update draft collection metadata (description and images).  
-        Backend does not trust new_id from URL and always uses user draft internally,
-        but returns the correct new_id in response.
-      tags:
-        - Collections
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: new_id
-          schema:
-            type: integer
-          required: true
-          description: Draft collection id from frontend.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ConstructorMetaRequest"
-      responses:
-        "200":
-          description: Metadata updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DraftConstructorResponse"
-        "400":
-          description: Validation error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "401":
+        '401':
           description: Unauthorized
           content:
             application/json:
@@ -441,69 +371,10 @@ paths:
 
   /collections/constructor/item:
     post:
-      summary: Create item in draft collection
-      tags:
-        - Collections
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                item_id:
-                  type: integer
-                  nullable: true
-                url_image:
-                  type: string
-                  nullable: true
-                image:
-                  type: string
-                  nullable: true
-                description:
-                  type: string
-                next:
-                  type: boolean
-                  description: "If true, user will create another item"
-                save_exit:
-                  type: boolean
-                  description: "If true, finalize draft and save to DB"
-      responses:
-        '200':
-          description: Item created or collection finalized
-          content:
-            application/json:
-              schema:
-                type: object
-                oneOf:
-                  - properties:
-                      ok:
-                        type: boolean
-                        example: true
-                      new_id:
-                        type: integer
-                      item_id:
-                        type: integer
-                        description: "Created item id in draft"
-                  - properties:
-                      ok:
-                        type: boolean
-                        example: true
-                      collection_id:
-                        type: integer
-                        description: "Final collection id stored in DB"
-        '400':
-          description: Validation error
-        '401':
-          description: Unauthorized
-
-    post:
       summary: Create or update item in draft collection
       description: >
-        Create (or update) an item inside the current draft collection.  
-        If `save_exit` is true, the draft collection will be finalized and persisted.
+        Create an item inside the current draft collection.  
+        If `save_exit` is true, the draft collection will be finalized and saved into PostgreSQL.
       tags:
         - Collections
       security:
@@ -516,7 +387,7 @@ paths:
               $ref: "#/components/schemas/CreateItemRequest"
       responses:
         "200":
-          description: Item created/updated or collection finalized
+          description: Item created or collection finalized
           content:
             application/json:
               schema:
@@ -564,10 +435,22 @@ paths:
                     $ref: '#/components/schemas/CollectionFull'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '403':
           description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '404':
           description: Collection not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
     put:
       summary: Update finalized collection metadata (private)
@@ -614,12 +497,28 @@ paths:
                     $ref: '#/components/schemas/CollectionFull'
         '400':
           description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '403':
           description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '404':
           description: Collection not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /upload/collection-image:
     post:
