@@ -3,6 +3,7 @@
 
 import { Collection } from "../models/collection.model.js";
 import { Item } from "../models/item.model.js";
+import { prisma } from "../db.js";
 
 // Auto-increment id
 let nextCollectionId = 1;
@@ -120,13 +121,13 @@ export function updateConstructorMeta(
 
 /**
  * Finalize draft collection for the given user:
- *  - move it from draftCollections to collectionsStore
- *  - mark it as non-draft
- *  - return finalized collection
+ *  - save collection + items into PostgreSQL via Prisma
+ *  - remove draft from memory
+ *  - return object with final collection id (from DB)
  *
  * Used when user chooses "save & exit".
  */
-export function finalizeDraft(userId) {
+export async function finalizeDraft(userId) {
   const userKey = String(userId);
 
   const draft = draftCollections.get(userKey);
@@ -136,23 +137,66 @@ export function finalizeDraft(userId) {
     throw err;
   }
 
-  // Mark this collection as finalized (not needed for logic, but useful)
-  draft.isDraft = false;
+  // Very basic validation: description must exist (same style as updateConstructorMeta)
+  if (!draft.description || !draft.description.trim()) {
+    const err = new Error("Collection description is required before finalize");
+    err.code = "VALIDATION_ERROR";
+    throw err;
+  }
 
-  // Save to finalized store (we reuse the same id and object for now)
-  collectionsStore.set(draft.id, draft);
+  // Build collection title from description (DB requires non-null title)
+  const title =
+    draft.description && draft.description.trim().length > 0
+      ? draft.description.trim().slice(0, 100)
+      : "Untitled collection";
 
-  // Remove draft from draftCollections
+  // owner_id in DB is BigInt, so we cast userId to BigInt
+  const ownerIdBigInt = BigInt(userId);
+
+  // 1) Create collection row in DB
+  const createdCollection = await prisma.collection.create({
+    data: {
+      owner_id: ownerIdBigInt,
+      title,
+      description: draft.description.trim(),
+      // created_at is defaulted by DB
+    },
+  });
+
+  // 2) Create items in DB (if any)
+  const itemsArray = draft.items ? Array.from(draft.items.values()) : [];
+
+  if (itemsArray.length > 0) {
+    const itemsData = itemsArray.map((item) => ({
+      collection_id: createdCollection.id,
+      title:
+        item.description && item.description.trim().length > 0
+          ? item.description.trim().slice(0, 100)
+          : `Item ${item.id}`,
+      description: item.description || null,
+      image_url: item.imagePath || item.urlImage || null,
+      // created_at is default by DB
+    }));
+
+    await prisma.item.createMany({
+      data: itemsData,
+    });
+  }
+
+  // Remove draft from in-memory store
   draftCollections.delete(userKey);
 
   console.log(
-    "finalizeDraft: finalized collectionId =",
-    draft.id,
+    "finalizeDraft: saved to DB. collectionId =",
+    createdCollection.id,
     "for userId =",
     userId,
   );
 
-  return draft;
+  // Return final collection id (from DB, converted to Number for convenience)
+  return {
+    id: Number(createdCollection.id),
+  };
 }
 
 /**
@@ -241,13 +285,58 @@ export function addItemToDraft(
 }
 
 /**
- * Get finalized collection by id.
+ * Get finalized collection by id from PostgreSQL.
  * Used by: GET /collections/:id
+ *
+ * Returns:
+ *   - null if not found
+ *   - DTO object:
+ *       {
+ *         id, ownerId, urlImage, imagePath, description,
+ *         createdAt, updatedAt, items: [...]
+ *       }
  */
-export function getCollectionById(collectionId) {
-  const id = Number(collectionId);
-  if (!Number.isFinite(id)) return null;
-  return collectionsStore.get(id) || null;
+export async function getCollectionById(collectionId) {
+  const idNum = Number(collectionId);
+  if (!Number.isFinite(idNum) || idNum <= 0) return null;
+
+  const idBigInt = BigInt(idNum);
+
+  // Load collection with its items from DB
+  const dbCollection = await prisma.collection.findUnique({
+    where: { id: idBigInt },
+    include: {
+      item: true,
+    },
+  });
+
+  if (!dbCollection) {
+    return null;
+  }
+
+  // Map DB items to DTO
+  const itemsDto = dbCollection.item.map((it) => ({
+    id: Number(it.id),
+    collectionId: Number(it.collection_id),
+    urlImage: it.image_url || null,
+    imagePath: null, // we do not store separate local path in DB for now
+    description: it.description || null,
+  }));
+
+  const collectionDto = {
+    id: Number(dbCollection.id),
+    ownerId: Number(dbCollection.owner_id),
+    // Collection model in DB has no image fields, so we keep them null in DTO
+    urlImage: null,
+    imagePath: null,
+    description: dbCollection.description || null,
+    createdAt: dbCollection.created_at,
+    // There is no updated_at in DB schema, so we reuse created_at
+    updatedAt: dbCollection.created_at,
+    items: itemsDto,
+  };
+
+  return collectionDto;
 }
 
 /**

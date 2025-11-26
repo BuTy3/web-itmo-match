@@ -145,7 +145,7 @@ export function loadConstructor(req, res) {
  *    save_exit     // save and finish constructor
  *  }
  */
-export function createItem(req, res) {
+export async function createItem(req, res) {
   try {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
@@ -180,7 +180,8 @@ export function createItem(req, res) {
     // if user chose "save & exit": finalize draft and return collection_id
     if (saveExit) {
       try {
-        const finalized = finalizeDraft(userId);
+        // Save collection + items into DB and remove draft from memory
+        const finalized = await finalizeDraft(userId);
 
         return res.json({
           ok: true,
@@ -189,7 +190,9 @@ export function createItem(req, res) {
       } catch (finalizeErr) {
         console.error("Error in finalizeDraft:", finalizeErr);
 
-        const isValidation = finalizeErr.code === "NO_DRAFT";
+        const isValidation =
+          finalizeErr.code === "NO_DRAFT" ||
+          finalizeErr.code === "VALIDATION_ERROR";
 
         return res.status(isValidation ? 400 : 500).json({
           ok: false,
@@ -243,7 +246,7 @@ export function createItem(req, res) {
  * On failure:
  *  { "ok": false, "message": "<text>" }
  */
-export function getCollection(req, res) {
+export async function getCollection(req, res) {
   try {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
@@ -257,7 +260,7 @@ export function getCollection(req, res) {
 
     console.log("getCollection: userId =", userId, "paramId =", paramId);
 
-    const collection = getCollectionById(paramId);
+    const collection = await getCollectionById(paramId);
 
     if (!collection) {
       return res.status(404).json({
@@ -278,31 +281,10 @@ export function getCollection(req, res) {
       });
     }
 
-    // Build response object (you can filter out internal fields if needed)
-    const items = collection.items
-      ? Array.from(collection.items.values()).map((item) => ({
-          id: item.id,
-          collectionId: item.collectionId,
-          urlImage: item.urlImage,
-          imagePath: item.imagePath,
-          description: item.description,
-        }))
-      : [];
-
-    const collectionDto = {
-      id: collection.id,
-      ownerId: collection.ownerId,
-      urlImage: collection.urlImage || null,
-      imagePath: collection.imagePath || null,
-      description: collection.description || null,
-      createdAt: collection.createdAt,
-      updatedAt: collection.updatedAt,
-      items,
-    };
-
+    // collection is already a DTO built in service
     return res.json({
       ok: true,
-      collection: collectionDto,
+      collection,
     });
   } catch (err) {
     console.error("Error in getCollection:", err);
@@ -313,6 +295,7 @@ export function getCollection(req, res) {
     });
   }
 }
+
 
 /**
  * [PUT] /collections/:id
