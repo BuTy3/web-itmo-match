@@ -23,6 +23,8 @@
   },
   "homepage": "https://github.com/egorikdo/web-itmo-match#readme",
   "dependencies": {
+    "@bugsnag/js": "^8.6.0",
+    "@bugsnag/plugin-express": "^8.6.0",
     "@prisma/client": "6.19.0",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",
