@@ -1,0 +1,47 @@
+{
+  "name": "backend-vode2d_app",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Backend of vode 2d app",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
+    "prettier:check": "prettier --check .",
+    "prettier:fix": "prettier --write .",
+    "test": "jest --passWithNoTests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/egorikdo/web-itmo-match.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/egorikdo/web-itmo-match/issues"
+  },
+  "homepage": "https://github.com/egorikdo/web-itmo-match#readme",
+  "dependencies": {
+    "@bugsnag/js": "^8.6.0",
+    "@bugsnag/plugin-express": "^8.6.0",
+    "@prisma/client": "6.19.0",
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "swagger-ui-express": "^5.0.1",
+    "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "jest": "^30.2.0",
+    "nodemon": "^3.1.11",
+    "prettier": "^3.6.2",
+    "prisma": "6.19.0"
+  }
+}

@@ -3,29 +3,63 @@ name: Unit tests
 on: [push, pull_request]
 
 jobs:
-  unit-tests:
+  # ============================
+  # Backend unit tests (Node.js)
+  # ============================
+  backend-unit-tests:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: nodejs-backend
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js (backend)
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: nodejs-backend/package-lock.json
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install backend dependencies
+        run: npm ci
         env:
           CI: true
 
-      - name: Run frontend unit tests
-        run: npm run test -- --ci --passWithNoTests
+      - name: Run backend unit tests
+        # Jest is configured with --passWithNoTests in package.json
+        run: npm test
         env:
           CI: true
 
-      # - name: Run backend unit tests
-#   run: cd backend && npm run test -- --ci --passWithNoTests
-#   env:
-#     CI: true
+  # =====================================
+  # Frontend unit tests (template for future)
+  # =====================================
+  # Uncomment and adapt when you add a frontend project.
+  # frontend-unit-tests:
+  #   runs-on: ubuntu-latest
+  #
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Setup Node.js (frontend)
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 20
+  #         cache: npm
+  #         cache-dependency-path: package-lock.json
+  #
+  #     - name: Install frontend dependencies
+  #       run: npm ci
+  #       env:
+  #         CI: true
+  #
+  #     - name: Run frontend unit tests
+  #       # Adjust this command to match your frontend test script
+  #       run: npm run test -- --ci --passWithNoTests
+  #       env:
+  #         CI: true
