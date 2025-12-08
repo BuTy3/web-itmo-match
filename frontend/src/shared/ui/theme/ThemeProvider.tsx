@@ -1,13 +1,9 @@
-import React from 'react';
 import { useMemo, type ReactNode } from 'react';
+import { useSelector } from 'react-redux';
+import { ThemeProvider, CssBaseline } from '@mui/material';
 import type { RootState } from '../../../app/store';
 import type { ThemeMode } from '../../../features/ui/model/uiSlice';
-import { useSelector } from 'react-redux';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
 import { createAppTheme } from './theme';
-
-
 import './reset.css';
 
 
