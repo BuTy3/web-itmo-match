@@ -57,6 +57,38 @@ jobs:
       - name: Run backend Prettier check
         run: npm run prettier:check
 
+      - name: Report "lint" status (success)
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const sha = context.payload.pull_request?.head.sha ?? context.sha;
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha,
+              state: 'success',
+              context: 'lint',
+              description: 'Lint & Prettier passed'
+            });
+
+      - name: Report "lint" status (failure)
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const sha = context.payload.pull_request?.head.sha ?? context.sha;
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha,
+              state: 'failure',
+              context: 'lint',
+              description: 'Lint or Prettier failed'
+            });
+
   # =========================
   # Backend: unit tests
   # =========================
@@ -80,6 +112,39 @@ jobs:
 
       - name: Run backend unit tests with coverage
         run: npm test -- --coverage
+
+      - name: Report "unit-tests" status (success)
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const sha = context.payload.pull_request?.head.sha ?? context.sha;
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha,
+              state: 'success',
+              context: 'unit-tests',
+              description: 'Backend unit tests passed'
+            });
+
+      - name: Report "unit-tests" status (failure)
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const sha = context.payload.pull_request?.head.sha ?? context.sha;
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha,
+              state: 'failure',
+              context: 'unit-tests',
+              description: 'Backend unit tests failed'
+            });
+
 
   # =====================================================
   # Frontend placeholder (for future use, currently off)

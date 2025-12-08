@@ -39,6 +39,38 @@ jobs:
         run: npm run e2e || echo "No backend e2e tests yet"
         env:
           CI: true
+          
+      - name: Report "e2e-tests" status (success)
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const sha = context.payload.pull_request?.head.sha ?? context.sha;
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha,
+              state: 'success',
+              context: 'e2e-tests',
+              description: 'E2E tests passed (or no tests)'
+            });
+
+      - name: Report "e2e-tests" status (failure)
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const sha = context.payload.pull_request?.head.sha ?? context.sha;
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha,
+              state: 'failure',
+              context: 'e2e-tests',
+              description: 'E2E tests failed'
+            });
 
   # ----------------------------------------------------------
   # Frontend E2E tests (template for future, currently disabled)
