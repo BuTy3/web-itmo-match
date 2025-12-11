@@ -3,3 +3,5 @@ nodejs-backend/node_modules/**
 node_modules
 nodejs-backend/.env
 nodejs-backend/src/generated/prisma
+.env
+.env.*
