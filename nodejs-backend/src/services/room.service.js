@@ -354,3 +354,244 @@ export async function submitConnectService(userId, roomId, payload) {
   return true;
 }
 
+/**
+ * Ensure user can access the room:
+ * - creator OR participant
+ */
+async function ensureRoomAccess(userId, roomId) {
+  const room = await prisma.room.findUnique({
+    where: { id: roomId },
+    select: {
+      id: true,
+      creator_id: true,
+      status: true,
+      result: true,
+    },
+  });
+
+  if (!room) {
+    const err = new Error("Room not found");
+    err.code = "NOT_FOUND";
+    throw err;
+  }
+
+  if (room.status === "CLOSED") {
+    const err = new Error("Room is closed");
+    err.code = "FORBIDDEN";
+    throw err;
+  }
+
+  // Creator always has access
+  if (room.creator_id === userId) {
+    return room;
+  }
+
+  // Participant has access
+  const participant = await prisma.room_participant.findUnique({
+    where: {
+      room_id_user_id: {
+        room_id: roomId,
+        user_id: userId,
+      },
+    },
+    select: { room_id: true },
+  });
+
+  if (!participant) {
+    const err = new Error("Access denied");
+    err.code = "FORBIDDEN";
+    throw err;
+  }
+
+  return room;
+}
+
+/**
+ * Build user display info for response DTO.
+ */
+async function getUserDisplay(userId) {
+  const user = await prisma.users.findUnique({
+    where: { id: userId },
+    select: {
+      display_name: true,
+      avatar_url: true,
+    },
+  });
+
+  if (!user) {
+    const err = new Error("User not found");
+    err.code = "NOT_FOUND";
+    throw err;
+  }
+
+  return {
+    nick: user.display_name,
+    profile_picture_url: user.avatar_url || null,
+  };
+}
+
+/**
+ * Read room state from room.result JSON, initialize if missing.
+ * We store per-user cursor (index) and choices here.
+ */
+function readOrInitRoomState(room, userId) {
+  const state = (room.result && typeof room.result === "object") ? room.result : {};
+
+  if (!state.users) state.users = {};
+  const key = String(userId);
+
+  if (!state.users[key]) {
+    state.users[key] = {
+      index: 0,
+      choices: [],
+      done: false,
+    };
+  }
+
+  return state;
+}
+
+/**
+ * Select current card (item) for user.
+ * NOTE: For now we simply pick items from the FIRST collection_id in room.result.collection_ids
+ * You can later replace this with user's chosen collection_id from connect step.
+ */
+async function getCurrentCardForUser(roomState, userId) {
+    // Prefer user's chosen collection_id from connect step
+  const u = roomState.users?.[String(userId)];
+  const chosen = u?.collection_id;
+
+  let collectionIdToUse = null;
+
+  if (chosen !== undefined && chosen !== null) {
+    collectionIdToUse = BigInt(Number(chosen));
+  } else {
+    // Fallback: use the first configured collection id
+    const configIds = roomState.collection_ids || roomState.config?.collection_ids;
+    const collectionIds = Array.isArray(configIds) ? configIds : [];
+
+    if (collectionIds.length === 0) {
+      const err = new Error("Room collections are not configured");
+      err.code = "VALIDATION_ERROR";
+      throw err;
+    }
+
+    collectionIdToUse = BigInt(Number(collectionIds[0]));
+  }
+
+  // Get items ordered by created_at (or id) to have deterministic cards
+  const items = await prisma.item.findMany({
+    where: { collection_id: collectionIdToUse },
+    orderBy: { created_at: "asc" },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      image_url: true,
+    },
+  });
+
+  return items;
+}
+
+/**
+ * Mode 1: enter room and return current card for user.
+ */
+export async function getRoomCardStateService(userId, roomId) {
+  const room = await ensureRoomAccess(userId, roomId);
+  const userDisplay = await getUserDisplay(userId);
+
+  const roomState = readOrInitRoomState(room, userId);
+
+  const items = await getCurrentCardForUser(roomState, userId);
+
+  const u = roomState.users[String(userId)];
+  const idx = u.index || 0;
+
+  // If no items -> error
+  if (items.length === 0) {
+    const err = new Error("No items in selected collection");
+    err.code = "VALIDATION_ERROR";
+    throw err;
+  }
+
+  // Clamp index
+  const safeIdx = Math.min(Math.max(idx, 0), items.length - 1);
+  u.index = safeIdx;
+
+  const card = items[safeIdx];
+
+  return {
+    ...userDisplay,
+    name_card: card.title,
+    description: card.description || "",
+  };
+}
+
+/**
+ * Mode 2: handle user choice (0 exit, 1 yes, 2 no).
+ * Returns next card DTO or redirect.
+ */
+export async function submitRoomChoiceService(userId, roomId, { choose }) {
+  const v = Number(choose);
+  if (![0, 1, 2].includes(v)) {
+    const err = new Error("Invalid choose value");
+    err.code = "VALIDATION_ERROR";
+    throw err;
+  }
+
+  // Exit -> redirect home (or you can return ok:false)
+  if (v === 0) {
+    return { redirect: "/home" };
+  }
+
+  const room = await ensureRoomAccess(userId, roomId);
+  const userDisplay = await getUserDisplay(userId);
+
+  const roomState = readOrInitRoomState(room, userId);
+
+  const items = await getCurrentCardForUser(roomState, userId);
+  if (items.length === 0) {
+    const err = new Error("No items in selected collection");
+    err.code = "VALIDATION_ERROR";
+    throw err;
+  }
+
+  const key = String(userId);
+  const u = roomState.users[key];
+
+  // Save choice
+  u.choices.push(v);
+
+  // Move to next card
+  u.index = (u.index || 0) + 1;
+
+  // If finished cards -> redirect to drawing (placeholder)
+  if (u.index >= items.length) {
+    u.done = true;
+
+    // Persist state to DB
+    await prisma.room.update({
+      where: { id: roomId },
+      data: { result: roomState },
+    });
+
+    // You can change this later to "/rooms/{id_room}/drawing"
+    return { redirect: `/rooms/${Number(roomId)}/drawing` };
+  }
+
+  // Persist updated state to DB
+  await prisma.room.update({
+    where: { id: roomId },
+    data: { result: roomState },
+  });
+
+  const card = items[u.index];
+
+  return {
+    ...userDisplay,
+    name_card: card.title,
+    description: card.description || "",
+  };
+}
+

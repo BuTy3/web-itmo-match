@@ -15,3 +15,10 @@ roomsRouter.post("/create", authApiRequired, createRoom);
 // Mode 2: submit connect (password + collection_id) -> { ok: true }
 roomsRouter.post("/connect/:id_room", authApiRequired, connectRoom);
 
+
+// [POST] /rooms/:id_room
+// Mode 1: enter room (empty body) -> { ok: true, nick, profile_picture_url, name_card, description }
+// Mode 2: choose card (body { choose }) -> { ok: true, ... } or redirect stage
+roomsRouter.post("/:id_room", authApiRequired, roomPage);
+
+export default roomsRouter;
