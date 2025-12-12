@@ -1,7 +1,7 @@
 // Rooms routes
 import { Router } from "express";
 import { authApiRequired } from "../middlewares/auth.middleware.js";
-import { createRoom, connectRoom, roomPage, drawingRoom, drawingResRoom  } from "../controllers/room.controller.js";
+import { createRoom, connectRoom, roomPage, drawingRoom, drawingResRoom, resultsRoom  } from "../controllers/room.controller.js";
 
 const roomsRouter = Router();
 
@@ -23,6 +23,10 @@ roomsRouter.post("/:id_room/drawing", authApiRequired, drawingRoom);
 // [POST] /rooms/:id_room/drawing_res
 // Return all users drawings: { ok: true, picture: [...] }
 roomsRouter.post("/:id_room/drawing_res", authApiRequired, drawingResRoom);
+
+// [POST] /rooms/:id_room/results
+// Return final cards: { ok: true, cards: [...] }
+roomsRouter.post("/:id_room/results", authApiRequired, resultsRoom);
 
 // [POST] /rooms/:id_room
 // Mode 1: enter room (empty body) -> { ok: true, nick, profile_picture_url, name_card, description }

@@ -733,3 +733,81 @@ export async function getDrawingResService(userId, roomId) {
 
   return { picture };
 }
+
+export async function getResultsService(userId, roomId) {
+  const room = await ensureRoomAccess(userId, roomId);
+
+  const state = (room.result && typeof room.result === "object") ? room.result : {};
+  const usersState = state.users || {};
+
+  const userIds = Object.keys(usersState)
+    .map((k) => Number(k))
+    .filter((n) => Number.isFinite(n) && n > 0 && Number.isInteger(n))
+    .map((n) => BigInt(n));
+
+  // If no stored state yet -> return empty results
+  if (userIds.length === 0) {
+    return { cards: [] };
+  }
+
+  // Load users display info
+  const users = await prisma.users.findMany({
+    where: { id: { in: userIds } },
+    select: { id: true, display_name: true, avatar_url: true },
+  });
+  const userMap = new Map(users.map((u) => [String(u.id), u]));
+
+  // Build cards
+  const cards = [];
+
+  // For each user -> pick YES items
+  for (const uid of userIds) {
+    const key = String(uid);
+    const uState = usersState[key] || {};
+    const choices = Array.isArray(uState.choices) ? uState.choices : [];
+
+    // If user didn't choose any -> skip
+    if (choices.length === 0) continue;
+
+    // Determine which collection was used by user
+    const chosenCollectionId = uState.collection_id;
+
+    if (chosenCollectionId === undefined || chosenCollectionId === null) {
+      // No chosen collection -> skip user (or fallback to first configured)
+      continue;
+    }
+
+    const collectionId = BigInt(Number(chosenCollectionId));
+
+    // Load items in deterministic order
+    const items = await prisma.item.findMany({
+      where: { collection_id: collectionId },
+      orderBy: { created_at: "asc" },
+      select: { id: true, title: true, description: true, image_url: true },
+    });
+
+    if (items.length === 0) continue;
+
+    const uInfo = userMap.get(key);
+
+    // choices[i] corresponds to item[i]
+    const n = Math.min(choices.length, items.length);
+
+    for (let i = 0; i < n; i++) {
+      if (Number(choices[i]) === 1) {
+        const it = items[i];
+
+        cards.push({
+          profile_picture_url: uInfo?.avatar_url || null,
+          nick: uInfo?.display_name || `user_${key}`, // optional but useful
+          name_card: it.title,
+          description: it.description || "",
+          // Optional: include item image if FE needs it
+          // url_image: it.image_url || null,
+        });
+      }
+    }
+  }
+
+  return { cards };
+}
