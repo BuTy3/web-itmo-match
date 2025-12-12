@@ -5,6 +5,8 @@ import { RegisterPage } from '../pages/auth/RegisterPage';
 import { HomePage } from '../pages/home/HomePage';
 import { CollectionsPage } from '../pages/collections/CollectionsPage';
 import { DrawingPage } from '../pages/drawing/DrawingPage';
+import { HistoryPage } from '../pages/history/HistoryPage';
+
 
 const router = createBrowserRouter([
   {
@@ -18,6 +20,10 @@ const router = createBrowserRouter([
       {
         path: 'collections',
         element: <CollectionsPage />,
+      },
+      {
+        path: 'history',
+        element: <HistoryPage />,
       },
       {
         path: 'drawing',
