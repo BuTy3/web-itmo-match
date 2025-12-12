@@ -685,3 +685,51 @@ export async function submitDrawingPointsService(userId, roomId, { points }) {
   return true;
 }
 
+
+export async function getDrawingResService(userId, roomId) {
+  const room = await ensureRoomAccess(userId, roomId);
+
+  const state = (room.result && typeof room.result === "object") ? room.result : {};
+  const pointsByUser = state.drawing?.pointsByUser || {};
+
+  const userKeys = Object.keys(pointsByUser);
+
+  // If nobody drew yet -> return empty list
+  if (userKeys.length === 0) {
+    return { picture: [] };
+  }
+
+  // Convert keys to BigInt ids (safe)
+  const ids = userKeys
+    .map((k) => Number(k))
+    .filter((n) => Number.isFinite(n) && n > 0 && Number.isInteger(n))
+    .map((n) => BigInt(n));
+
+  if (ids.length === 0) {
+    return { picture: [] };
+  }
+
+  const users = await prisma.users.findMany({
+    where: { id: { in: ids } },
+    select: {
+      id: true,
+      display_name: true,
+      avatar_url: true,
+    },
+  });
+
+  // Map for quick lookup
+  const userMap = new Map(users.map((u) => [String(u.id), u]));
+
+  const picture = userKeys.map((k) => {
+    const u = userMap.get(k);
+
+    return {
+      nick: u?.display_name || `user_${k}`,
+      profile_picture_url: u?.avatar_url || null,
+      points: Array.isArray(pointsByUser[k]) ? pointsByUser[k] : [],
+    };
+  });
+
+  return { picture };
+}

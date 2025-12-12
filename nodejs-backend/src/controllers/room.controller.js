@@ -7,6 +7,7 @@ import {
   submitRoomChoiceService,
   getDrawingStateService,
   submitDrawingPointsService,
+  getDrawingResService,
  } from "../services/room.service.js";
 
 // [POST] /rooms/create
@@ -217,6 +218,40 @@ export async function drawingRoom(req, res) {
     return res.json({ ok: true });
   } catch (err) {
     console.error("Error in drowingRoom:", err);
+
+    const code = err.code;
+    let status = 500;
+
+    if (code === "VALIDATION_ERROR") status = 400;
+    else if (code === "NOT_FOUND") status = 404;
+    else if (code === "FORBIDDEN") status = 403;
+
+    return res.status(status).json({
+      ok: false,
+      message: err.message || "Internal server error",
+    });
+  }
+}
+
+// [POST] /rooms/:id_room/drawing_res
+export async function drawingResRoom(req, res) {
+  try {
+    const userId = BigInt(req.user.id);
+
+    const roomIdNum = Number(req.params.id_room);
+    if (!Number.isFinite(roomIdNum) || roomIdNum <= 0 || !Number.isInteger(roomIdNum)) {
+      return res.status(400).json({ ok: false, message: "Invalid room id" });
+    }
+    const roomId = BigInt(roomIdNum);
+
+    const result = await getDrawingResService(userId, roomId);
+
+    return res.json({
+      ok: true,
+      picture: result.picture,
+    });
+  } catch (err) {
+    console.error("Error in drawingResRoom:", err);
 
     const code = err.code;
     let status = 500;
