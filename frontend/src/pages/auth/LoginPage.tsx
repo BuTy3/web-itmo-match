@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Button, Paper, Stack, TextField, Typography, Alert } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { login } from '../../shared/api/auth';
 
 export const LoginPage = () => {
@@ -9,6 +9,7 @@ export const LoginPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -25,6 +26,7 @@ export const LoginPage = () => {
       const resp = await login({ login: loginValue, password });
       if (resp.ok) {
         setSuccess('Успешный вход');
+        navigate('/');
       } else {
         setError(resp.message || 'Неверный логин или пароль');
       }
