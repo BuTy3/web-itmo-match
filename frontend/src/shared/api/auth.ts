@@ -1,33 +1,27 @@
 import { apiClient } from './client';
-import type { AuthResponse, User } from './types';
 
 export type LoginPayload = {
-  email: string;
+  login: string;
   password: string;
 };
 
 export type RegisterPayload = {
-  email: string;
+  login: string;
   password: string;
 };
 
-const mockUser: User = {
-  id: 'mock-user-id',
-  email: 'user@example.com',
-  name: 'Mock User',
+export type AuthApiResponse = {
+  ok: boolean;
+  token?: string;
+  message?: string;
 };
 
-const buildAuthResponse = (overrides?: Partial<User>): AuthResponse => ({
-  user: { ...mockUser, ...overrides },
-  accessToken: 'mock-access-token',
-});
-
-void apiClient;
-
-export const login = (payload: LoginPayload): Promise<AuthResponse> => {
-  return Promise.resolve(buildAuthResponse({ email: payload.email }));
+export const login = async (payload: LoginPayload): Promise<AuthApiResponse> => {
+  const { data } = await apiClient.post<AuthApiResponse>('/auth/login', payload);
+  return data;
 };
 
-export const register = (payload: RegisterPayload): Promise<AuthResponse> => {
-  return Promise.resolve(buildAuthResponse({ email: payload.email }));
+export const register = async (payload: RegisterPayload): Promise<AuthApiResponse> => {
+  const { data } = await apiClient.post<AuthApiResponse>('/auth/register', payload);
+  return data;
 };
