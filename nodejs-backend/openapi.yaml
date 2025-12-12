@@ -1,10 +1,9 @@
 openapi: 3.0.3
 info:
   title: Guider Backend API
-  version: 1.0.0
+  version: 2.0.0
   description: >
-    API documentation for authentication, collections constructor,
-    items, uploads and finalized collections.
+    API documentation.
 
 servers:
   - url: http://localhost:3000
@@ -16,6 +15,45 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+  # ==========================
+  # Reusable Responses (FIXED)
+  # ==========================
+  responses:
+    BadRequest:
+      description: Bad request / validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/OkFalseResponse"
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/OkFalseResponse"
+
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/OkFalseResponse"
+
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/OkFalseResponse"
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/OkFalseResponse"
 
   schemas:
     AuthRequest:
@@ -69,6 +107,17 @@ components:
           type: integer
           nullable: true
 
+    OkFalseResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Internal server error"
+      required: [ok, message]
+
     CollectionItem:
       type: object
       properties:
@@ -91,28 +140,6 @@ components:
           nullable: true
           example: "Item description"
 
-    CollectionMeta:
-      type: object
-      properties:
-        id:
-          type: integer
-          example: 1
-        ownerId:
-          type: integer
-          example: 1
-        urlImage:
-          type: string
-          nullable: true
-          example: "https://example.com/collection-header.png"
-        imagePath:
-          type: string
-          nullable: true
-          example: "/uploads/collections/col-1700000000000.png"
-        description:
-          type: string
-          nullable: true
-          example: "My first collection"
-
     CollectionFull:
       type: object
       properties:
@@ -125,11 +152,9 @@ components:
         urlImage:
           type: string
           nullable: true
-          description: "Currently always null, collection images are not stored in DB"
         imagePath:
           type: string
           nullable: true
-          description: "Currently always null, collection images are not stored in DB"
         description:
           type: string
           nullable: true
@@ -180,8 +205,7 @@ components:
         item_id:
           type: integer
           nullable: true
-          description: >
-            Desired item id from client. Backend may adjust it if invalid.
+          description: Desired item id from client. Backend may adjust it if invalid.
         url_image:
           type: string
           nullable: true
@@ -251,6 +275,9 @@ components:
           nullable: true
           example: "No topics available"
 
+    # ==========================
+    # Home schemas
+    # ==========================
     HomeItem:
       type: object
       properties:
@@ -315,17 +342,6 @@ components:
             $ref: "#/components/schemas/HomeCollection"
       required: [ok, collections]
 
-    OkFalseResponse:
-      type: object
-      properties:
-        ok:
-          type: boolean
-          example: false
-        message:
-          type: string
-          example: "Internal server error"
-      required: [ok, message]
-
     SearchRoomRequest:
       type: object
       properties:
@@ -346,13 +362,35 @@ components:
           example: 1
       required: [ok, id_room]
 
+    # ==========================
+    # Drawing points (FIXED)
+    # ==========================
+    DrawingPoint:
+      type: object
+      required: [x, y]
+      properties:
+        x:
+          type: number
+          example: 120.5
+        y:
+          type: number
+          example: 42.2
+        color:
+          type: string
+          nullable: true
+          example: "#000000"
+
+    DrawingPoints:
+      type: array
+      items:
+        $ref: "#/components/schemas/DrawingPoint"
+
 paths:
   /auth/register:
     post:
       summary: Register a new user
       description: Create a new user and return a JWT token.
-      tags:
-        - Auth
+      tags: [Auth]
       requestBody:
         required: true
         content:
@@ -371,8 +409,7 @@ paths:
     post:
       summary: Login
       description: Authenticate user and return a JWT token.
-      tags:
-        - Auth
+      tags: [Auth]
       requestBody:
         required: true
         content:
@@ -390,11 +427,7 @@ paths:
   /collections/constructor:
     post:
       summary: Create or get draft collection
-      description: >
-        Create (or reuse) a draft collection for current user and return its id (new_id).  
-        Draft exists only in memory until user finalizes it.
-      tags:
-        - Collections
+      tags: [Collections]
       security:
         - bearerAuth: []
       responses:
@@ -405,20 +438,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/DraftConstructorResponse"
         "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/Unauthorized"
 
   /collections/constructor/{new_id}:
     post:
       summary: Save or load draft collection constructor state
-      description: >
-        If body contains collection metadata (url_image, image, description) – saves metadata into draft.  
-        If body is empty – returns draft state with next item id.
-      tags:
-        - Collections
+      tags: [Collections]
       security:
         - bearerAuth: []
       parameters:
@@ -446,32 +471,18 @@ paths:
                     type: boolean
                   new_id:
                     type: integer
-                    description: "Draft collection id"
                   item_id:
                     type: integer
                     nullable: true
-                    description: "Next item id when loading constructor state"
         "400":
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/BadRequest"
         "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/Unauthorized"
 
   /collections/constructor/item:
     post:
-      summary: Create or update item in draft collection
-      description: >
-        Create an item inside the current draft collection.  
-        If `save_exit` is true, the draft collection will be finalized and saved into PostgreSQL.
-      tags:
-        - Collections
+      summary: Create item in draft collection (or finalize)
+      tags: [Collections]
       security:
         - bearerAuth: []
       requestBody:
@@ -490,23 +501,14 @@ paths:
                   - $ref: "#/components/schemas/CreateItemContinueResponse"
                   - $ref: "#/components/schemas/CreateItemFinalizeResponse"
         "400":
-          description: Validation error while saving item
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/BadRequest"
         "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/Unauthorized"
 
   /collections/{id}:
     get:
-      summary: Get finalized collection (private)
-      tags:
-        - Collections
+      summary: Get collection (private)
+      tags: [Collections]
       security:
         - bearerAuth: []
       parameters:
@@ -525,32 +527,18 @@ paths:
                 properties:
                   ok:
                     type: boolean
-                    example: true
                   collection:
                     $ref: "#/components/schemas/CollectionFull"
         "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          description: Access denied
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: Collection not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/NotFound"
 
     put:
-      summary: Update finalized collection metadata (private)
-      tags:
-        - Collections
+      summary: Update collection (private)
+      tags: [Collections]
       security:
         - bearerAuth: []
       parameters:
@@ -569,15 +557,12 @@ paths:
                 url_image:
                   type: string
                   nullable: true
-                  description: "Validated but not stored in DB yet"
                 image:
                   type: string
                   nullable: true
-                  description: "Validated but not stored in DB yet"
                 description:
                   type: string
                   nullable: true
-                  description: "Collection description; actually stored in DB"
       responses:
         "200":
           description: Updated collection
@@ -591,38 +576,18 @@ paths:
                   collection:
                     $ref: "#/components/schemas/CollectionFull"
         "400":
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/BadRequest"
         "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          description: Access denied
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: Collection not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/NotFound"
 
   /upload/collection-image:
     post:
       summary: Upload collection image
-      description: >
-        Upload a collection image file.  
-        Returns `imagePath` which can be used in collection metadata (constructor).
-      tags:
-        - Upload
+      tags: [Upload]
       requestBody:
         required: true
         content:
@@ -641,20 +606,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/UploadImageResponse"
         "400":
-          description: No image provided or invalid file
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/BadRequest"
 
   /upload/item-image:
     post:
       summary: Upload item image
-      description: >
-        Upload an item image file.  
-        Returns `imagePath` which can be used when creating items in constructor.
-      tags:
-        - Upload
+      tags: [Upload]
       requestBody:
         required: true
         content:
@@ -673,21 +630,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/UploadImageResponse"
         "400":
-          description: No image provided or invalid file
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/BadRequest"
 
   /drawing/topic:
     get:
       summary: Get a drawing topic
-      description: >
-        Return a drawing topic from the server-side pool.  
-        Frontend should provide last_topic (from local storage) so that
-        backend can try to avoid returning the same topic.
-      tags:
-        - Drawing
+      tags: [Drawing]
       parameters:
         - in: query
           name: last_topic
@@ -695,7 +643,6 @@ paths:
             type: string
             nullable: true
           required: false
-          description: Last topic shown to the user (or null on first visit).
       responses:
         "200":
           description: Drawing topic response
@@ -704,15 +651,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/DrawingTopicResponse"
         "500":
-          description: Internal server error while getting topic
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/ServerError"
 
   /home:
     get:
-      tags: [home]
+      tags: [Home]
       summary: Get ready collections for Home (public)
       responses:
         "200":
@@ -722,14 +665,10 @@ paths:
               schema:
                 $ref: "#/components/schemas/HomeCollectionsResponse"
         "500":
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+          $ref: "#/components/responses/ServerError"
 
     post:
-      tags: [home]
+      tags: [Home]
       summary: Get collections of current user (private)
       security:
         - bearerAuth: []
@@ -741,21 +680,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/HomeCollectionsResponse"
         "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+          $ref: "#/components/responses/Unauthorized"
         "500":
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+          $ref: "#/components/responses/ServerError"
 
   /home/search:
     post:
-      tags: [home]
+      tags: [Home]
       summary: Search room by id (private)
       security:
         - bearerAuth: []
@@ -773,34 +704,17 @@ paths:
               schema:
                 $ref: "#/components/schemas/SearchRoomResponse"
         "400":
-          description: Invalid room id
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+          $ref: "#/components/responses/BadRequest"
         "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+          $ref: "#/components/responses/Unauthorized"
         "404":
-          description: Room not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+          $ref: "#/components/responses/NotFound"
         "500":
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+          $ref: "#/components/responses/ServerError"
 
   /rooms/create:
     post:
-      tags:
-        - Rooms
+      tags: [Rooms]
       summary: Create room or check access
       description: |
         Mode 1 (empty body): check access  
@@ -851,13 +765,14 @@ paths:
                         type: integer
         "400":
           $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
 
   /rooms/connect/{id_room}:
     post:
-      tags:
-        - Rooms
+      tags: [Rooms]
       summary: Connect to room or get collections
       description: |
         Mode 1 (empty body): return user's collections  
@@ -918,6 +833,8 @@ paths:
                         example: true
         "400":
           $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
         "404":
@@ -925,8 +842,7 @@ paths:
 
   /rooms/{id_room}:
     post:
-      tags:
-        - Rooms
+      tags: [Rooms]
       summary: Room cards flow
       description: |
         Mode 1 (empty body): get current card  
@@ -980,6 +896,8 @@ paths:
                         type: string
         "400":
           $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
         "404":
@@ -987,8 +905,7 @@ paths:
 
   /rooms/{id_room}/drawing:
     post:
-      tags:
-        - Drawing
+      tags: [Rooms]
       summary: Drawing page
       description: |
         Mode 1 (empty body): get topic and existing points  
@@ -1010,16 +927,7 @@ paths:
               type: object
               properties:
                 points:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      x:
-                        type: number
-                      y:
-                        type: number
-                      color:
-                        type: string
+                  $ref: "#/components/schemas/DrawingPoints"
       responses:
         "200":
           description: Success
@@ -1034,8 +942,9 @@ paths:
                         example: true
                       topic:
                         type: string
+                        nullable: true
                       points:
-                        type: array
+                        $ref: "#/components/schemas/DrawingPoints"
                   - type: object
                     properties:
                       ok:
@@ -1043,6 +952,8 @@ paths:
                         example: true
         "400":
           $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
         "404":
@@ -1050,8 +961,7 @@ paths:
 
   /rooms/{id_room}/results:
     post:
-      tags:
-        - Results
+      tags: [Results]
       summary: Room results
       description: Return selected cards for all users
       security:
@@ -1086,6 +996,8 @@ paths:
                           type: string
                         description:
                           type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
         "404":
