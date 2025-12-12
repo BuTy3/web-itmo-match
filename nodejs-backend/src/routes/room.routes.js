@@ -1,7 +1,14 @@
 // Rooms routes
 import { Router } from "express";
 import { authApiRequired } from "../middlewares/auth.middleware.js";
-import { createRoom, connectRoom, roomPage, drawingRoom, drawingResRoom, resultsRoom  } from "../controllers/room.controller.js";
+import {
+  createRoom,
+  connectRoom,
+  roomPage,
+  drawingRoom,
+  drawingResRoom,
+  resultsRoom,
+} from "../controllers/room.controller.js";
 
 const roomsRouter = Router();
 

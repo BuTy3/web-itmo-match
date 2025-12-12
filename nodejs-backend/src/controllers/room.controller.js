@@ -1,15 +1,15 @@
 // Rooms controller
-import { 
-    createRoomService,
-    getConnectStateService,
+import {
+  createRoomService,
+  getConnectStateService,
   submitConnectService,
   getRoomCardStateService,
   submitRoomChoiceService,
   getDrawingStateService,
   submitDrawingPointsService,
   getDrawingResService,
-    getResultsService,
- } from "../services/room.service.js";
+  getResultsService,
+} from "../services/room.service.js";
 
 // [POST] /rooms/create
 export async function createRoom(req, res) {
@@ -17,7 +17,10 @@ export async function createRoom(req, res) {
     // Mode 1: just check access (A requirement)
     // If body is empty or has no "name" -> return ok: true
     const body = req.body || {};
-    const hasCreatePayload = body.name !== undefined || body.type_collections !== undefined || body.collection_id !== undefined;
+    const hasCreatePayload =
+      body.name !== undefined ||
+      body.type_collections !== undefined ||
+      body.collection_id !== undefined;
 
     if (!hasCreatePayload) {
       return res.json({ ok: true });
@@ -69,7 +72,11 @@ export async function connectRoom(req, res) {
 
     // Validate room id in URL
     const roomIdNum = Number(req.params.id_room);
-    if (!Number.isFinite(roomIdNum) || roomIdNum <= 0 || !Number.isInteger(roomIdNum)) {
+    if (
+      !Number.isFinite(roomIdNum) ||
+      roomIdNum <= 0 ||
+      !Number.isInteger(roomIdNum)
+    ) {
       return res.status(400).json({
         ok: false,
         message: "Invalid room id",
@@ -124,7 +131,11 @@ export async function roomPage(req, res) {
 
     // Validate room id in URL
     const roomIdNum = Number(req.params.id_room);
-    if (!Number.isFinite(roomIdNum) || roomIdNum <= 0 || !Number.isInteger(roomIdNum)) {
+    if (
+      !Number.isFinite(roomIdNum) ||
+      roomIdNum <= 0 ||
+      !Number.isInteger(roomIdNum)
+    ) {
       return res.status(400).json({
         ok: false,
         message: "Invalid room id",
@@ -192,7 +203,11 @@ export async function drawingRoom(req, res) {
     const userId = BigInt(req.user.id);
 
     const roomIdNum = Number(req.params.id_room);
-    if (!Number.isFinite(roomIdNum) || roomIdNum <= 0 || !Number.isInteger(roomIdNum)) {
+    if (
+      !Number.isFinite(roomIdNum) ||
+      roomIdNum <= 0 ||
+      !Number.isInteger(roomIdNum)
+    ) {
       return res.status(400).json({ ok: false, message: "Invalid room id" });
     }
     const roomId = BigInt(roomIdNum);
@@ -240,7 +255,11 @@ export async function drawingResRoom(req, res) {
     const userId = BigInt(req.user.id);
 
     const roomIdNum = Number(req.params.id_room);
-    if (!Number.isFinite(roomIdNum) || roomIdNum <= 0 || !Number.isInteger(roomIdNum)) {
+    if (
+      !Number.isFinite(roomIdNum) ||
+      roomIdNum <= 0 ||
+      !Number.isInteger(roomIdNum)
+    ) {
       return res.status(400).json({ ok: false, message: "Invalid room id" });
     }
     const roomId = BigInt(roomIdNum);
@@ -274,7 +293,11 @@ export async function resultsRoom(req, res) {
     const userId = BigInt(req.user.id);
 
     const roomIdNum = Number(req.params.id_room);
-    if (!Number.isFinite(roomIdNum) || roomIdNum <= 0 || !Number.isInteger(roomIdNum)) {
+    if (
+      !Number.isFinite(roomIdNum) ||
+      roomIdNum <= 0 ||
+      !Number.isInteger(roomIdNum)
+    ) {
       return res.status(400).json({ ok: false, message: "Invalid room id" });
     }
     const roomId = BigInt(roomIdNum);

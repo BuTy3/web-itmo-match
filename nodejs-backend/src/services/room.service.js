@@ -1,5 +1,5 @@
 // Rooms service (Prisma + validation)
-import {prisma} from "../db.js";
+import { prisma } from "../db.js";
 
 /**
  * Normalize collection_id for "connect" step:
@@ -88,13 +88,17 @@ function validateTypeCollections(typeCollections, collectionIds) {
   }
 
   if (t === 1 && collectionIds.length !== 1) {
-    const err = new Error("For type_collections=1 you must provide exactly 1 collection_id");
+    const err = new Error(
+      "For type_collections=1 you must provide exactly 1 collection_id",
+    );
     err.code = "VALIDATION_ERROR";
     throw err;
   }
 
   if (t === 2 && collectionIds.length < 1) {
-    const err = new Error("For type_collections=2 you must provide at least 1 collection_id");
+    const err = new Error(
+      "For type_collections=2 you must provide at least 1 collection_id",
+    );
     err.code = "VALIDATION_ERROR";
     throw err;
   }
@@ -146,7 +150,10 @@ export async function createRoomService(userId, payload) {
   const matchMode = mapMatchMode(payload.typeMatch);
 
   const collectionIds = normalizeCollectionIds(payload.collectionId);
-  const typeCollections = validateTypeCollections(payload.typeCollections, collectionIds);
+  const typeCollections = validateTypeCollections(
+    payload.typeCollections,
+    collectionIds,
+  );
 
   // Check that all collections belong to current user
   const idsBigInt = collectionIds.map((id) => BigInt(id));
@@ -278,7 +285,8 @@ export async function submitConnectService(userId, roomId, payload) {
 
   // If room is PRIVATE -> validate password
   if (room.access_mode === "PRIVATE") {
-    const p = typeof payload.password === "string" ? payload.password.trim() : "";
+    const p =
+      typeof payload.password === "string" ? payload.password.trim() : "";
     if (!p) {
       const err = new Error("Password is required");
       err.code = "VALIDATION_ERROR";
@@ -324,15 +332,16 @@ export async function submitConnectService(userId, roomId, payload) {
     },
   });
 
-    // --- Persist chosen collection_id for this user in room.result ---
+  // --- Persist chosen collection_id for this user in room.result ---
   const roomForState = await prisma.room.findUnique({
     where: { id: roomId },
     select: { result: true },
   });
 
-  const state = (roomForState?.result && typeof roomForState.result === "object")
-    ? roomForState.result
-    : {};
+  const state =
+    roomForState?.result && typeof roomForState.result === "object"
+      ? roomForState.result
+      : {};
 
   if (!state.users) state.users = {};
 
@@ -435,7 +444,8 @@ async function getUserDisplay(userId) {
  * We store per-user cursor (index) and choices here.
  */
 function readOrInitRoomState(room, userId) {
-  const state = (room.result && typeof room.result === "object") ? room.result : {};
+  const state =
+    room.result && typeof room.result === "object" ? room.result : {};
 
   if (!state.users) state.users = {};
   const key = String(userId);
@@ -457,7 +467,7 @@ function readOrInitRoomState(room, userId) {
  * You can later replace this with user's chosen collection_id from connect step.
  */
 async function getCurrentCardForUser(roomState, userId) {
-    // Prefer user's chosen collection_id from connect step
+  // Prefer user's chosen collection_id from connect step
   const u = roomState.users?.[String(userId)];
   const chosen = u?.collection_id;
 
@@ -467,7 +477,8 @@ async function getCurrentCardForUser(roomState, userId) {
     collectionIdToUse = BigInt(Number(chosen));
   } else {
     // Fallback: use the first configured collection id
-    const configIds = roomState.collection_ids || roomState.config?.collection_ids;
+    const configIds =
+      roomState.collection_ids || roomState.config?.collection_ids;
     const collectionIds = Array.isArray(configIds) ? configIds : [];
 
     if (collectionIds.length === 0) {
@@ -637,7 +648,8 @@ function validatePoints(points) {
 export async function getDrawingStateService(userId, roomId) {
   const room = await ensureRoomAccess(userId, roomId);
 
-  const state = (room.result && typeof room.result === "object") ? room.result : {};
+  const state =
+    room.result && typeof room.result === "object" ? room.result : {};
 
   if (!state.drawing) state.drawing = {};
   if (!state.drawing.pointsByUser) state.drawing.pointsByUser = {};
@@ -668,7 +680,8 @@ export async function submitDrawingPointsService(userId, roomId, { points }) {
 
   const room = await ensureRoomAccess(userId, roomId);
 
-  const state = (room.result && typeof room.result === "object") ? room.result : {};
+  const state =
+    room.result && typeof room.result === "object" ? room.result : {};
   if (!state.drawing) state.drawing = {};
   if (!state.drawing.pointsByUser) state.drawing.pointsByUser = {};
 
@@ -685,11 +698,11 @@ export async function submitDrawingPointsService(userId, roomId, { points }) {
   return true;
 }
 
-
 export async function getDrawingResService(userId, roomId) {
   const room = await ensureRoomAccess(userId, roomId);
 
-  const state = (room.result && typeof room.result === "object") ? room.result : {};
+  const state =
+    room.result && typeof room.result === "object" ? room.result : {};
   const pointsByUser = state.drawing?.pointsByUser || {};
 
   const userKeys = Object.keys(pointsByUser);
@@ -737,7 +750,8 @@ export async function getDrawingResService(userId, roomId) {
 export async function getResultsService(userId, roomId) {
   const room = await ensureRoomAccess(userId, roomId);
 
-  const state = (room.result && typeof room.result === "object") ? room.result : {};
+  const state =
+    room.result && typeof room.result === "object" ? room.result : {};
   const usersState = state.users || {};
 
   const userIds = Object.keys(usersState)

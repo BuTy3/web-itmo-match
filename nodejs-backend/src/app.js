@@ -65,7 +65,6 @@ app.use("/home", homeRoutes);
 // Rooms routes
 app.use("/rooms", roomsRoutes);
 
-
 // login page / home demo
 app.get("/login", (req, res) => {
   res.send("<h1>Login page</h1>");
