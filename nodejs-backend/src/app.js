@@ -11,6 +11,8 @@ import authRoutes from "./routes/auth.routes.js";
 import collectionRoutes from "./routes/collection.routes.js";
 import drawingRoutes from "./routes/drawing.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
+import homeRoutes from "./routes/home.routes.js";
+
 import { authPageRequired } from "./middlewares/auth.middleware.js";
 import { prisma } from "./db.js";
 import { bugsnagMiddleware } from "./bugsnag.js";
@@ -55,6 +57,9 @@ app.use("/collections", collectionRoutes);
 
 // Drawing (public)
 app.use("/drawing", drawingRoutes);
+
+// Home routes
+app.use("/home", homeRoutes);
 
 // login page / home demo
 app.get("/login", (req, res) => {
