@@ -251,6 +251,101 @@ components:
           nullable: true
           example: "No topics available"
 
+    HomeItem:
+      type: object
+      properties:
+        item_id:
+          type: integer
+          example: 10
+        url_image:
+          type: string
+          nullable: true
+          example: "https://example.com/item.png"
+        description:
+          type: string
+          nullable: true
+          example: "Item description"
+      required: [item_id, url_image, description]
+
+    CollectionType:
+      type: string
+      enum:
+        - WALK_AROUND_CITY
+        - DATE
+        - DINNER
+        - MOVIE_NIGHT
+        - COFFEE_TALK
+        - TRAVEL
+        - MUSEUM
+        - SPORTS
+        - PARTY
+        - DEFAULT
+
+    HomeCollection:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        url_image:
+          type: string
+          nullable: true
+          example: "https://example.com/collection.png"
+        type:
+          $ref: "#/components/schemas/CollectionType"
+        description:
+          type: string
+          nullable: true
+          example: "Collection description"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/HomeItem"
+      required: [id, url_image, type, description, items]
+
+    HomeCollectionsResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        collections:
+          type: array
+          items:
+            $ref: "#/components/schemas/HomeCollection"
+      required: [ok, collections]
+
+    OkFalseResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Internal server error"
+      required: [ok, message]
+
+    SearchRoomRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          minimum: 1
+          example: 1
+      required: [id]
+
+    SearchRoomResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        id_room:
+          type: integer
+          example: 1
+      required: [ok, id_room]
+
 paths:
   /auth/register:
     post:
@@ -614,3 +709,90 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+
+  /home:
+    get:
+      tags: [home]
+      summary: Get ready collections for Home (public)
+      responses:
+        "200":
+          description: Collections list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomeCollectionsResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+
+    post:
+      tags: [home]
+      summary: Get collections of current user (private)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User collections list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomeCollectionsResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+
+  /home/search:
+    post:
+      tags: [home]
+      summary: Search room by id (private)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchRoomRequest"
+      responses:
+        "200":
+          description: Room found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchRoomResponse"
+        "400":
+          description: Invalid room id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+        "404":
+          description: Room not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
