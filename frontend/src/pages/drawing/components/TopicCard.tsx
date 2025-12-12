@@ -35,44 +35,13 @@ export function TopicCard() {
 
   return (
     <div
-      style={{
-        width: 437,
-        height: 615,
-        borderRadius: 35,
-        background:
-          "linear-gradient(180deg, rgba(239,48,48,0.2) 0%, rgba(65,36,243,0.2) 100%)",
-        display: "flex",
-        alignItems: "flex-start",
-        justifyContent: "center",
-        paddingTop: 40,
-        boxSizing: "border-box",
-      }}
+      className="topic-card"
     >
       <div
-        style={{
-          width: 369,
-          height: 265,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 22,
-        }}
+        className="topic-card__content"
       >
         <div
-          style={{
-            width: 369,
-            height: 132,
-            borderRadius: 35,
-            background: "#E8E8E8",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "0 20px",
-            boxSizing: "border-box",
-            textAlign: "center",
-            fontSize: 18,
-            fontWeight: 500,
-          }}
+          className="topic-card__text"
         >
           {loading ? "Загрузка..." : error ? error : topic || "—"}
         </div>
@@ -81,17 +50,7 @@ export function TopicCard() {
           type="button"
           onClick={loadTopic}
           disabled={loading}
-          style={{
-            width: 169,
-            height: 76,
-            borderRadius: 35,
-            border: "none",
-            cursor: loading ? "default" : "pointer",
-            background: "linear-gradient(180deg, #EF3030 0%, #4124F3 100%)",
-            color: "white",
-            fontSize: 14,
-            fontWeight: 600,
-          }}
+          className="topic-card__action"
         >
           {loading ? "..." : "Изменить\nтему"}
         </button>

@@ -20,43 +20,17 @@ const COLORS = [
 ];
 
 export function ToolBar({ tool, setTool, color, setColor, onClear }: Props) {
-  const iconBtnBase: React.CSSProperties = {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
-    border: "2px solid transparent",
-    background: "rgba(255,255,255,0.18)",
-    display: "grid",
-    placeItems: "center",
-    cursor: "pointer",
-    padding: 0,
-  };
-
-  const selectedStyle: React.CSSProperties = {
-    border: "2px solid rgba(255,255,255,0.95)",
-    boxShadow: "0 0 0 3px rgba(0,0,0,0.12)",
-  };
 
   return (
     <div
-      style={{
-        width: 120,
-        height: 615,
-        borderRadius: 22,
-        background: "linear-gradient(180deg, #EF3030 0%, #4124F3 100%)",
-        padding: 14,
-        boxSizing: "border-box",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 12,
-      }}
+      className="toolbar"
     >
       <button
         type="button"
         aria-label="Карандаш"
         onClick={() => setTool("pen")}
-        style={{ ...iconBtnBase, ...(tool === "pen" ? selectedStyle : null) }}
+        /* style={{ ...iconBtnBase, ...(tool === "pen" ? selectedStyle : null) }} */
+        className={`toolbar__icon-button${tool === "pen" ? " toolbar__icon-button--active" : ""}`}
       >
         <img src="/pencil.svg" alt="" width={26} height={26} />
       </button>
@@ -65,7 +39,8 @@ export function ToolBar({ tool, setTool, color, setColor, onClear }: Props) {
         type="button"
         aria-label="Ластик"
         onClick={() => setTool("eraser")}
-        style={{ ...iconBtnBase, ...(tool === "eraser" ? selectedStyle : null) }}
+        /* style={{ ...iconBtnBase, ...(tool === "eraser" ? selectedStyle : null) }} */
+        className={`toolbar__icon-button${tool === "eraser" ? " toolbar__icon-button--active" : ""}`}
       >
         <img src="/eraser-svgrepo-com.svg" alt="" width={26} height={26} />
       </button>
@@ -74,22 +49,17 @@ export function ToolBar({ tool, setTool, color, setColor, onClear }: Props) {
         type="button"
         aria-label="Удалить рисунок"
         onClick={onClear}
-        style={iconBtnBase}
+        className="toolbar__icon-button"
       >
         <img src="/delete-2-svgrepo-com.svg" alt="" width={26} height={26} />
       </button>
 
-      <div style={{ flex: 1 }} />
+      <div
+        className="toolbar__spacer"
+      />
 
       <div
-        style={{
-          width: "100%",
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: 12,
-          justifyItems: "center",
-          paddingBottom: 6,
-        }}
+        className="toolbar__palette"
       >
         {COLORS.map((c) => {
           const isSelected = c.toLowerCase() === color.toLowerCase();
@@ -99,18 +69,8 @@ export function ToolBar({ tool, setTool, color, setColor, onClear }: Props) {
               type="button"
               aria-label={`Цвет ${c}`}
               onClick={() => setColor(c)}
-              style={{
-                width: 26,
-                height: 26,
-                borderRadius: 8,
-                background: c,
-                border: isSelected
-                  ? "2px solid rgba(255,255,255,0.95)"
-                  : "2px solid rgba(0,0,0,0.15)",
-                boxShadow: isSelected ? "0 0 0 3px rgba(0,0,0,0.12)" : "none",
-                cursor: "pointer",
-                padding: 0,
-              }}
+              className={`toolbar__color-button${isSelected ? " toolbar__color-button--active" : ""}`}
+              data-color={c}
             />
           );
         })}

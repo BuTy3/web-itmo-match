@@ -98,15 +98,12 @@ export function DrawingCanvas({ tool, color, brushSize, clearSignal }: Props) {
 
   return (
     <div
-      style={{
-        width: 850,
-        height: 615,
-        background: "#E8E8E8",
-        borderRadius: 35,
-        overflow: "hidden",
-      }}
+      className="drawing-canvas-wrapper"
     >
-      <canvas ref={canvasRef} style={{ display: "block" }} />
+      <canvas
+        ref={canvasRef}
+        className="drawing-canvas"
+      />
     </div>
   );
 }

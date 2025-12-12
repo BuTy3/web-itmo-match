@@ -2,6 +2,7 @@ import { useState } from "react";
 import { DrawingCanvas } from "./components/DrawingCanvas";
 import { ToolBar } from "./components/ToolBar";
 import { TopicCard } from "./components/TopicCard";
+import "./drawing.css";
 
 type Tool = "pen" | "eraser";
 
@@ -12,19 +13,17 @@ export const DrawingPage = () => {
   const [clearSignal, setClearSignal] = useState(0);
 
   return (
-    <div style={{ padding: 24 }}>
-      <h1 style={{ fontSize: 26, margin: 0 }}>
+    <div
+      className="drawing-page"
+    >
+      <h1
+        className="drawing-title"
+      >
         Тут можно создавать шедевры, пока у вас есть свободное время
       </h1>
 
       <div
-        style={{
-          marginTop: 24,
-          display: "grid",
-          gridTemplateColumns: "850px 120px 437px",
-          gap: 24,
-          alignItems: "start",
-        }}
+        className="drawing-layout"
       >
         <DrawingCanvas
           tool={tool}
