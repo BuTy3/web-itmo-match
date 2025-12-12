@@ -1,86 +1,40 @@
 import { createTheme } from '@mui/material';
-import type { PaletteMode, ThemeOptions } from '@mui/material';
+import type { PaletteMode } from '@mui/material';
 
+export const SIDEBAR_WIDTH_EXPANDED = 192;
+export const SIDEBAR_WIDTH_COLLAPSED = 90;
 
-const getPalette = (mode: PaletteMode): ThemeOptions['palette'] => {
-  if (mode === 'dark') {
-    return {
+export const sidebarBg = '#FDF7F7';
+export const pageBg = '#FFFBFB';
+
+export const createAppTheme = (mode: PaletteMode) =>
+  createTheme({
+    palette: {
       mode,
       primary: {
-        main: '#90caf9',
-        contrastText: '#0d1b2a',
+        main: '#4225F4',
       },
       secondary: {
-        main: '#f48fb1',
-        contrastText: '#0d1b2a',
+        main: '#F32222',
       },
       background: {
-        default: '#0d1b2a',
-        paper: '#14213d',
+        default: pageBg,
+        paper: '#FFFFFF',
       },
       text: {
-        primary: '#f5f5f5',
-        secondary: '#c1c9d6',
+        primary: '#000000',
       },
-    };
-  }
-
-  return {
-    mode,
-    primary: {
-      main: '#0055ff',
-      contrastText: '#ffffff',
     },
-    secondary: {
-      main: '#ff6f61',
-      contrastText: '#ffffff',
+    typography: {
+      fontFamily:
+        'Roboto, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      h1: {
+        fontSize: 48,
+        fontWeight: 700,
+        lineHeight: 1.2,
+      },
+      body1: {
+        fontSize: 16,
+      },
     },
-    background: {
-      default: '#f4f6fb',
-      paper: '#ffffff',
-    },
-    text: {
-      primary: '#0f172a',
-      secondary: '#475569',
-    },
-  };
-};
-
-const typography: ThemeOptions['typography'] = {
-  fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-  h1: {
-    fontWeight: 600,
-    fontSize: '3rem',
-  },
-  h2: {
-    fontWeight: 600,
-    fontSize: '2.5rem',
-  },
-  h3: {
-    fontWeight: 600,
-    fontSize: '2rem',
-  },
-  h4: {
-    fontWeight: 600,
-    fontSize: '1.75rem',
-  },
-  h5: {
-    fontWeight: 600,
-    fontSize: '1.5rem',
-  },
-  h6: {
-    fontWeight: 600,
-    fontSize: '1.25rem',
-  },
-  body1: {
-    fontSize: '1rem',
-    lineHeight: 1.5,
-  },
-};
-
-export const createAppTheme = (mode: PaletteMode = 'light') => {
-  return createTheme({
-    palette: getPalette(mode),
-    typography,
   });
-};

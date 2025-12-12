@@ -4,6 +4,8 @@ import { store } from '../../app/store';
 
 const baseURL = import.meta.env.VITE_API_URL ?? '';
 
+console.log('API baseURL =', baseURL); // временно для проверки
+
 export const apiClient = axios.create({
   baseURL,
 });
