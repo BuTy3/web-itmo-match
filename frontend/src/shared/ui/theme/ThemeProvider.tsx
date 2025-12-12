@@ -1,4 +1,3 @@
-import React from 'react';
 import { useMemo, type ReactNode } from 'react';
 import type { RootState } from '../../../app/store';
 import type { ThemeMode } from '../../../features/ui/model/uiSlice';
