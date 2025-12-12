@@ -5,6 +5,8 @@ import {
   submitConnectService,
   getRoomCardStateService,
   submitRoomChoiceService,
+  getDrawingStateService,
+  submitDrawingPointsService,
  } from "../services/room.service.js";
 
 // [POST] /rooms/create
@@ -182,3 +184,50 @@ export async function roomPage(req, res) {
   }
 }
 
+// [POST] /rooms/:id_room/drawing
+export async function drawingRoom(req, res) {
+  try {
+    const userId = BigInt(req.user.id);
+
+    const roomIdNum = Number(req.params.id_room);
+    if (!Number.isFinite(roomIdNum) || roomIdNum <= 0 || !Number.isInteger(roomIdNum)) {
+      return res.status(400).json({ ok: false, message: "Invalid room id" });
+    }
+    const roomId = BigInt(roomIdNum);
+
+    const body = req.body || {};
+    const hasPointsPayload = body.points !== undefined;
+
+    // Mode 1: enter drawing page
+    if (!hasPointsPayload) {
+      const state = await getDrawingStateService(userId, roomId);
+
+      return res.json({
+        ok: true,
+        topic: state.topic,
+        points: state.points,
+      });
+    }
+
+    // Mode 2: submit points
+    await submitDrawingPointsService(userId, roomId, {
+      points: body.points,
+    });
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("Error in drowingRoom:", err);
+
+    const code = err.code;
+    let status = 500;
+
+    if (code === "VALIDATION_ERROR") status = 400;
+    else if (code === "NOT_FOUND") status = 404;
+    else if (code === "FORBIDDEN") status = 403;
+
+    return res.status(status).json({
+      ok: false,
+      message: err.message || "Internal server error",
+    });
+  }
+}

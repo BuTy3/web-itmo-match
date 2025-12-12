@@ -15,6 +15,10 @@ roomsRouter.post("/create", authApiRequired, createRoom);
 // Mode 2: submit connect (password + collection_id) -> { ok: true }
 roomsRouter.post("/connect/:id_room", authApiRequired, connectRoom);
 
+// [POST] /rooms/:id_room/drowing
+// Mode 1: enter drawing page (empty body) -> { ok: true, topic, points }
+// Mode 2: submit points (body { points }) -> { ok: true }
+roomsRouter.post("/:id_room/drawing", authApiRequired, drawingRoom);
 
 // [POST] /rooms/:id_room
 // Mode 1: enter room (empty body) -> { ok: true, nick, profile_picture_url, name_card, description }

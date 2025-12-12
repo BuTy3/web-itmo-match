@@ -595,3 +595,93 @@ export async function submitRoomChoiceService(userId, roomId, { choose }) {
   };
 }
 
+function validatePoints(points) {
+  if (!Array.isArray(points)) {
+    const err = new Error("points must be an array");
+    err.code = "VALIDATION_ERROR";
+    throw err;
+  }
+
+  // Limit to avoid huge payloads
+  if (points.length > 50000) {
+    const err = new Error("Too many points");
+    err.code = "VALIDATION_ERROR";
+    throw err;
+  }
+
+  for (const p of points) {
+    if (typeof p !== "object" || p === null) {
+      const err = new Error("Each point must be an object");
+      err.code = "VALIDATION_ERROR";
+      throw err;
+    }
+
+    const x = Number(p.x);
+    const y = Number(p.y);
+    const color = p.color;
+
+    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+      const err = new Error("Point x/y must be numbers");
+      err.code = "VALIDATION_ERROR";
+      throw err;
+    }
+
+    if (color !== undefined && color !== null && typeof color !== "string") {
+      const err = new Error("Point color must be a string");
+      err.code = "VALIDATION_ERROR";
+      throw err;
+    }
+  }
+}
+
+export async function getDrawingStateService(userId, roomId) {
+  const room = await ensureRoomAccess(userId, roomId);
+
+  const state = (room.result && typeof room.result === "object") ? room.result : {};
+
+  if (!state.drawing) state.drawing = {};
+  if (!state.drawing.pointsByUser) state.drawing.pointsByUser = {};
+
+  // Ensure topic exists
+  if (!state.drawing.topic) {
+    // Simple fallback topic generator (you can connect to your drawing topics pool later)
+    state.drawing.topic = "default";
+  }
+
+  const key = String(userId);
+  const points = state.drawing.pointsByUser[key] || [];
+
+  // Persist if we just initialized something
+  await prisma.room.update({
+    where: { id: roomId },
+    data: { result: state },
+  });
+
+  return {
+    topic: state.drawing.topic,
+    points,
+  };
+}
+
+export async function submitDrawingPointsService(userId, roomId, { points }) {
+  validatePoints(points);
+
+  const room = await ensureRoomAccess(userId, roomId);
+
+  const state = (room.result && typeof room.result === "object") ? room.result : {};
+  if (!state.drawing) state.drawing = {};
+  if (!state.drawing.pointsByUser) state.drawing.pointsByUser = {};
+
+  const key = String(userId);
+
+  // Overwrite points with latest snapshot from FE (as per spec: list kept on FE, resend full list)
+  state.drawing.pointsByUser[key] = points;
+
+  await prisma.room.update({
+    where: { id: roomId },
+    data: { result: state },
+  });
+
+  return true;
+}
+
