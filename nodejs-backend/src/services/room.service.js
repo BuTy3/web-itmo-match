@@ -2,6 +2,20 @@
 import {prisma} from "../db.js";
 
 /**
+ * Normalize collection_id for "connect" step:
+ * - must be a single integer (>0)
+ */
+function normalizeSingleCollectionId(collectionId) {
+  const n = Number(collectionId);
+  if (!Number.isFinite(n) || n <= 0 || !Number.isInteger(n)) {
+    const err = new Error("Invalid collection_id");
+    err.code = "VALIDATION_ERROR";
+    throw err;
+  }
+  return BigInt(n);
+}
+
+/**
  * Normalize collection_id from FE:
  * - accepts number OR array
  * - returns unique integer ids (>0)
@@ -182,3 +196,161 @@ export async function createRoomService(userId, payload) {
 
   return room;
 }
+
+/**
+ * Get connect state (POST /rooms/connect/:id_room) - Mode 1
+ * Returns list of user's collections for choosing.
+ */
+export async function getConnectStateService(userId, roomId) {
+  const room = await prisma.room.findUnique({
+    where: { id: roomId },
+    select: {
+      id: true,
+      status: true,
+      access_mode: true,
+    },
+  });
+
+  if (!room) {
+    const err = new Error("Room not found");
+    err.code = "NOT_FOUND";
+    throw err;
+  }
+
+  if (room.status === "CLOSED") {
+    const err = new Error("Room is closed");
+    err.code = "FORBIDDEN";
+    throw err;
+  }
+
+  // Return user's collections for choosing on FE
+  const collections = await prisma.collection.findMany({
+    where: { owner_id: userId },
+    orderBy: { created_at: "desc" },
+    take: 50,
+    select: {
+      id: true,
+      type: true,
+      image_url: true,
+      description: true,
+      title: true,
+    },
+  });
+
+  const collection_choose = collections.map((c) => ({
+    id: Number(c.id),
+    type: c.type,
+    url_image: c.image_url ?? null,
+    description: c.description ?? null,
+    title: c.title,
+  }));
+
+  return { collection_choose };
+}
+
+/**
+ * Submit connect (POST /rooms/connect/:id_room) - Mode 2
+ * Validates password (if PRIVATE), validates collection_id ownership,
+ * then upserts room_participant.
+ */
+export async function submitConnectService(userId, roomId, payload) {
+  const room = await prisma.room.findUnique({
+    where: { id: roomId },
+    select: {
+      id: true,
+      status: true,
+      access_mode: true,
+      password_hash: true,
+    },
+  });
+
+  if (!room) {
+    const err = new Error("Room not found");
+    err.code = "NOT_FOUND";
+    throw err;
+  }
+
+  if (room.status === "CLOSED") {
+    const err = new Error("Room is closed");
+    err.code = "FORBIDDEN";
+    throw err;
+  }
+
+  // If room is PRIVATE -> validate password
+  if (room.access_mode === "PRIVATE") {
+    const p = typeof payload.password === "string" ? payload.password.trim() : "";
+    if (!p) {
+      const err = new Error("Password is required");
+      err.code = "VALIDATION_ERROR";
+      throw err;
+    }
+
+    const bcrypt = (await import("bcrypt")).default;
+    const ok = await bcrypt.compare(p, room.password_hash || "");
+
+    if (!ok) {
+      const err = new Error("Invalid password");
+      err.code = "FORBIDDEN";
+      throw err;
+    }
+  }
+
+  // Validate collection_id (must belong to user)
+  const collectionId = normalizeSingleCollectionId(payload.collectionId);
+
+  const owned = await prisma.collection.findFirst({
+    where: { id: collectionId, owner_id: userId },
+    select: { id: true },
+  });
+
+  if (!owned) {
+    const err = new Error("Collection does not belong to user");
+    err.code = "FORBIDDEN";
+    throw err;
+  }
+
+  // Upsert participant (idempotent)
+  await prisma.room_participant.upsert({
+    where: {
+      room_id_user_id: {
+        room_id: roomId,
+        user_id: userId,
+      },
+    },
+    update: {},
+    create: {
+      room_id: roomId,
+      user_id: userId,
+    },
+  });
+
+    // --- Persist chosen collection_id for this user in room.result ---
+  const roomForState = await prisma.room.findUnique({
+    where: { id: roomId },
+    select: { result: true },
+  });
+
+  const state = (roomForState?.result && typeof roomForState.result === "object")
+    ? roomForState.result
+    : {};
+
+  if (!state.users) state.users = {};
+
+  const key = String(userId);
+
+  // Keep existing state if already created by /rooms/:id_room
+  if (!state.users[key]) {
+    state.users[key] = { index: 0, choices: [], done: false };
+  }
+
+  // Save user's chosen collection id
+  state.users[key].collection_id = Number(collectionId);
+
+  await prisma.room.update({
+    where: { id: roomId },
+    data: { result: state },
+  });
+
+  return true;
+}
+
