@@ -1,5 +1,5 @@
 // Home service (Prisma queries + DTO mapping)
-import {prisma} from "../db.js";
+import { prisma } from "../db.js";
 
 /**
  * Build collections DTO for Home screen.
@@ -17,7 +17,7 @@ function mapCollectionDto(c) {
   return {
     id: Number(c.id),
     url_image: c.image_url ?? null,
-    type: c.type, 
+    type: c.type,
     description: c.description ?? null,
     items: (c.item || []).map((it) => ({
       item_id: Number(it.id),
