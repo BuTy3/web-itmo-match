@@ -7,7 +7,7 @@ export const ThemeMenu = () => {
         width: '160px',
         height: '195px',
         position: 'absolute',
-        top: '145px',
+        top: 'calc(100% + 8px)',
         right: '0px',
         backgroundColor: '#FFFFFF',
         borderRadius: '12px',
