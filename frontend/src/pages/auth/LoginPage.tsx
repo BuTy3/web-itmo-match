@@ -55,25 +55,43 @@ export const LoginPage = () => {
         sx={{
           width: '100%',
           maxWidth: 676,
-          minHeight: 878,
+          height: 'min(878px, calc(100dvh - 64px))',
+          maxHeight: 'calc(100dvh - 32px)',
           borderRadius: 4,
-          p: { xs: 3, sm: 5 },
+          p: { xs: 2, sm: 4, md: 5 },
           bgcolor: 'rgba(255,255,255,0.94)',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
+          overflow: 'hidden',
         }}
       >
-        <form onSubmit={handleSubmit}>
-          <Stack spacing={3} alignItems="center">
-            <Typography variant="h4" fontWeight={700}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{
+            height: '100%',
+            width: '100%',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <Stack
+            spacing={0}
+            alignItems="center"
+            sx={{ gap: { xs: 2, sm: 2.5, md: 3 }, my: 'auto' }}
+          >
+            <Typography
+              variant="h4"
+              fontWeight={700}
+              sx={{ fontSize: 'clamp(24px, 3vw, 34px)' }}
+            >
               ITMO
             </Typography>
 
-            <Stack spacing={2} sx={{ maxWidth: 520, width: '100%' }}>
+            <Stack spacing={0} sx={{ maxWidth: 520, width: '100%', gap: { xs: 1.5, md: 2 } }}>
               <TextField
                 label="Никнейм"
                 fullWidth
+                size="small"
                 value={loginValue}
                 onChange={(e) => setLoginValue(e.target.value)}
               />
@@ -81,6 +99,7 @@ export const LoginPage = () => {
                 label="Пароль"
                 type="password"
                 fullWidth
+                size="small"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -97,8 +116,15 @@ export const LoginPage = () => {
               </Alert>
             )}
 
-            <Stack spacing={1.5} sx={{ maxWidth: 520, width: '100%' }}>
-              <Button type="submit" variant="contained" size="large" fullWidth disabled={loading}>
+            <Stack spacing={0} sx={{ maxWidth: 520, width: '100%', gap: { xs: 1.25, md: 1.5 } }}>
+              <Button
+                type="submit"
+                variant="contained"
+                size="large"
+                fullWidth
+                disabled={loading}
+                sx={{ py: { xs: 1.25, md: 1.6 }, fontSize: { xs: 14, md: 16 } }}
+              >
                 Войти
               </Button>
 
@@ -108,6 +134,7 @@ export const LoginPage = () => {
                 variant="contained"
                 size="large"
                 fullWidth
+                sx={{ py: { xs: 1.25, md: 1.6 }, fontSize: { xs: 14, md: 16 } }}
               >
                 Регистрация
               </Button>
@@ -117,7 +144,7 @@ export const LoginPage = () => {
               Если возникли проблемы, напишите сюда
             </Typography>
           </Stack>
-        </form>
+        </Box>
       </Paper>
     </Box>
   );
