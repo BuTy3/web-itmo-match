@@ -27,29 +27,39 @@ export const Header: React.FC<HeaderProps> = ({
         borderBottom: 'none',
       }}
     >
-      {/* INTERNAL HEADER CONTENT (maxWidth 1677px + 223px offset) */}
       <Box
         sx={{
           width: '100%',
-          maxWidth: '1677px',
+          maxWidth: '1500px',
           height: '74px',
-          ml: '15px',
+          mx: 'auto',
+          px: { xs: 2, sm: 3 },
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          gap: { xs: 2, sm: 3 },
           boxSizing: 'border-box',
         }}
       >
         {/* LEFT SIDE — TITLE */}
         <Box
           sx={{
-            width: '209px',
-            height: '64px',
             display: 'flex',
             alignItems: 'center',
+            flex: '1 1 auto',
+            minWidth: 0,
           }}
         >
-          <Typography sx={{ fontSize: '55px', fontWeight: 500 }}>
+          <Typography
+            noWrap
+            sx={{
+              fontSize: { xs: '32px', sm: '44px', md: '55px' },
+              fontWeight: 500,
+              lineHeight: 1,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
             {title}
           </Typography>
         </Box>

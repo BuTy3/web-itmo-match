@@ -12,17 +12,20 @@ export const RightHeaderPanel = ({ username }: { username: string }) => {
         alignItems: 'center',
         position: 'relative',
         height: '74px',
-        marginLeft: '900px'
+        minWidth: 0,
+        maxWidth: '100%',
+        gap: { xs: '10px', sm: '12px', md: '18px' },
       }}
     >
 
       {/* ====================== AVATAR (67×67) ====================== */}
       <Box
         sx={{
-          width: '67px',
-          height: '67px',
+          width: { xs: '48px', sm: '56px', md: '67px' },
+          height: { xs: '48px', sm: '56px', md: '67px' },
           position: 'relative',
           borderRadius: '50%',
+          flex: '0 0 auto',
         }}
       >
         {/* Outer Circle (border ring) */}
@@ -31,7 +34,7 @@ export const RightHeaderPanel = ({ username }: { username: string }) => {
             position: 'absolute',
             inset: 0,
             borderRadius: '50%',
-            border: '4px solid #8874F6',
+            border: { xs: '3px solid #8874F6', md: '4px solid #8874F6' },
           }}
         />
 
@@ -39,10 +42,10 @@ export const RightHeaderPanel = ({ username }: { username: string }) => {
         <Box
           sx={{
             position: 'absolute',
-            top: '8px',
-            left: '8px',
-            width: '51px',
-            height: '51px',
+            top: { xs: '6px', sm: '7px', md: '8px' },
+            left: { xs: '6px', sm: '7px', md: '8px' },
+            width: { xs: '36px', sm: '42px', md: '51px' },
+            height: { xs: '36px', sm: '42px', md: '51px' },
             borderRadius: '50%',
             backgroundColor: '#D9D9D9',
             display: 'flex',
@@ -53,8 +56,8 @@ export const RightHeaderPanel = ({ username }: { username: string }) => {
           {/* user icon masked */}
           <Box
             sx={{
-              width: '32px',
-              height: '32px',
+              width: { xs: '20px', sm: '24px', md: '32px' },
+              height: { xs: '20px', sm: '24px', md: '32px' },
               backgroundColor: '#918888',
               maskImage: 'url("/icons/user-outline.svg")',
               WebkitMaskImage: 'url("/icons/user-outline.svg")',
@@ -67,25 +70,28 @@ export const RightHeaderPanel = ({ username }: { username: string }) => {
         </Box>
       </Box>
 
-      {/* ====================== GAP 1 → 85 px ====================== */}
-      <Box sx={{ width: '18px' }} />
-
       {/* ====================== USERNAME BOX (154×42) ====================== */}
       <Box
         sx={{
-          width: '154px',
-          height: '42px',
           display: 'flex',
           alignItems: 'center',
+          minWidth: 0,
+          flex: '0 1 auto',
+          maxWidth: { xs: '140px', sm: '220px', md: '320px' },
         }}
       >
-        <Typography sx={{ fontSize: '35px', color: '#3E3B3B' }}>
+        <Typography
+          noWrap
+          sx={{
+            fontSize: { xs: '16px', sm: '20px', md: '35px' },
+            color: '#3E3B3B',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
           {username}
         </Typography>
       </Box>
-
-      {/* ====================== GAP 2 → 175 px ====================== */}
-      <Box sx={{ width: '18px' }} />
 
       {/* ====================== DIVIDER 1 (1×46) ====================== */}
       <Box
@@ -93,30 +99,29 @@ export const RightHeaderPanel = ({ username }: { username: string }) => {
           width: '1px',
           height: '46px',
           backgroundColor: '#3E3B3B',
+          display: { xs: 'none', md: 'block' },
         }}
       />
-
-      {/* ====================== GAP 3 → 21 px ====================== */}
-      <Box sx={{ width: '18px' }} />
 
       {/* ====================== LOGOUT BUTTON (56×56) ====================== */}
       <Box
         sx={{
-          width: '56px',
-          height: '56px',
+          width: { xs: '44px', sm: '50px', md: '56px' },
+          height: { xs: '44px', sm: '50px', md: '56px' },
           borderRadius: '8px',
           border: '2px solid #4124F4',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          flex: '0 0 auto',
         }}
       >
         {/* logout SVG mask */}
         <Box
           sx={{
-            width: '32px',
-            height: '32px',
+            width: { xs: '24px', md: '32px' },
+            height: { xs: '24px', md: '32px' },
             backgroundColor: '#4124F4',
             maskImage: 'url(/icons/logout-vector.svg)',
             WebkitMaskImage: 'url(/icons/logout-vector.svg)',
@@ -126,28 +131,24 @@ export const RightHeaderPanel = ({ username }: { username: string }) => {
         />
       </Box>
 
-      {/* ====================== GAP 4 → 76 px ====================== */}
-      <Box sx={{ width: '18px' }} />
-
       {/* ====================== DIVIDER 2 (1×46) ====================== */}
       <Box
         sx={{
           width: '1px',
           height: '46px',
           backgroundColor: '#3E3B3B',
+          display: { xs: 'none', md: 'block' },
         }}
       />
-
-      {/* ====================== GAP 5 → 14 px ====================== */}
-      <Box sx={{ width: '10px' }} />
 
       {/* ====================== THEME TOGGLE BUTTON (56×56) ====================== */}
       <Box
         sx={{
-          width: '56px',
-          height: '56px',
+          width: { xs: '44px', sm: '50px', md: '56px' },
+          height: { xs: '44px', sm: '50px', md: '56px' },
           cursor: 'pointer',
           position: 'relative',
+          flex: '0 0 auto',
         }}
         onClick={() => setMenuOpen((s) => !s)}
       >
@@ -155,10 +156,10 @@ export const RightHeaderPanel = ({ username }: { username: string }) => {
         <Box
           sx={{
             position: 'absolute',
-            top: '9px',
-            left: '9px',
-            width: '38px',
-            height: '38px',
+            top: { xs: '7px', sm: '8px', md: '9px' },
+            left: { xs: '7px', sm: '8px', md: '9px' },
+            width: { xs: '30px', sm: '34px', md: '38px' },
+            height: { xs: '30px', sm: '34px', md: '38px' },
             borderRadius: '50%',
             background: 'linear-gradient(90deg, #FFFFFF 50%, #EF3030 50%)',
           }}
@@ -168,10 +169,10 @@ export const RightHeaderPanel = ({ username }: { username: string }) => {
         <Box
           sx={{
             position: 'absolute',
-            top: '9px',
-            left: '9px',
-            width: '38px',
-            height: '38px',
+            top: { xs: '7px', sm: '8px', md: '9px' },
+            left: { xs: '7px', sm: '8px', md: '9px' },
+            width: { xs: '30px', sm: '34px', md: '38px' },
+            height: { xs: '30px', sm: '34px', md: '38px' },
             borderRadius: '50%',
             background: 'linear-gradient(90deg, #F03030 50%, #4124F4 50%)',
             transform: 'scale(0.7)',
