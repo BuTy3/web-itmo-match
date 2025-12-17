@@ -27,3 +27,12 @@ export type Room = {
   name: string;
   createdAt: string;
 };
+
+export type HistoryRoom = {
+  id: string;
+  name: string;
+  url_image: string;
+  type: string;
+  description: string;
+  date: string;
+};
