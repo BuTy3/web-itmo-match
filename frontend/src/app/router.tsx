@@ -6,6 +6,7 @@ import { HomePage } from '../pages/home/HomePage';
 import { CollectionsPage } from '../pages/collections/CollectionsPage';
 import { DrawingPage } from '../pages/drawing/DrawingPage';
 import { HistoryPage } from '../pages/history/HistoryPage';
+import { HistoryRoomPage } from '../pages/history/HistoryRoomPage';
 
 
 const router = createBrowserRouter([
@@ -24,6 +25,10 @@ const router = createBrowserRouter([
       {
         path: 'history',
         element: <HistoryPage />,
+      },
+      {
+        path: 'history/:id_room',
+        element: <HistoryRoomPage />,
       },
       {
         path: 'drawing',
