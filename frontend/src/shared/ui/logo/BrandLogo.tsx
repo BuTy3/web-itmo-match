@@ -1,9 +1,18 @@
 import { Box } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 
 const LOGO_SIZE = 90;          // внешний квадрат
 const TILE_RADIUS = 2;         // скругление углов квадратиков — можешь подбирать 4–8
 
 export function BrandLogo() {
+  const theme = useTheme();
+  const primaryGradient = `linear-gradient(180deg, ${
+    theme.palette.primary.main
+  } 0%, ${alpha(theme.palette.primary.main, 0.45)} 100%)`;
+  const secondaryGradient = `linear-gradient(180deg, ${
+    theme.palette.secondary.main
+  } 0%, ${alpha(theme.palette.secondary.main, 0.45)} 100%)`;
+
   return (
     <Box
       sx={{
@@ -22,7 +31,7 @@ export function BrandLogo() {
           width: 30,
           height: 37.5,
           borderRadius: TILE_RADIUS,
-          background: 'linear-gradient(180deg, #F32222 0%, #E67171 100%)',
+          background: secondaryGradient,
         }}
       />
 
@@ -35,7 +44,7 @@ export function BrandLogo() {
           width: 30,
           height: 22.5,
           borderRadius: TILE_RADIUS,
-          background: 'linear-gradient(180deg, #4225F4 0%, #2488D1 84%)',
+          background: primaryGradient,
         }}
       />
 
@@ -48,7 +57,7 @@ export function BrandLogo() {
           width: 30,
           height: 22.5,
           borderRadius: TILE_RADIUS,
-          background: 'linear-gradient(180deg, #F32222 0%, #E67171 100%)',
+          background: secondaryGradient,
         }}
       />
 
@@ -61,7 +70,7 @@ export function BrandLogo() {
           width: 30,
           height: 37.5,
           borderRadius: TILE_RADIUS,
-          background: 'linear-gradient(180deg, #4225F4 0%, #2488D1 84%)',
+          background: primaryGradient,
         }}
       />
     </Box>

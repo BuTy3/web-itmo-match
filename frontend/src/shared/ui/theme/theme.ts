@@ -1,28 +1,26 @@
 import { createTheme } from '@mui/material';
 import type { PaletteMode } from '@mui/material';
+import type { ThemeColors } from '../../../features/ui/model/uiSlice';
 
 export const SIDEBAR_WIDTH_EXPANDED = 192;
 export const SIDEBAR_WIDTH_COLLAPSED = 90;
 
-export const sidebarBg = '#FDF7F7';
-export const pageBg = '#FFFBFB';
-
-export const createAppTheme = (mode: PaletteMode) =>
+export const createAppTheme = (mode: PaletteMode, colors: ThemeColors) =>
   createTheme({
     palette: {
       mode,
       primary: {
-        main: '#4225F4',
+        main: colors.primary,
       },
       secondary: {
-        main: '#F32222',
+        main: colors.secondary,
       },
       background: {
-        default: pageBg,
+        default: colors.background,
         paper: '#FFFFFF',
       },
       text: {
-        primary: '#000000',
+        primary: mode === 'dark' ? '#FFFFFF' : '#000000',
       },
     },
     typography: {

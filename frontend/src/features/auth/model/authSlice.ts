@@ -1,10 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
-
-type AuthUser = {
-  id: string;
-  email: string;
+export type AuthUser = {
+  login: string;
 };
 
 type AuthStatus = 'idle' | 'loading' | 'error';

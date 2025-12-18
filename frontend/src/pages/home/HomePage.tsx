@@ -1,6 +1,21 @@
 import { Box, Typography, TextField, Button, Stack } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 
 export const HomePage = () => {
+  const theme = useTheme();
+  const roomsPanelStyles = {
+    p: 3,
+    borderRadius: 3,
+    border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+    backgroundColor: alpha(theme.palette.secondary.main, 0.08),
+  };
+  const collectionsPanelStyles = {
+    p: 3,
+    borderRadius: 3,
+    border: `1px dashed ${alpha(theme.palette.primary.main, 0.4)}`,
+    backgroundColor: alpha(theme.palette.primary.main, 0.05),
+  };
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       {/* Заголовок страницы */}
@@ -9,7 +24,7 @@ export const HomePage = () => {
       </Typography>
 
       {/* Блок "Комнаты" */}
-      <Box>
+      <Box sx={roomsPanelStyles}>
         <Typography variant="h6" sx={{ mb: 1.5 }}>
           Комнаты
         </Typography>
@@ -19,14 +34,19 @@ export const HomePage = () => {
             size="small"
             placeholder="Введите id"
             sx={{ maxWidth: 260 }}
+            color="secondary"
           />
-          <Button variant="contained">Создать комнату</Button>
-          <Button variant="outlined">История комнат</Button>
+          <Button variant="contained" color="primary">
+            Создать комнату
+          </Button>
+          <Button variant="outlined" color="secondary">
+            История комнат
+          </Button>
         </Stack>
       </Box>
 
       {/* Блок "Коллекции" */}
-      <Box>
+      <Box sx={collectionsPanelStyles}>
         <Typography variant="h6" sx={{ mb: 2 }}>
           Коллекции
         </Typography>

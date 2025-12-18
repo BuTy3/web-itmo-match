@@ -2,12 +2,26 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 export type ThemeMode = 'light' | 'dark';
 
+export type ThemeColors = {
+  primary: string;
+  secondary: string;
+  background: string;
+};
+
+export type ThemeColorKey = keyof ThemeColors;
+
 interface UiState {
   themeMode: ThemeMode;
+  themeColors: ThemeColors;
 }
 
 const initialState: UiState = {
   themeMode: 'light',
+  themeColors: {
+    primary: '#4225F4',
+    secondary: '#F32222',
+    background: '#FFF7FF',
+  },
 };
 
 const uiSlice = createSlice({
@@ -20,8 +34,14 @@ const uiSlice = createSlice({
     setThemeMode(state, action: PayloadAction<ThemeMode>) {
       state.themeMode = action.payload;
     },
+    setThemeColor(
+      state,
+      action: PayloadAction<{ key: ThemeColorKey; color: string }>,
+    ) {
+      state.themeColors[action.payload.key] = action.payload.color;
+    },
   },
 });
 
-export const { toggleTheme, setThemeMode } = uiSlice.actions;
+export const { toggleTheme, setThemeMode, setThemeColor } = uiSlice.actions;
 export default uiSlice.reducer;
