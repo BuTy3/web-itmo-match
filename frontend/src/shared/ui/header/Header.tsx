@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import { RightHeaderPanel } from './RightHeaderPanel';
+import { alpha, useTheme } from '@mui/material/styles';
 
 type HeaderProps = {
   title: string;
@@ -12,6 +13,10 @@ export const Header: React.FC<HeaderProps> = ({
   username,
   sidebarWidth,
 }) => {
+  const theme = useTheme();
+  const borderColor = alpha(theme.palette.secondary.main, 0.4);
+  const headerBackground = theme.palette.background.default;
+
   return (
     <Box
       sx={{
@@ -20,11 +25,12 @@ export const Header: React.FC<HeaderProps> = ({
         left: `${sidebarWidth}px`,
         width: `calc(100% - ${sidebarWidth}px)`,
         height: '74px',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: headerBackground,
         zIndex: 1200,
         display: 'flex',
         alignItems: 'center',
-        borderBottom: 'none',
+        borderBottom: `3px solid ${borderColor}`,
+        boxShadow: `0px 6px 16px ${alpha(theme.palette.secondary.main, 0.12)}`,
       }}
     >
       <Box
@@ -58,6 +64,7 @@ export const Header: React.FC<HeaderProps> = ({
               lineHeight: 1,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              color: theme.palette.text.primary,
             }}
           >
             {title}

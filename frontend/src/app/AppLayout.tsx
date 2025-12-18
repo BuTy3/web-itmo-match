@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { Header } from '../shared/ui/header/Header';
 import {
   Box,
@@ -9,6 +10,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 
 import HomeIcon from '@mui/icons-material/Home';
 import CollectionsIcon from '@mui/icons-material/Collections';
@@ -22,8 +24,8 @@ import { BrandLogo } from '../shared/ui/logo/BrandLogo';
 import {
   SIDEBAR_WIDTH_COLLAPSED,
   SIDEBAR_WIDTH_EXPANDED,
-  sidebarBg,
 } from '../shared/ui/theme/theme';
+import type { RootState } from './store';
 
 type NavItem = {
   label: string;
@@ -45,6 +47,16 @@ export const AppLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
+  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+  const username = useSelector(
+    (state: RootState) => state.auth.user?.login ?? 'Никнейм',
+  );
+
+  useEffect(() => {
+    if (!accessToken) {
+      navigate('/login', { replace: true });
+    }
+  }, [accessToken, navigate]);
 
   const drawerWidth = sidebarOpen
     ? SIDEBAR_WIDTH_EXPANDED
@@ -58,7 +70,13 @@ export const AppLayout: React.FC = () => {
   };
 
   const pageTitle = pageTitleMap[location.pathname] ?? 'Страница';
-  const username = 'Никнейм';
+
+  const theme = useTheme();
+  const accentColor = theme.palette.secondary.main;
+  const pageBackground = theme.palette.background.default;
+  const activeNavBg = alpha(accentColor, 0.18);
+  const hoverNavBg = alpha(accentColor, 0.1);
+  const sidebarBorderColor = alpha(accentColor, 0.35);
 
   return (
     // ВНЕШНИЙ КОНТЕЙНЕР: центрируем макет фиксированной ширины
@@ -67,7 +85,7 @@ export const AppLayout: React.FC = () => {
         display: 'flex',
         justifyContent: 'center',
         minHeight: '100vh',
-        bgcolor: '#FFF7FF', // твой фон, если нужен
+        bgcolor: pageBackground,
       }}
     >
       {/* КОНТЕЙНЕР МАКЕТА (ширина фигмы) */}
@@ -87,8 +105,8 @@ export const AppLayout: React.FC = () => {
             '& .MuiDrawer-paper': {
               width: drawerWidth,
               boxSizing: 'border-box',
-              bgcolor: sidebarBg,
-              borderRight: '1px solid #E2E2E2',
+              bgcolor: pageBackground,
+              borderRight: `1px solid ${sidebarBorderColor}`,
               position: 'relative',
               overflow: 'visible',
             },
@@ -136,11 +154,15 @@ export const AppLayout: React.FC = () => {
                           ? 0
                           : `${MENU_ITEM_GAP}px`,
                       px: 0,
-                      borderRadius: 2,
                       justifyContent: sidebarOpen ? 'flex-start' : 'center',
-                      bgcolor: active ? '#D2D2D7' : 'transparent',
+                      bgcolor: active ? activeNavBg : 'transparent',
+                      borderRadius: 2,
+                      borderLeft: sidebarOpen
+                        ? `4px solid ${active ? accentColor : 'transparent'}`
+                        : '4px solid transparent',
+                      transition: 'background-color 0.2s ease, border-color 0.2s ease',
                       '&:hover': {
-                        bgcolor: active ? '#D2D2D7' : '#F5F5F5',
+                        bgcolor: active ? activeNavBg : hoverNavBg,
                       },
                     }}
                   >
@@ -153,7 +175,10 @@ export const AppLayout: React.FC = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: '#000',
+                        color: theme.palette.text.primary,
+                        ...(active && {
+                          color: accentColor,
+                        }),
                         '& svg': { fontSize: 24 },
                       }}
                     >
@@ -163,7 +188,13 @@ export const AppLayout: React.FC = () => {
                     {sidebarOpen && (
                       <ListItemText
                         primary={item.label}
-                        primaryTypographyProps={{ fontSize: 18 }}
+                        primaryTypographyProps={{
+                          fontSize: 18,
+                          color: active
+                            ? accentColor
+                            : theme.palette.text.primary,
+                          fontWeight: active ? 600 : 400,
+                        }}
                       />
                     )}
                   </ListItemButton>
@@ -180,14 +211,19 @@ export const AppLayout: React.FC = () => {
                 width: 35,
                 height: 35,
                 borderRadius: '50%',
-                bgcolor: '#FFFFFF',
-                border: '2px solid #C2BABA',
+                bgcolor: theme.palette.background.paper,
+                border: `2px solid ${sidebarBorderColor}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 boxShadow: '0 0 4px rgba(0,0,0,0.12)',
                 cursor: 'pointer',
                 zIndex: 1300,
+                transition: 'background-color 0.2s ease, border-color 0.2s ease',
+                '&:hover': {
+                  bgcolor: activeNavBg,
+                  borderColor: accentColor,
+                },
               }}
               onClick={() => setSidebarOpen((prev) => !prev)}
             >

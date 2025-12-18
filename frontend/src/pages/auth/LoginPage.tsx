@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, Button, Paper, Stack, TextField, Typography, Alert } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../../shared/api/auth';
+import type { RootState, AppDispatch } from '../../app/store';
+import { loginSuccess } from '../../features/auth/model/authSlice';
 
 export const LoginPage = () => {
   const [loginValue, setLoginValue] = useState('');
@@ -10,6 +13,14 @@ export const LoginPage = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+
+  useEffect(() => {
+    if (accessToken) {
+      navigate('/', { replace: true });
+    }
+  }, [accessToken, navigate]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -24,13 +35,15 @@ export const LoginPage = () => {
     try {
       setLoading(true);
       const resp = await login({ login: loginValue, password });
-      if (resp.ok) {
+      if (resp.ok && resp.token) {
+        dispatch(loginSuccess({ user: { login: loginValue }, accessToken: resp.token }));
         setSuccess('Успешный вход');
         navigate('/');
       } else {
         setError(resp.message || 'Неверный логин или пароль');
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('Login request failed', error);
       setError('Ошибка запроса. Проверьте соединение с сервером.');
     } finally {
       setLoading(false);

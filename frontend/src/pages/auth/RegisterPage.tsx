@@ -1,20 +1,30 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, Button, Paper, Stack, TextField, Typography, Alert } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { register } from '../../shared/api/auth';
+import type { RootState, AppDispatch } from '../../app/store';
+import { loginSuccess } from '../../features/auth/model/authSlice';
 
 export const RegisterPage = () => {
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [passwordRepeat, setPasswordRepeat] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+
+  useEffect(() => {
+    if (accessToken) {
+      navigate('/', { replace: true });
+    }
+  }, [accessToken, navigate]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
-    setSuccess(null);
 
     if (!login || !password) {
       setError('Заполните все поля');
@@ -29,15 +39,13 @@ export const RegisterPage = () => {
     try {
       setLoading(true);
       const resp = await register({ login, password });
-      if (resp.ok) {
-        setSuccess('Пользователь создан');
-        setLogin('');
-        setPassword('');
-        setPasswordRepeat('');
+      if (resp.ok && resp.token) {
+        dispatch(loginSuccess({ user: { login }, accessToken: resp.token }));
       } else {
         setError(resp.message || 'Не удалось зарегистрироваться');
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('Register request failed', error);
       setError('Ошибка запроса. Проверьте соединение с сервером.');
     } finally {
       setLoading(false);
@@ -125,12 +133,6 @@ export const RegisterPage = () => {
                 {error}
               </Alert>
             )}
-            {success && (
-              <Alert severity="success" sx={{ maxWidth: 520, width: '100%' }}>
-                {success}
-              </Alert>
-            )}
-
             <Stack spacing={0} sx={{ maxWidth: 520, width: '100%', gap: { xs: 1.25, md: 1.5 } }}>
               <Button
                 component={Link}
