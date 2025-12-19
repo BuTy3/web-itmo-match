@@ -1,30 +1,30 @@
-import { useEffect, useState } from 'react';
-import { Box, Button, Paper, Stack, TextField, Typography, Alert } from '@mui/material';
+import { useState } from 'react';
+import {
+  Box,
+  Button,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+  Alert,
+} from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
 import { register } from '../../shared/api/auth';
-import type { RootState, AppDispatch } from '../../app/store';
-import { loginSuccess } from '../../features/auth/model/authSlice';
+import { ThemeToggleButton } from '../../shared/ui/header/ThemeToggleButton';
 
 export const RegisterPage = () => {
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [passwordRepeat, setPasswordRepeat] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
-  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
-
-  useEffect(() => {
-    if (accessToken) {
-      navigate('/', { replace: true });
-    }
-  }, [accessToken, navigate]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    setSuccess(null);
 
     if (!login || !password) {
       setError('Заполните все поля');
@@ -39,8 +39,13 @@ export const RegisterPage = () => {
     try {
       setLoading(true);
       const resp = await register({ login, password });
-      if (resp.ok && resp.token) {
-        dispatch(loginSuccess({ user: { login }, accessToken: resp.token }));
+      if (resp.ok) {
+        setSuccess('Пользователь создан');
+        localStorage.setItem('nickname', login);
+        navigate('/');
+        setLogin('');
+        setPassword('');
+        setPasswordRepeat('');
       } else {
         setError(resp.message || 'Не удалось зарегистрироваться');
       }
@@ -76,8 +81,14 @@ export const RegisterPage = () => {
           p: { xs: 2, sm: 4, md: 5 },
           bgcolor: 'rgba(255,255,255,0.94)',
           overflow: 'hidden',
+          position: 'relative',
         }}
       >
+        <ThemeToggleButton
+          sx={{ position: 'absolute', top: 12, right: 12, zIndex: 1 }}
+          menuSx={{ top: 'calc(100% + 12px)', right: 0 }}
+        />
+
         <Box
           component="form"
           onSubmit={handleSubmit}
@@ -94,13 +105,12 @@ export const RegisterPage = () => {
             alignItems="center"
             sx={{ gap: { xs: 2, sm: 2.5, md: 3 }, my: 'auto' }}
           >
-            <Typography
-              variant="h4"
-              fontWeight={700}
-              sx={{ fontSize: 'clamp(24px, 3vw, 34px)' }}
-            >
-              ITMO
-            </Typography>
+            <Box
+              component="img"
+              src="/itmo-logo-1.png"
+              alt="ITMO"
+              sx={{ maxWidth: 360, width: '100%', height: 'auto' }}
+            />
 
             <Stack spacing={0} sx={{ maxWidth: 520, width: '100%', gap: { xs: 1.5, md: 2 } }}>
               <TextField
@@ -131,6 +141,11 @@ export const RegisterPage = () => {
             {error && (
               <Alert severity="error" sx={{ maxWidth: 520, width: '100%' }}>
                 {error}
+              </Alert>
+            )}
+            {success && (
+              <Alert severity="success" sx={{ maxWidth: 520, width: '100%' }}>
+                {success}
               </Alert>
             )}
             <Stack spacing={0} sx={{ maxWidth: 520, width: '100%', gap: { xs: 1.25, md: 1.5 } }}>
