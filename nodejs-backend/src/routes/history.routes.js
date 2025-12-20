@@ -17,6 +17,3 @@ historyRouter.get("/", authApiRequired, getHistory);
 historyRouter.get("/:id", authApiRequired, getRoomHistory);
 
 export default historyRouter;
-
-
-

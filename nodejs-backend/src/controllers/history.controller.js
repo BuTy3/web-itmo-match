@@ -85,6 +85,3 @@ export async function getRoomHistory(req, res) {
     });
   }
 }
-
-
-
