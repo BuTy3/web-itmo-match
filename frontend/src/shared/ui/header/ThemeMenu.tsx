@@ -1,6 +1,7 @@
 import { Box, Typography } from '@mui/material';
+import type { SxProps, Theme } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
-import type { RootState, AppDispatch } from '../../../app/store';
+import type { AppDispatch, RootState } from '../../../app/store';
 import {
   setThemeColor,
   type ThemeColorKey,
@@ -28,7 +29,7 @@ const COLOR_GROUPS: Array<{
   },
 ];
 
-export const ThemeMenu = () => {
+export const ThemeMenu = ({ sx }: { sx?: SxProps<Theme> }) => {
   const dispatch = useDispatch<AppDispatch>();
   const selectedColors = useSelector(
     (state: RootState) => state.ui.themeColors,
@@ -55,6 +56,7 @@ export const ThemeMenu = () => {
         gap: '12px',
         zIndex: 3000,
         border: '1px solid rgba(0,0,0,0.05)',
+        ...sx,
       }}
     >
       {COLOR_GROUPS.map((group) => (

@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../../shared/api/auth';
 import type { RootState, AppDispatch } from '../../app/store';
 import { loginSuccess } from '../../features/auth/model/authSlice';
+import { ThemeToggleButton } from '../../shared/ui/header/ThemeToggleButton';
 
 export const LoginPage = () => {
   const [loginValue, setLoginValue] = useState('');
@@ -38,6 +39,7 @@ export const LoginPage = () => {
       if (resp.ok && resp.token) {
         dispatch(loginSuccess({ user: { login: loginValue }, accessToken: resp.token }));
         setSuccess('Успешный вход');
+        localStorage.setItem('nickname', loginValue);
         navigate('/');
       } else {
         setError(resp.message || 'Неверный логин или пароль');
@@ -74,8 +76,14 @@ export const LoginPage = () => {
           p: { xs: 2, sm: 4, md: 5 },
           bgcolor: 'rgba(255,255,255,0.94)',
           overflow: 'hidden',
+          position: 'relative',
         }}
       >
+        <ThemeToggleButton
+          sx={{ position: 'absolute', top: 12, right: 12, zIndex: 1 }}
+          menuSx={{ top: 'calc(100% + 12px)', right: 0 }}
+        />
+
         <Box
           component="form"
           onSubmit={handleSubmit}
@@ -92,13 +100,12 @@ export const LoginPage = () => {
             alignItems="center"
             sx={{ gap: { xs: 2, sm: 2.5, md: 3 }, my: 'auto' }}
           >
-            <Typography
-              variant="h4"
-              fontWeight={700}
-              sx={{ fontSize: 'clamp(24px, 3vw, 34px)' }}
-            >
-              ITMO
-            </Typography>
+            <Box
+              component="img"
+              src="/itmo-logo-1.png"
+              alt="ITMO"
+              sx={{ maxWidth: 360, width: '100%', height: 'auto' }}
+            />
 
             <Stack spacing={0} sx={{ maxWidth: 520, width: '100%', gap: { xs: 1.5, md: 2 } }}>
               <TextField
