@@ -34,7 +34,7 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { label: 'Главная', path: '/', icon: <HomeIcon /> },
+  { label: 'Главная', path: '/home', icon: <HomeIcon /> },
   { label: 'Коллекции', path: '/collections', icon: <CollectionsIcon /> },
   { label: 'История', path: '/history', icon: <HistoryIcon /> },
   { label: 'Рисование', path: '/drawing', icon: <BrushIcon /> },
@@ -63,7 +63,7 @@ export const AppLayout: React.FC = () => {
     : SIDEBAR_WIDTH_COLLAPSED;
 
   const pageTitleMap: Record<string, string> = {
-    '/': 'Главная',
+    '/home': 'Главная',
     '/collections': 'Коллекции',
     '/history': 'История',
     '/drawing': 'Рисование',

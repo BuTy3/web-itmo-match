@@ -9,7 +9,10 @@ import {
   Alert,
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { register } from '../../shared/api/auth';
+import type { AppDispatch } from '../../app/store';
+import { loginSuccess } from '../../features/auth/model/authSlice';
 import { ThemeToggleButton } from '../../shared/ui/header/ThemeToggleButton';
 
 export const RegisterPage = () => {
@@ -20,6 +23,7 @@ export const RegisterPage = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -39,10 +43,12 @@ export const RegisterPage = () => {
     try {
       setLoading(true);
       const resp = await register({ login, password });
-      if (resp.ok) {
+      if (resp.ok && resp.token) {
+        dispatch(loginSuccess({ user: { login }, accessToken: resp.token }));
         setSuccess('Пользователь создан');
         localStorage.setItem('nickname', login);
-        navigate('/');
+        localStorage.setItem('accessToken', resp.token);
+        navigate('/home');
         setLogin('');
         setPassword('');
         setPasswordRepeat('');

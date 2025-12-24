@@ -35,7 +35,7 @@ export const HistoryPage = () => {
       if (cancelled) return;
 
       if (!resp.ok) {
-        navigate('/');
+        navigate('/home');
         return;
       }
 
