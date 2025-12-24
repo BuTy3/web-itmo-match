@@ -7,9 +7,13 @@ import {
   TextField,
   Typography,
   Alert,
+  Link as MuiLink,
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { register } from '../../shared/api/auth';
+import type { AppDispatch } from '../../app/store';
+import { loginSuccess } from '../../features/auth/model/authSlice';
 import { ThemeToggleButton } from '../../shared/ui/header/ThemeToggleButton';
 
 export const RegisterPage = () => {
@@ -20,6 +24,7 @@ export const RegisterPage = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -39,9 +44,11 @@ export const RegisterPage = () => {
     try {
       setLoading(true);
       const resp = await register({ login, password });
-      if (resp.ok) {
+      if (resp.ok && resp.token) {
+        dispatch(loginSuccess({ user: { login }, accessToken: resp.token }));
         setSuccess('Пользователь создан');
         localStorage.setItem('nickname', login);
+        localStorage.setItem('accessToken', resp.token);
         navigate('/');
         setLogin('');
         setPassword('');
@@ -173,7 +180,15 @@ export const RegisterPage = () => {
             </Stack>
 
             <Typography variant="body2" color="text.secondary" align="center">
-              Если возникли проблемы, напишите сюда
+              <MuiLink
+                href="https://docs.google.com/forms/d/e/1FAIpQLSeIP1uebWz4RujMdUqtLVDX5pBTkmBfpwCqq3Sn3ZLL9h5c2A/viewform?usp=dialog"
+                target="_blank"
+                rel="noopener noreferrer"
+                color="inherit"
+                underline="hover"
+              >
+                Если возникли проблемы, напишите сюда
+              </MuiLink>
             </Typography>
           </Stack>
         </Box>

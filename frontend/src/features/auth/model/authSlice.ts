@@ -19,9 +19,25 @@ interface AuthState {
   error: string | null;
 }
 
+const getStoredAuth = (): Pick<AuthState, 'user' | 'accessToken'> => {
+  if (typeof window === 'undefined') {
+    return { user: null, accessToken: null };
+  }
+
+  const accessToken = localStorage.getItem('accessToken');
+  const login = localStorage.getItem('nickname');
+
+  return {
+    accessToken: accessToken ?? null,
+    user: login ? { login } : null,
+  };
+};
+
+const storedAuth = getStoredAuth();
+
 const initialState: AuthState = {
-  user: null,
-  accessToken: null,
+  user: storedAuth.user,
+  accessToken: storedAuth.accessToken,
   status: 'idle',
   error: null,
 };
