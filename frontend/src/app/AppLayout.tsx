@@ -110,7 +110,7 @@ export const AppLayout: React.FC = () => {
             '& .MuiDrawer-paper': {
               width: drawerWidth,
               boxSizing: 'border-box',
-              bgcolor: pageBackground,
+              bgcolor: theme.palette.background.paper,
               borderRight: `1px solid ${sidebarBorderColor}`,
               position: 'relative',
               overflow: 'visible',
@@ -144,7 +144,9 @@ export const AppLayout: React.FC = () => {
             {/* МЕНЮ */}
             <List sx={{ width: '100%', mt: '105px' }}>
               {navItems.map((item, index) => {
-                const active = location.pathname === item.path;
+                const active =
+                  location.pathname === item.path ||
+                  location.pathname.startsWith(`${item.path}/`);
 
                 return (
                   <ListItemButton

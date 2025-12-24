@@ -8,14 +8,9 @@ type HeaderProps = {
   sidebarWidth: number;
 };
 
-export const Header: React.FC<HeaderProps> = ({
-  title,
-  username,
-  sidebarWidth,
-}) => {
+export const Header: React.FC<HeaderProps> = ({ title, username, sidebarWidth }) => {
   const theme = useTheme();
-  const borderColor = alpha(theme.palette.secondary.main, 0.4);
-  const headerBackground = theme.palette.background.default;
+  const borderColor = alpha(theme.palette.secondary.main, 0.35);
 
   return (
     <Box
@@ -25,7 +20,7 @@ export const Header: React.FC<HeaderProps> = ({
         left: `${sidebarWidth}px`,
         width: `calc(100% - ${sidebarWidth}px)`,
         height: '74px',
-        backgroundColor: headerBackground,
+        bgcolor: theme.palette.background.paper, // ✅ темнеет в dark
         zIndex: 1200,
         display: 'flex',
         alignItems: 'center',
@@ -47,15 +42,7 @@ export const Header: React.FC<HeaderProps> = ({
           boxSizing: 'border-box',
         }}
       >
-        {/* LEFT SIDE — TITLE */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            flex: '1 1 auto',
-            minWidth: 0,
-          }}
-        >
+        <Box sx={{ display: 'flex', alignItems: 'center', flex: '1 1 auto', minWidth: 0 }}>
           <Typography
             noWrap
             sx={{
@@ -64,14 +51,13 @@ export const Header: React.FC<HeaderProps> = ({
               lineHeight: 1,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              color: theme.palette.text.primary,
+              color: theme.palette.text.primary, // ✅ текст светлый в dark
             }}
           >
             {title}
           </Typography>
         </Box>
 
-        {/* RIGHT SIDE */}
         <RightHeaderPanel username={username} />
       </Box>
     </Box>
