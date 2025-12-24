@@ -31,6 +31,14 @@ const router = createBrowserRouter([
         element: <HistoryRoomPage />,
       },
       {
+        path: 'histore',
+        element: <HistoryPage />,
+      },
+      {
+        path: 'histore/:id_room',
+        element: <HistoryRoomPage />,
+      },
+      {
         path: 'drawing',
         element: <DrawingPage />,
       },

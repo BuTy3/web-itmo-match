@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "jest",
+    "e2e:history:chromium": "bash scripts/e2e-history-chromium.sh",
     "preview": "vite preview"
   },
   "dependencies": {
