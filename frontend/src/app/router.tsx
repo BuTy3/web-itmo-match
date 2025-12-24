@@ -3,7 +3,7 @@ import { AppLayout } from './AppLayout';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { RegisterPage } from '../pages/auth/RegisterPage';
 import { HomePage } from '../pages/home/HomePage';
-import { CollectionsPage } from '../pages/collections/CollectionsPage';
+import CollectionsPage from '../pages/collections/CollectionsPage';
 import { DrawingPage } from '../pages/drawing/DrawingPage';
 import { HistoryPage } from '../pages/history/HistoryPage';
 import { HistoryRoomPage } from '../pages/history/HistoryRoomPage';
@@ -19,7 +19,7 @@ const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: 'collections',
+        path: 'collections/*',
         element: <CollectionsPage />,
       },
       {

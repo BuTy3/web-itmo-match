@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Box, ClickAwayListener } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '../../../app/store';
+import { toggleTheme } from '../../../features/ui/model/uiSlice';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { ThemeMenu } from './ThemeMenu';
 
@@ -17,6 +20,12 @@ export const ThemeToggleButton = ({
 }: ThemeToggleButtonProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const theme = useTheme();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const handleToggle = () => {
+    dispatch(toggleTheme());
+    setMenuOpen((open) => !open);
+  };
 
   return (
     <ClickAwayListener onClickAway={() => setMenuOpen(false)}>
@@ -29,7 +38,11 @@ export const ThemeToggleButton = ({
             position: 'relative',
             ...buttonSx,
           }}
-          onClick={() => setMenuOpen((open) => !open)}
+          onClick={handleToggle}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            setMenuOpen((open) => !open);
+          }}
         >
           <Box
             sx={{

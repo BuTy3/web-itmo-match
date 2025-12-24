@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../../../features/auth/model/authSlice';
@@ -90,7 +90,7 @@ export const RightHeaderPanel = ({ username }: { username: string }) => {
           noWrap
           sx={{
             fontSize: { xs: '16px', sm: '20px', md: '35px' },
-            color: '#3E3B3B',
+            color: theme.palette.text.primary,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
           }}
@@ -104,7 +104,7 @@ export const RightHeaderPanel = ({ username }: { username: string }) => {
         sx={{
           width: '1px',
           height: '46px',
-          backgroundColor: '#3E3B3B',
+          backgroundColor: alpha(theme.palette.text.primary, 0.8),
           display: { xs: 'none', md: 'block' },
         }}
       />
@@ -140,7 +140,7 @@ export const RightHeaderPanel = ({ username }: { username: string }) => {
         sx={{
           width: '1px',
           height: '46px',
-          backgroundColor: '#3E3B3B',
+          backgroundColor: alpha(theme.palette.text.primary, 0.8),
           display: { xs: 'none', md: 'block' },
         }}
       />
