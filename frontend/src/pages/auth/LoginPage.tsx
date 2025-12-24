@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Paper, Stack, TextField, Typography, Alert } from '@mui/material';
+import { Box, Button, Paper, Stack, TextField, Typography, Alert, Link as MuiLink } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../../shared/api/auth';
@@ -40,6 +40,7 @@ export const LoginPage = () => {
         dispatch(loginSuccess({ user: { login: loginValue }, accessToken: resp.token }));
         setSuccess('Успешный вход');
         localStorage.setItem('nickname', loginValue);
+        localStorage.setItem('accessToken', resp.token);
         navigate('/');
       } else {
         setError(resp.message || 'Неверный логин или пароль');
@@ -161,7 +162,15 @@ export const LoginPage = () => {
             </Stack>
 
             <Typography variant="body2" color="text.secondary" align="center">
-              Если возникли проблемы, напишите сюда
+              <MuiLink
+                href="https://docs.google.com/forms/d/e/1FAIpQLSeIP1uebWz4RujMdUqtLVDX5pBTkmBfpwCqq3Sn3ZLL9h5c2A/viewform?usp=dialog"
+                target="_blank"
+                rel="noopener noreferrer"
+                color="inherit"
+                underline="hover"
+              >
+                Если возникли проблемы, напишите сюда
+              </MuiLink>
             </Typography>
           </Stack>
         </Box>
