@@ -31,7 +31,7 @@ router.post("/register", async (req, res) => {
     if (existing) {
       return res.json({
         ok: false,
-        message: "Такой логин уже занят",
+        message: "Ошибка регистрации, некорректные данные",
       });
     }
 
