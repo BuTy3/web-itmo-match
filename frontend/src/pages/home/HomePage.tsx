@@ -1,8 +1,10 @@
 import { Box, Typography, TextField, Button, Stack } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
 
 export const HomePage = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const roomsPanelStyles = {
     p: 3,
     borderRadius: 3,
@@ -39,7 +41,11 @@ export const HomePage = () => {
           <Button variant="contained" color="primary">
             Создать комнату
           </Button>
-          <Button variant="outlined" color="secondary">
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => navigate('/history')}
+          >
             История комнат
           </Button>
         </Stack>
