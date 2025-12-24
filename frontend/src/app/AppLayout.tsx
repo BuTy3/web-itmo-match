@@ -66,17 +66,15 @@ export const AppLayout: React.FC = () => {
     '/': 'Главная',
     '/collections': 'Коллекции',
     '/history': 'История',
+    '/histore': 'История',
     '/drawing': 'Рисование',
   };
 
   const pageTitle =
-    location.pathname.startsWith('/collections')
-      ? 'Коллекции'
-      : location.pathname.startsWith('/history')
-        ? 'История'
-        : location.pathname.startsWith('/drawing')
-          ? 'Рисование'
-          : pageTitleMap[location.pathname] ?? 'Страница';
+    pageTitleMap[location.pathname] ??
+    (location.pathname.startsWith('/history') || location.pathname.startsWith('/histore')
+      ? 'История'
+      : 'Страница');
 
   const theme = useTheme();
   const accentColor = theme.palette.secondary.main;

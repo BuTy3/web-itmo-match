@@ -31,8 +31,37 @@ export type Room = {
 export type HistoryRoom = {
   id: string;
   name: string;
-  url_image: string;
+  url_image: string | null;
   type: string;
   description: string;
   date: string;
+};
+
+export type HistoryRoomCreator = {
+  id: string;
+  display_name: string;
+  avatar_url: string | null;
+};
+
+export type HistoryRoomParticipant = {
+  user_id: string;
+  display_name: string;
+  avatar_url: string | null;
+  joined_at: string;
+  finished_at: string | null;
+};
+
+export type HistoryRoomDetails = {
+  id: string;
+  name: string;
+  topic: string;
+  match_mode: string;
+  status: string;
+  access_mode: string;
+  created_at: string;
+  closed_at: string | null;
+  date: string;
+  result: unknown;
+  creator: HistoryRoomCreator;
+  participants: HistoryRoomParticipant[];
 };
