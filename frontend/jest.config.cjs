@@ -1,9 +1,24 @@
 /** @type {import('jest').Config} */
 module.exports = {
   preset: 'ts-jest/presets/default-esm',
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   roots: ['<rootDir>/src'],
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
+  setupFilesAfterEnv: ['<rootDir>/src/test/setupTests.ts'],
+  moduleNameMapper: {
+    '\\.(css|less|scss)$': '<rootDir>/src/test/styleMock.js',
+  },
+  transform: {
+    '^.+\\.(ts|tsx)$': [
+      'ts-jest',
+      {
+        useESM: true,
+        tsconfig: {
+          jsx: 'react-jsx',
+        },
+      },
+    ],
+  },
   globals: {
     'ts-jest': {
       useESM: true,

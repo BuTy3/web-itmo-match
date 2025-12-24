@@ -12,6 +12,8 @@ export const RightHeaderPanel = ({ username }: { username: string }) => {
   const theme = useTheme();
 
   const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('nickname');
     dispatch(logout());
     navigate('/login', { replace: true });
   };

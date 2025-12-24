@@ -36,3 +36,17 @@ export type HistoryRoom = {
   description: string;
   date: string;
 };
+
+export type HomeCollectionItem = {
+  item_id: number;
+  url_image: string | null;
+  description: string | null;
+};
+
+export type HomeCollection = {
+  id: number;
+  url_image: string | null;
+  type: string | null;
+  description: string | null;
+  items: HomeCollectionItem[];
+};
