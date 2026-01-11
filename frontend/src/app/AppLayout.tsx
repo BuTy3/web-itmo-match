@@ -26,6 +26,7 @@ import {
   SIDEBAR_WIDTH_EXPANDED,
 } from '../shared/ui/theme/theme';
 import type { RootState } from './store';
+import { MetrikaRouteTracker } from '../shared/metrics/MetrikaRouteTracker';
 
 type NavItem = {
   label: string;
@@ -93,6 +94,7 @@ export const AppLayout: React.FC = () => {
         bgcolor: pageBackground,
       }}
     >
+      <MetrikaRouteTracker />
       {/* КОНТЕЙНЕР МАКЕТА (ширина фигмы) */}
       <Box
         sx={{
