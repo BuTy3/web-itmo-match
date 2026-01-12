@@ -1,8 +1,22 @@
-
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, TextField, Typography, useTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../app/store';
+import {
+  createConstructor,
+  createConstructorItem,
+  deleteCollection,
+  deleteCollectionItem,
+  getCollectionDetails,
+  getMyCollections,
+  loadConstructorState,
+  saveConstructorMeta,
+  type CollectionDetails,
+  type CollectionListItem,
+} from '../../shared/api/collections';
+import './collections.css';
 
 type CollectionItem = {
   id: number;
@@ -35,24 +49,47 @@ const sampleImage =
 const defaultDescription =
   'Python developer (разработчик на питоне) — это программист, который использует Python...';
 
-const createMockItems = (): CollectionItem[] =>
-  Array.from({ length: 8 }).map((_, i) => ({
-    id: i + 1,
-    index: i + 1,
-    title: 'Название',
-    description: 'Описание описание описание...',
-    image: sampleImage,
-  }));
+const buildTitle = (value: string | null | undefined, fallback: string) => {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed.slice(0, 32) : fallback;
+};
 
-const createMockCollections = (): Collection[] =>
-  Array.from({ length: 8 }).map((_, i) => ({
-    id: i + 1,
-    title: 'Название',
-    type: 'Тип тип тип',
-    description: defaultDescription,
-    image: sampleImage,
-    items: createMockItems(),
-  }));
+const pickCollectionImage = (value: string | null | undefined, items: { url_image?: string | null; urlImage?: string | null }[]) => {
+  if (value && value.trim()) return value;
+  const firstItemImage = items[0]?.url_image ?? items[0]?.urlImage ?? null;
+  if (firstItemImage && firstItemImage.trim()) return firstItemImage;
+  return sampleImage;
+};
+
+const mapListCollection = (collection: CollectionListItem): Collection => ({
+  id: collection.id,
+  title: buildTitle(collection.description, 'Коллекция'),
+  type: collection.type ?? '',
+  description: collection.description ?? '',
+  image: pickCollectionImage(collection.url_image, collection.items),
+  items: collection.items.map((item) => ({
+    id: item.item_id,
+    index: item.item_id,
+    title: buildTitle(item.description, `Элемент ${item.item_id}`),
+    description: item.description ?? '',
+    image: item.url_image ?? sampleImage,
+  })),
+});
+
+const mapDetailsCollection = (collection: CollectionDetails): Collection => ({
+  id: collection.id,
+  title: buildTitle(collection.description, 'Коллекция'),
+  type: 'DEFAULT',
+  description: collection.description ?? '',
+  image: pickCollectionImage(collection.urlImage, collection.items),
+  items: collection.items.map((item) => ({
+    id: item.id,
+    index: item.id,
+    title: buildTitle(item.description, `Элемент ${item.id}`),
+    description: item.description ?? '',
+    image: item.urlImage ?? sampleImage,
+  })),
+});
 
 const Card = ({
   title,
@@ -103,8 +140,8 @@ const CollectionsPage = () => {
   const navigate = useNavigate();
   const params = useParams<{ '*': string }>();
   const segments = (params['*'] ?? '').split('/').filter(Boolean);
+  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
 
-  // ✅ FIX: корректный парсинг wildcard для routes: 'collections/*'
   const isConstructor = segments[0] === 'constructor';
   const collectionId = useMemo(() => {
     const raw = isConstructor ? segments[1] : segments[0];
@@ -125,8 +162,9 @@ const CollectionsPage = () => {
     return 'list';
   }, [collectionId, isConstructor, itemId, segments.length]);
 
-  const [collections, setCollections] = useState<Collection[]>(createMockCollections);
-  const [drafts, setDrafts] = useState<Record<string, Collection>>({});
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
+  const [filters, setFilters] = useState({ name: '', type: '' });
   const [collectionForm, setCollectionForm] = useState({
     title: '',
     image: '',
@@ -138,116 +176,188 @@ const CollectionsPage = () => {
     description: '',
   });
 
-  const nextId = useMemo(
-    () => Math.max(0, ...collections.map((c) => c.id)) + 1,
-    [collections],
-  );
-
-  // drafts init
-  useEffect(() => {
-    if (!isConstructor || !collectionId) return;
-    const key = String(collectionId);
-    setDrafts((prev) =>
-      prev[key]
-        ? prev
-        : {
-            ...prev,
-            [key]: {
-              id: collectionId,
-              title: '',
-              type: 'Тип тип тип',
-              description: '',
-              image: '',
-              items: [],
-            },
-          },
-    );
-  }, [isConstructor, collectionId]);
-
-  const selectedCollection = useMemo(() => {
-    if (!collectionId || isConstructor) return null;
-    return collections.find((c) => c.id === collectionId) ?? null;
-  }, [collections, collectionId, isConstructor]);
-
-  const draft = useMemo(() => {
-    if (!collectionId) return null;
-    return drafts[String(collectionId)] ?? null;
-  }, [collectionId, drafts]);
-
   const currentItem = useMemo(() => {
     if (!selectedCollection || !itemId) return null;
     return selectedCollection.items.find((it) => it.id === itemId) ?? null;
   }, [selectedCollection, itemId]);
 
+  const nameOptions = useMemo(() => {
+    const unique = new Set(collections.map((collection) => collection.title).filter(Boolean));
+    return Array.from(unique).sort((a, b) => a.localeCompare(b));
+  }, [collections]);
+
+  const typeOptions = useMemo(() => {
+    const unique = new Set(collections.map((collection) => collection.type).filter(Boolean));
+    return Array.from(unique).sort((a, b) => a.localeCompare(b));
+  }, [collections]);
+
+  const filteredCollections = useMemo(() => {
+    return collections.filter((collection) => {
+      if (filters.name && collection.title !== filters.name) return false;
+      if (filters.type && collection.type !== filters.type) return false;
+      return true;
+    });
+  }, [collections, filters.name, filters.type]);
+
   const pageSurface = theme.palette.background.paper;
   const panelBorder = `1px solid ${alpha(theme.palette.text.primary, 0.18)}`;
 
-  const handleAddCollection = () => navigate(`/collections/constructor/${nextId}`);
+  useEffect(() => {
+    if (!accessToken) {
+      setCollections([]);
+      return;
+    }
+    if (viewMode !== 'list') return;
+
+    let active = true;
+    const load = async () => {
+      try {
+        const response = await getMyCollections();
+        if (!active) return;
+        if (response.ok) {
+          setCollections(response.collections.map(mapListCollection));
+        } else {
+          setCollections([]);
+        }
+      } catch {
+        if (!active) return;
+        setCollections([]);
+      }
+    };
+
+    void load();
+
+    return () => {
+      active = false;
+    };
+  }, [accessToken, viewMode]);
+
+  useEffect(() => {
+    if (!accessToken) {
+      setSelectedCollection(null);
+      return;
+    }
+    if (!collectionId) return;
+    if (viewMode !== 'collectionDetail' && viewMode !== 'itemView') return;
+
+    let active = true;
+    const load = async () => {
+      try {
+        const response = await getCollectionDetails(collectionId);
+        if (!active) return;
+        if (response.ok) {
+          setSelectedCollection(mapDetailsCollection(response.collection));
+        } else {
+          setSelectedCollection(null);
+        }
+      } catch {
+        if (!active) return;
+        setSelectedCollection(null);
+      }
+    };
+
+    void load();
+
+    return () => {
+      active = false;
+    };
+  }, [accessToken, collectionId, viewMode]);
+
+  const handleAddCollection = async () => {
+    if (!accessToken) return;
+    try {
+      const response = await createConstructor();
+      if (response.ok) {
+        navigate(`/collections/constructor/${response.new_id}`);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
   const handleOpenCollection = (id: number) => navigate(`/collections/${id}`);
   const handleOpenItem = (colId: number, itId: number) => navigate(`/collections/${colId}/${itId}`);
   const handleBackToList = () => navigate('/collections');
-
-  const saveCollectionDraft = () => {
+  const handleDeleteCollection = async () => {
     if (!collectionId) return;
-    const key = String(collectionId);
-    setDrafts((prev) => ({
-      ...prev,
-      [key]: {
-        ...(prev[key] ?? {
-          id: collectionId,
-          title: '',
-          type: 'Тип тип тип',
-          description: '',
-          image: '',
-          items: [],
-        }),
-        title: collectionForm.title || 'Название',
-        image: collectionForm.image || sampleImage,
-        description: collectionForm.description || defaultDescription,
-      },
-    }));
-  };
-
-  const goNextFromCollection = () => {
-    if (!collectionId) return;
-    saveCollectionDraft();
-    const count = draft?.items.length ?? 0;
-    navigate(`/collections/constructor/${collectionId}/${count + 1}`);
-  };
-
-  const saveItem = (finish: boolean) => {
-    if (!collectionId || !draft) return;
-
-    const newItemId = itemId ?? draft.items.length + 1;
-    const newItem: CollectionItem = {
-      id: newItemId,
-      index: newItemId,
-      title: itemForm.title || 'Название',
-      description: itemForm.description || 'Описание описание описание...',
-      image: itemForm.image || sampleImage,
-    };
-
-    const updatedDraft: Collection = {
-      ...draft,
-      items: [...draft.items.filter((x) => x.id !== newItemId), newItem].sort((a, b) => a.id - b.id),
-    };
-
-    setDrafts((prev) => ({ ...prev, [String(collectionId)]: updatedDraft }));
-
-    if (finish) {
-      setCollections((prev) => {
-        const idx = prev.findIndex((c) => c.id === updatedDraft.id);
-        if (idx === -1) return [...prev, updatedDraft];
-        const copy = [...prev];
-        copy[idx] = updatedDraft;
-        return copy;
-      });
-      navigate(`/collections/${updatedDraft.id}`);
-      return;
+    const confirmed = window.confirm('Удалить коллекцию? Это действие нельзя отменить.');
+    if (!confirmed) return;
+    try {
+      const response = await deleteCollection(collectionId);
+      if (response.ok) {
+        navigate('/collections');
+      }
+    } catch {
+      // ignore
     }
+  };
 
-    setItemForm({ title: '', image: '', description: '' });
-    navigate(`/collections/constructor/${collectionId}/${newItemId + 1}`);
+  const handleDeleteItem = async () => {
+    if (!collectionId || !itemId) return;
+    const confirmed = window.confirm('Удалить элемент коллекции? Это действие нельзя отменить.');
+    if (!confirmed) return;
+    try {
+      const response = await deleteCollectionItem(collectionId, itemId);
+      if (response.ok) {
+        navigate(`/collections/${collectionId}`);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const goNextFromCollection = async () => {
+    if (!collectionId || !accessToken) return;
+
+    const description =
+      collectionForm.description.trim() || collectionForm.title.trim() || defaultDescription;
+
+    try {
+      const saved = await saveConstructorMeta(collectionId, {
+        description,
+        url_image: collectionForm.image.trim() || null,
+      });
+
+      if (!saved.ok) return;
+
+      const state = await loadConstructorState(saved.new_id);
+      if (state.ok) {
+        navigate(`/collections/constructor/${state.new_id}/${state.item_id}`);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const saveItem = async (finish: boolean) => {
+    if (!collectionId || !accessToken) return;
+
+    const description = itemForm.description.trim() || itemForm.title.trim() || 'Описание...';
+    const payload = {
+      item_id: itemId,
+      description,
+      url_image: itemForm.image.trim() || null,
+      next: !finish,
+      save_exit: finish,
+    };
+
+    try {
+      const response = await createConstructorItem(payload);
+
+      if (!response.ok) return;
+
+      if ('collection_id' in response) {
+        setItemForm({ title: '', image: '', description: '' });
+        navigate(`/collections/${response.collection_id}`);
+        return;
+      }
+
+      const nextItemId = response.item_id + 1;
+      setItemForm({ title: '', image: '', description: '' });
+      navigate(`/collections/constructor/${collectionId}/${nextItemId}`);
+    } catch {
+      // ignore
+    }
   };
 
   const renderList = () => (
@@ -258,7 +368,41 @@ const CollectionsPage = () => {
         p: 3,
       }}
     >
-      <Typography sx={{ fontSize: 28, fontWeight: 700, mb: 2 }}>Коллекции</Typography>
+      <Typography sx={{ fontSize: 28, fontWeight: 700 }}>Коллекции</Typography>
+
+      <div className="collections-filters">
+        <select
+          className={`collections-filter collections-filter--select${
+            filters.name ? ' collections-filter--active' : ''
+          }`}
+          value={filters.name}
+          onChange={(event) => setFilters((prev) => ({ ...prev, name: event.target.value }))}
+          aria-label="Фильтр по названию"
+        >
+          <option value="">Название</option>
+          {nameOptions.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
+
+        <select
+          className={`collections-filter collections-filter--select${
+            filters.type ? ' collections-filter--active' : ''
+          }`}
+          value={filters.type}
+          onChange={(event) => setFilters((prev) => ({ ...prev, type: event.target.value }))}
+          aria-label="Фильтр по типу"
+        >
+          <option value="">Тип</option>
+          {typeOptions.map((type) => (
+            <option key={type} value={type}>
+              {type}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <Box
         sx={{
@@ -267,7 +411,7 @@ const CollectionsPage = () => {
           gap: 2,
         }}
       >
-        {collections.map((c) => (
+        {filteredCollections.map((c) => (
           <Card
             key={c.id}
             title={c.title}
@@ -278,7 +422,7 @@ const CollectionsPage = () => {
         ))}
 
         <Box
-          onClick={handleAddCollection}
+          onClick={() => void handleAddCollection()}
           sx={{
             cursor: 'pointer',
             borderRadius: 2,
@@ -326,7 +470,7 @@ const CollectionsPage = () => {
           />
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'center', mt: 1 }}>
-            <Button variant="contained" onClick={goNextFromCollection}>
+            <Button variant="contained" onClick={() => void goNextFromCollection()}>
               Перейти далее
             </Button>
             <Button variant="outlined" onClick={handleBackToList}>
@@ -383,10 +527,10 @@ const CollectionsPage = () => {
           />
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'center', mt: 1 }}>
-            <Button variant="outlined" onClick={() => saveItem(false)}>
+            <Button variant="outlined" onClick={() => void saveItem(false)}>
               Создать ещё
             </Button>
-            <Button variant="contained" onClick={() => saveItem(true)}>
+            <Button variant="contained" onClick={() => void saveItem(true)}>
               Сохранить и закончить
             </Button>
             <Button variant="outlined" onClick={handleBackToList}>
@@ -416,7 +560,7 @@ const CollectionsPage = () => {
             Ваше фото
           </Box>
           <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
-            Элемент номер: {itemId ?? (draft?.items.length ?? 0) + 1}
+            Элемент номер: {itemId ?? 1}
           </Typography>
         </Box>
       </Box>
@@ -438,6 +582,9 @@ const CollectionsPage = () => {
               </Typography>
               <Button variant="outlined" onClick={handleBackToList}>
                 К коллекциям
+              </Button>
+              <Button variant="outlined" color="error" onClick={() => void handleDeleteCollection()}>
+                Удалить
               </Button>
             </Box>
             <Typography sx={{ whiteSpace: 'pre-line', color: 'text.primary' }}>
@@ -492,6 +639,9 @@ const CollectionsPage = () => {
               </Typography>
               <Button variant="outlined" onClick={() => handleOpenCollection(selectedCollection.id)}>
                 К коллекции
+              </Button>
+              <Button variant="outlined" color="error" onClick={() => void handleDeleteItem()}>
+                Удалить
               </Button>
             </Box>
 
