@@ -1,4 +1,4 @@
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { AppLayout } from './AppLayout';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { RegisterPage } from '../pages/auth/RegisterPage';
@@ -7,6 +7,9 @@ import CollectionsPage from '../pages/collections/CollectionsPage';
 import { DrawingPage } from '../pages/drawing/DrawingPage';
 import { HistoryPage } from '../pages/history/HistoryPage';
 import { HistoryRoomPage } from '../pages/history/HistoryRoomPage';
+import { RoomCreatePage } from '../pages/rooms/RoomCreatePage';
+import { RoomConnectPage } from '../pages/rooms/RoomConnectPage';
+import { RoomPage } from '../pages/rooms/RoomPage';
 
 
 const router = createBrowserRouter([
@@ -16,6 +19,10 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
+        element: <Navigate to="/home" replace />,
+      },
+      {
+        path: 'home',
         element: <HomePage />,
       },
       {
@@ -41,6 +48,18 @@ const router = createBrowserRouter([
       {
         path: 'drawing',
         element: <DrawingPage />,
+      },
+      {
+        path: 'rooms/create',
+        element: <RoomCreatePage />,
+      },
+      {
+        path: 'rooms/connect/:id_room',
+        element: <RoomConnectPage />,
+      },
+      {
+        path: 'rooms/:id_room',
+        element: <RoomPage />,
       },
     ],
   },

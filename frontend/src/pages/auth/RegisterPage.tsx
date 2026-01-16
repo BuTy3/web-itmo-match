@@ -49,7 +49,7 @@ export const RegisterPage = () => {
         setSuccess('Пользователь создан');
         localStorage.setItem('nickname', login);
         localStorage.setItem('accessToken', resp.token);
-        navigate('/');
+        navigate('/home');
         setLogin('');
         setPassword('');
         setPasswordRepeat('');
