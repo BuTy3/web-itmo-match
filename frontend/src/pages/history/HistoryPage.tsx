@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../../app/store';
 import { getHistory } from '../../shared/api/history';
 import type { HistoryRoom } from '../../shared/api/types';
 import { HistoryRoomCard } from './components/HistoryRoomCard';
@@ -15,7 +13,6 @@ type FiltersState = {
 
 export const HistoryPage = () => {
   const navigate = useNavigate();
-  const token = useSelector((state: RootState) => state.auth.accessToken) ?? '';
   const [rooms, setRooms] = useState<HistoryRoom[]>([]);
   const [filters, setFilters] = useState<FiltersState>({ name: '', type: '', date: '' });
 
@@ -24,7 +21,6 @@ export const HistoryPage = () => {
 
     const run = async () => {
       const resp = await getHistory({
-        token,
         filters: {
           name: filters.name || undefined,
           type: filters.type || undefined,
@@ -47,7 +43,7 @@ export const HistoryPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [filters.date, filters.name, filters.type, navigate, token]);
+  }, [filters.date, filters.name, filters.type, navigate]);
 
   const nameOptions = useMemo(() => {
     const unique = new Set(rooms.map((room) => room.name));

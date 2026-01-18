@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { HistoryRoom } from './types';
+import type { HistoryRoom, RoomHistoryDetail } from './types';
 
 export type HistoryFilters = {
   name?: string;
@@ -9,6 +9,10 @@ export type HistoryFilters = {
 
 export type HistoryResponse =
   | { ok: true; rooms: HistoryRoom[] }
+  | { ok: false; message: string };
+
+export type RoomHistoryResponse =
+  | { ok: true; room: RoomHistoryDetail }
   | { ok: false; message: string };
 
 const mockRooms: HistoryRoom[] = [
@@ -27,14 +31,18 @@ const includesCaseInsensitive = (value: string, query: string) =>
   value.toLowerCase().includes(query.trim().toLowerCase());
 
 export const getHistory = async (payload: {
-  token: string;
   filters?: HistoryFilters;
 }): Promise<HistoryResponse> => {
   try {
-    const { data } = await apiClient.post<HistoryResponse>('/history', {
-      token: payload.token,
-      filters: payload.filters,
-    });
+    const params = new URLSearchParams();
+    if (payload.filters?.name) params.append('name', payload.filters.name);
+    if (payload.filters?.type) params.append('type', payload.filters.type);
+    if (payload.filters?.date) params.append('date', payload.filters.date);
+
+    const queryString = params.toString();
+    const url = queryString ? `/history?${queryString}` : '/history';
+
+    const { data } = await apiClient.get<HistoryResponse>(url);
     return data;
   } catch {
     const filters = payload.filters ?? {};
@@ -47,5 +55,17 @@ export const getHistory = async (payload: {
     });
 
     return Promise.resolve({ ok: true, rooms: filteredRooms });
+  }
+};
+
+export const getRoomHistory = async (roomId: string): Promise<RoomHistoryResponse> => {
+  try {
+    const { data } = await apiClient.get<RoomHistoryResponse>(`/history/${roomId}`);
+    return data;
+  } catch (error: any) {
+    return {
+      ok: false,
+      message: error.response?.data?.message || 'Failed to load room history',
+    };
   }
 };

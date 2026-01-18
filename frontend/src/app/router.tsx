@@ -7,6 +7,8 @@ import { CollectionsPage } from '../pages/collections/CollectionsPage';
 import { DrawingPage } from '../pages/drawing/DrawingPage';
 import { HistoryPage } from '../pages/history/HistoryPage';
 import { HistoryRoomPage } from '../pages/history/HistoryRoomPage';
+import { RoomPage } from '../pages/rooms/RoomPage';
+import { RoomResultsPage } from '../pages/rooms/RoomResultsPage';
 
 
 const router = createBrowserRouter([
@@ -27,12 +29,28 @@ const router = createBrowserRouter([
         element: <HistoryPage />,
       },
       {
-        path: 'history/:id_room',
+        path: 'history/:id',
         element: <HistoryRoomPage />,
       },
       {
         path: 'drawing',
         element: <DrawingPage />,
+      },
+      {
+        path: 'rooms/:id',
+        element: <RoomPage />,
+      },
+      {
+        path: 'rooms/:id/results',
+        element: <RoomResultsPage />,
+      },
+      {
+        path: 'rooms/:id/drawing',
+        element: <DrawingPage />,
+      },
+      {
+        path: 'rooms/:id/drawing_res',
+        element: <RoomResultsPage />,
       },
     ],
   },

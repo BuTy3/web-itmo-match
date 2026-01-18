@@ -69,7 +69,28 @@ export const AppLayout: React.FC = () => {
     '/drawing': 'Рисование',
   };
 
-  const pageTitle = pageTitleMap[location.pathname] ?? 'Страница';
+  // Determine page title based on path
+  const getPageTitle = () => {
+    if (pageTitleMap[location.pathname]) {
+      return pageTitleMap[location.pathname];
+    }
+    // Handle room pages
+    if (location.pathname.startsWith('/rooms/')) {
+      if (location.pathname.includes('/results') || location.pathname.includes('/drawing_res')) {
+        return 'Комната: результаты';
+      }
+      if (location.pathname.includes('/drawing')) {
+        return 'Рисование';
+      }
+      return 'Комната';
+    }
+    if (location.pathname.startsWith('/history/')) {
+      return 'История комнаты';
+    }
+    return 'Страница';
+  };
+
+  const pageTitle = getPageTitle();
 
   const theme = useTheme();
   const accentColor = theme.palette.secondary.main;
