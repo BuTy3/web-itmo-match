@@ -9,7 +9,17 @@ export const store = configureStore({
     ui: uiReducer,
     rooms: roomsReducer,
   },
+  preloadedState,
 });
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+
+let lastThemeMode = store.getState().ui.themeMode;
+store.subscribe(() => {
+  const nextThemeMode = store.getState().ui.themeMode;
+  if (nextThemeMode !== lastThemeMode) {
+    lastThemeMode = nextThemeMode;
+    persistThemeMode(nextThemeMode);
+  }
+});
