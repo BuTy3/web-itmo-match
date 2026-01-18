@@ -41,6 +41,7 @@ export const HomePage = () => {
             color="secondary"
             value={roomId}
             onChange={(event) => setRoomId(event.target.value)}
+            inputProps={{ inputMode: 'numeric' }}
             onKeyDown={(event) => {
               if (event.key !== 'Enter') return;
               const trimmed = roomId.trim();
