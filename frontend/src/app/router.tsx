@@ -9,7 +9,10 @@ import { HistoryPage } from '../pages/history/HistoryPage';
 import { HistoryRoomPage } from '../pages/history/HistoryRoomPage';
 import { RoomCreatePage } from '../pages/rooms/RoomCreatePage';
 import { RoomConnectPage } from '../pages/rooms/RoomConnectPage';
-import { RoomPage } from '../pages/rooms/RoomPage';
+import { RoomVotePage } from '../pages/rooms/RoomVotePage';
+import { RoomDrawingPage } from '../pages/rooms/RoomDrawingPage';
+import { RoomResultsPage } from '../pages/rooms/RoomResultsPage';
+import { RoomDrawingsResultsPage } from '../pages/rooms/RoomDrawingsResultsPage';
 
 
 const router = createBrowserRouter([
@@ -59,7 +62,19 @@ const router = createBrowserRouter([
       },
       {
         path: 'rooms/:id_room',
-        element: <RoomPage />,
+        element: <RoomVotePage />,
+      },
+      {
+        path: 'rooms/:id_room/drowing',
+        element: <RoomDrawingPage />,
+      },
+      {
+        path: 'rooms/:id_room/results',
+        element: <RoomResultsPage />,
+      },
+      {
+        path: 'rooms/:id_room/drowing_res',
+        element: <RoomDrawingsResultsPage />,
       },
     ],
   },
