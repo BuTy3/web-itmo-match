@@ -34,7 +34,7 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { label: 'Главная', path: '/', icon: <HomeIcon /> },
+  { label: 'Главная', path: '/home', icon: <HomeIcon /> },
   { label: 'Коллекции', path: '/collections', icon: <CollectionsIcon /> },
   { label: 'История', path: '/history', icon: <HistoryIcon /> },
   { label: 'Рисование', path: '/drawing', icon: <BrushIcon /> },
@@ -52,11 +52,11 @@ export const AppLayout: React.FC = () => {
     (state: RootState) => state.auth.user?.login ?? 'Никнейм',
   );
 
-  useEffect(() => {
-    if (!accessToken) {
-      navigate('/login', { replace: true });
-    }
-  }, [accessToken, navigate]);
+   useEffect(() => {
+     if (!accessToken) {
+       navigate('/login', { replace: true });
+     }
+   }, [accessToken, navigate]);
 
   const drawerWidth = sidebarOpen
     ? SIDEBAR_WIDTH_EXPANDED
@@ -143,7 +143,7 @@ export const AppLayout: React.FC = () => {
             '& .MuiDrawer-paper': {
               width: drawerWidth,
               boxSizing: 'border-box',
-              bgcolor: pageBackground,
+              bgcolor: theme.palette.background.paper,
               borderRight: `1px solid ${sidebarBorderColor}`,
               position: 'relative',
               overflow: 'visible',
@@ -177,7 +177,9 @@ export const AppLayout: React.FC = () => {
             {/* МЕНЮ */}
             <List sx={{ width: '100%', mt: '105px' }}>
               {navItems.map((item, index) => {
-                const active = location.pathname === item.path;
+                const active =
+                  location.pathname === item.path ||
+                  location.pathname.startsWith(`${item.path}/`);
 
                 return (
                   <ListItemButton

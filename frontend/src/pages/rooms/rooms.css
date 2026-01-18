@@ -1,106 +1,404 @@
 .room-page {
   display: flex;
   flex-direction: column;
+  gap: 28px;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+.room-title {
+  font-size: 36px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.room-subtitle {
+  font-size: 18px;
+  color: #3e3b3b;
+  margin: 8px 0 0;
+}
+
+.room-card {
+  border-radius: 32px;
+  background: #f2f2f2;
+  padding: 24px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+.room-card--ghost {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(31, 31, 31, 0.1);
+  box-shadow: none;
+}
+
+.room-form {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(260px, 320px) minmax(220px, 280px);
+  grid-template-areas:
+    "name collection password"
+    "modes collection access";
+  gap: 24px 40px;
+  align-items: start;
+}
+
+.room-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.room-form__label {
+  font-size: 14px;
+  color: #3e3b3b;
+}
+
+.room-form__input {
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(31, 31, 31, 0.2);
+  padding: 0 12px;
+  font-size: 14px;
+  background: #ffffff;
+}
+
+.room-form__input:focus {
+  outline: 2px solid rgba(65, 36, 243, 0.3);
+}
+
+.room-form__checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.room-form__checkbox {
+  display: flex;
   align-items: center;
-  padding: 20px 0;
+  gap: 10px;
+  font-size: 15px;
 }
 
-.voting-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.room-form__checkbox input {
+  width: 16px;
+  height: 16px;
+  accent-color: #4124f3;
 }
 
-.voting-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+.room-form__collection {
+  grid-area: collection;
 }
 
-/* Results page */
-.room-results-page {
+.room-form__collection-box {
+  border-radius: 18px;
+  padding: 10px;
+  background: linear-gradient(180deg, rgba(239, 48, 48, 0.9) 0%, rgba(65, 36, 243, 0.9) 100%);
+}
+
+.room-form__select {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  font-size: 14px;
+  outline: none;
+}
+
+.room-form__select option {
+  color: #1f1f1f;
+}
+
+.room-form__select--list {
+  height: 220px;
+  border-radius: 12px;
+  background: transparent;
+}
+
+.room-form__footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.room-button {
+  min-width: 160px;
+  height: 44px;
+  border-radius: 18px;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  background: linear-gradient(180deg, #ef3030 0%, #4124f3 100%);
+  font-size: 15px;
+  font-weight: 600;
+  transition: transform 0.2s ease;
+}
+
+.room-button:hover {
+  transform: translateY(-1px);
+}
+
+.room-button--ghost {
+  background: transparent;
+  border: 2px solid rgba(65, 36, 243, 0.6);
+  color: #4124f3;
+}
+
+.room-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.room-connect-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr);
+  gap: 28px 40px;
+  align-items: start;
+}
+
+.room-vote {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px 0;
+  gap: 20px;
 }
 
-.match-title {
-  font-size: 4rem;
-  font-weight: 700;
-  font-style: italic;
-  color: #9C27B0;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.match-checkmark {
-  color: #4CAF50;
-  font-size: 4rem;
-}
-
-.match-subtitle {
-  font-size: 1.5rem;
-  color: #333;
-  margin-bottom: 40px;
-  text-align: center;
-}
-
-.no-match-title {
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 24px;
-  text-align: center;
-}
-
-.no-match-subtitle {
-  font-size: 1.1rem;
-  color: #666;
-  text-align: center;
-  max-width: 400px;
-  line-height: 1.6;
-}
-
-.results-cards-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 24px;
-  max-width: 1200px;
-}
-
-.result-card {
-  width: 280px;
-  border-radius: 16px;
+.room-vote-card {
+  width: min(360px, 100%);
+  border-radius: 30px;
+  background: linear-gradient(180deg, #b6c6f2 0%, #f6f6f6 50%, #4124f3 100%);
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.16);
 }
 
-.result-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+.room-vote-card__image {
+  height: 240px;
+  background: #d6d6d6;
+  display: grid;
+  place-items: center;
 }
 
-.result-card-image {
+.room-vote-card__image img {
   width: 100%;
-  height: 220px;
+  height: 100%;
   object-fit: cover;
 }
 
-.result-card-content {
-  padding: 16px 20px 24px;
+.room-vote-card__content {
+  padding: 16px;
+  color: #ffffff;
+  text-align: center;
 }
 
-.result-card-title {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: white;
-  margin-bottom: 4px;
+.room-vote-card__title {
+  font-size: 18px;
+  font-weight: 600;
 }
 
-.result-card-description {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
+.room-vote-actions {
+  display: flex;
+  gap: 16px;
 }
 
+.room-vote-actions button {
+  min-width: 90px;
+  height: 34px;
+  border-radius: 10px;
+  border: none;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.room-vote-actions .room-vote-actions__no {
+  background: #ef3030;
+}
+
+.room-vote-actions .room-vote-actions__yes {
+  background: #34c759;
+}
+
+.room-drawing-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(88px, 120px) minmax(220px, 1fr);
+  grid-template-areas: "canvas toolbar participants";
+  gap: 24px;
+  align-items: start;
+}
+
+.room-drawing-hint {
+  margin: 0 0 16px;
+  font-size: 18px;
+}
+
+.room-participants {
+  grid-area: participants;
+  width: 100%;
+  max-width: 320px;
+  min-height: 420px;
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(239, 48, 48, 0.24) 0%, rgba(65, 36, 243, 0.24) 100%);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.room-participant {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.room-participant__avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: #f4f4f4;
+  border: 2px solid rgba(31, 31, 31, 0.1);
+}
+
+.room-participant__name {
+  font-size: 15px;
+}
+
+.room-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.room-results__headline {
+  font-size: 48px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.room-results__text {
+  font-size: 20px;
+  max-width: 620px;
+}
+
+.room-results-card {
+  width: min(360px, 100%);
+  border-radius: 26px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(239, 48, 48, 0.2) 0%, rgba(65, 36, 243, 0.5) 100%);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.14);
+}
+
+.room-results-card__image {
+  height: 240px;
+  background: #d6d6d6;
+}
+
+.room-results-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.room-results-card__info {
+  padding: 16px;
+  color: #ffffff;
+  text-align: left;
+}
+
+.room-results-card__title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.room-drawings-panel {
+  border-radius: 28px;
+  padding: 22px;
+  background: linear-gradient(180deg, rgba(239, 48, 48, 0.3) 0%, rgba(65, 36, 243, 0.35) 100%);
+}
+
+.room-drawings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.room-drawings-card {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 24px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.room-drawings-card__image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 20px;
+  background: #f0f0f0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.room-drawings-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.room-drawings-card__name {
+  font-size: 15px;
+}
+
+@media (max-width: 1200px) {
+  .room-form {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "name password"
+      "collection collection"
+      "modes access";
+  }
+
+  .room-drawing-layout {
+    grid-template-columns: minmax(0, 1fr) 120px;
+    grid-template-areas:
+      "canvas toolbar"
+      "participants participants";
+  }
+
+  .room-participants {
+    max-width: none;
+    min-height: 240px;
+  }
+}
+
+@media (max-width: 768px) {
+  .room-form {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "name"
+      "collection"
+      "password"
+      "modes"
+      "access";
+  }
+
+  .room-connect-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .room-drawing-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "canvas"
+      "toolbar"
+      "participants";
+  }
+}

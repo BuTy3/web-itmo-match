@@ -10,13 +10,7 @@
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest tests/unit --runInBand",
-    "e2e": "NODE_OPTIONS=--experimental-vm-modules jest tests/e2e --runInBand",
-    "seed:history": "node scripts/seed-history.js",
-    "prisma:generate": "prisma generate",
-    "prisma:push": "prisma db push",
-    "prisma:migrate": "prisma migrate dev",
-    "rebuild": "npm rebuild bcrypt",
-    "db:reset": "npm run prisma:push && npm run seed:history"
+    "e2e": "NODE_OPTIONS=--experimental-vm-modules jest tests/e2e --runInBand"
   },
   "repository": {
     "type": "git",

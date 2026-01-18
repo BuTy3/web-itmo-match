@@ -13,7 +13,7 @@ import drawingRoutes from "./routes/drawing.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import homeRoutes from "./routes/home.routes.js";
 import historyRoutes from "./routes/history.routes.js";
-import roomRoutes from "./routes/room.routes.js";
+import roomsRoutes from "./routes/rooms.routes.js";
 
 import { authPageRequired } from "./middlewares/auth.middleware.js";
 import { prisma } from "./db.js";
@@ -66,8 +66,8 @@ app.use("/home", homeRoutes);
 // History routes
 app.use("/history", historyRoutes);
 
-// Room routes (voting)
-app.use("/rooms", roomRoutes);
+// Rooms routes
+app.use("/rooms", roomsRoutes);
 
 // login page / home demo
 app.get("/login", (req, res) => {

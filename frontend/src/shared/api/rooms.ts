@@ -1,13 +1,8 @@
 import { apiClient } from './client';
-import type {
-  RoomVotingState,
-  VoteResponse,
-  RoomResults,
-} from './types';
 
 export type RoomAccessResponse =
-    | { ok: true; collection_choose?: number | boolean }
-    | { ok: false; message: string };
+  | { ok: true; collection_choose?: number | boolean }
+  | { ok: false; message: string };
 
 export type RoomCreatePayload = {
   token: string;
@@ -29,20 +24,20 @@ export type RoomConnectPayload = {
 };
 
 export type RoomConnectResponse =
-    | { ok: true }
-    | { ok: false; message: string };
+  | { ok: true }
+  | { ok: false; message: string };
 
 export type RoomStateResponse =
-    | {
-  ok: true;
-  nick: string;
-  profile_picture_url?: string | null;
-  name_card: string;
-  description: string;
-  redirect?: string;
-  next?: string;
-}
-    | { ok: false; message: string };
+  | {
+      ok: true;
+      nick: string;
+      profile_picture_url?: string | null;
+      name_card: string;
+      description: string;
+      redirect?: string;
+      next?: string;
+    }
+  | { ok: false; message: string };
 
 export type RoomChoosePayload = {
   token: string;
@@ -50,16 +45,16 @@ export type RoomChoosePayload = {
 };
 
 export type RoomChooseResponse =
-    | {
-  ok: true;
-  nick?: string;
-  profile_picture_url?: string | null;
-  name_card?: string;
-  description?: string;
-  redirect?: string;
-  next?: string;
-}
-    | { ok: false; message: string };
+  | {
+      ok: true;
+      nick?: string;
+      profile_picture_url?: string | null;
+      name_card?: string;
+      description?: string;
+      redirect?: string;
+      next?: string;
+    }
+  | { ok: false; message: string };
 
 export type RoomCollection = {
   id: number | string;
@@ -69,20 +64,66 @@ export type RoomCollection = {
 };
 
 export type RoomCollectionsResponse =
-    | { ok: true; collections: RoomCollection[] }
-    | { ok: false; message: string };
+  | { ok: true; collections: RoomCollection[] }
+  | { ok: false; message: string };
 
 export const checkCreateRoomAccess = async (
-    payload: { token: string },
+  payload: { token: string },
 ): Promise<RoomAccessResponse> => {
   const { data } = await apiClient.post<RoomAccessResponse>('/rooms/create', payload);
   return data;
 };
 
 export const createRoom = async (
-    payload: RoomCreatePayload,
+  payload: RoomCreatePayload,
 ): Promise<RoomCreateResponse> => {
   const { data } = await apiClient.post<RoomCreateResponse>('/rooms/create', payload);
+  return data;
+};
+
+export const checkConnectRoomAccess = async (
+  payload: { token: string; id_room: string | number },
+): Promise<RoomAccessResponse> => {
+  const { id_room, token } = payload;
+  const { data } = await apiClient.post<RoomAccessResponse>(`/rooms/connect/${id_room}`, {
+    token,
+  });
+  return data;
+};
+
+export const connectRoom = async (
+  payload: { id_room: string | number } & RoomConnectPayload,
+): Promise<RoomConnectResponse> => {
+  const { id_room, ...body } = payload;
+  const { data } = await apiClient.post<RoomConnectResponse>(
+    `/rooms/connect/${id_room}`,
+    body,
+  );
+  return data;
+};
+
+export const fetchRoomState = async (
+  payload: { token: string; id_room: string | number },
+): Promise<RoomStateResponse> => {
+  const { id_room, token } = payload;
+  const { data } = await apiClient.post<RoomStateResponse>(`/rooms/${id_room}`, {
+    token,
+  });
+  return data;
+};
+
+export const chooseRoomCard = async (
+  payload: { id_room: string | number } & RoomChoosePayload,
+): Promise<RoomChooseResponse> => {
+  const { id_room, ...body } = payload;
+  const { data } = await apiClient.post<RoomChooseResponse>(`/rooms/${id_room}`, body);
+  return data;
+};
+
+export const getUserCollections = async (
+  payload: { token: string },
+): Promise<RoomCollectionsResponse> => {
+  const { data } = await apiClient.post<RoomCollectionsResponse>('/home', payload);
   return data;
 };
 

@@ -1,8 +1,12 @@
 import { Box, Typography, TextField, Button, Stack } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 export const HomePage = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
+  const [roomId, setRoomId] = useState('');
   const roomsPanelStyles = {
     p: 3,
     borderRadius: 3,
@@ -35,11 +39,27 @@ export const HomePage = () => {
             placeholder="Введите id"
             sx={{ maxWidth: 260 }}
             color="secondary"
+            value={roomId}
+            onChange={(event) => setRoomId(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== 'Enter') return;
+              const trimmed = roomId.trim();
+              if (!trimmed) return;
+              navigate(`/rooms/connect/${trimmed}`);
+            }}
           />
-          <Button variant="contained" color="primary">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate('/rooms/create')}
+          >
             Создать комнату
           </Button>
-          <Button variant="outlined" color="secondary">
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => navigate('/history')}
+          >
             История комнат
           </Button>
         </Stack>

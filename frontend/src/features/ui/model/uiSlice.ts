@@ -5,7 +5,6 @@ export type ThemeMode = 'light' | 'dark';
 export type ThemeColors = {
   primary: string;
   secondary: string;
-  background: string;
 };
 
 export type ThemeColorKey = keyof ThemeColors;
@@ -20,9 +19,9 @@ const initialState: UiState = {
   themeColors: {
     primary: '#4225F4',
     secondary: '#F32222',
-    background: '#FFF7FF',
   },
 };
+
 
 const uiSlice = createSlice({
   name: 'ui',

@@ -1,326 +1,159 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Box, Typography, Button, Avatar, CircularProgress } from '@mui/material';
-import { alpha, useTheme } from '@mui/material/styles';
-import { getRoomVotingState, submitVote, leaveRoom } from '../../shared/api/rooms';
-import type { RoomVotingState, VotingItem } from '../../shared/api/types';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../app/store';
+import { chooseRoomCard, fetchRoomState } from '../../shared/api/rooms';
 import './rooms.css';
+
+type RoomCardState = {
+  nick: string;
+  profile_picture_url?: string | null;
+  name_card: string;
+  description: string;
+};
+
+const fallbackCard: RoomCardState = {
+  nick: 'Никнейм',
+  profile_picture_url: null,
+  name_card: 'Название карточки',
+  description: 'Описание...',
+};
 
 export const RoomPage = () => {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  const theme = useTheme();
+  const { id_room } = useParams<{ id_room: string }>();
+  const token = useSelector((state: RootState) => state.auth.accessToken) ?? '';
+  const [card, setCard] = useState<RoomCardState>(fallbackCard);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [roomState, setRoomState] = useState<RoomVotingState | null>(null);
-  const [currentItem, setCurrentItem] = useState<VotingItem | null>(null);
-  const [voting, setVoting] = useState(false);
+  const showRequestError = (err: unknown) => {
+    const status =
+      typeof err === 'object' && err !== null && 'response' in err
+        ? (err as { response?: { status?: number } }).response?.status
+        : undefined;
 
-  const loadRoomState = useCallback(async () => {
-    if (!id) {
-      navigate('/');
-      return;
-    }
+    let message = 'Упс, какие-то проблемы с соединением.';
+    if (status === 401) message = 'Сессия истекла. Войдите снова.';
+    if (status === 403) message = 'Недостаточно прав для этого действия.';
+    if (status === 500) message = 'Ошибка сервера. Попробуйте позже.';
 
-    setLoading(true);
-    setError(null);
-
-    const response = await getRoomVotingState(id);
-
-    if (!response.ok || !response.data) {
-      setError(response.message || 'Ошибка загрузки комнаты');
-      setLoading(false);
-      return;
-    }
-
-    setRoomState(response.data);
-    setCurrentItem(response.data.current_item);
-
-    // If voting already finished, redirect to results
-    if (response.data.all_finished) {
-      navigate(`/rooms/${id}/results`);
-      return;
-    }
-
-    setLoading(false);
-  }, [id, navigate]);
+    window.alert(message);
+  };
 
   useEffect(() => {
-    void loadRoomState();
-  }, [loadRoomState]);
-
-  const handleVote = async (vote: boolean) => {
-    if (!id || !currentItem || voting) return;
-
-    setVoting(true);
-
-    const response = await submitVote(id, currentItem.id, vote);
-
-    if (!response.ok) {
-      setError(response.message || 'Ошибка при голосовании');
-      setVoting(false);
+    if (!token || !id_room) {
+      navigate('/home', { replace: true });
       return;
     }
+    let cancelled = false;
 
-    // Handle redirect based on response
-    if (response.redirect_to) {
-      switch (response.redirect_to) {
-        case 'drawing':
-          navigate(`/rooms/${id}/drawing`);
+    const run = async () => {
+      try {
+        const resp = await fetchRoomState({ token, id_room });
+        if (!resp.ok) {
+          navigate('/home', { replace: true });
           return;
-        case 'drawing_res':
-          navigate(`/rooms/${id}/drawing_res`);
-          return;
-        case 'results':
-          navigate(`/rooms/${id}/results`);
-          return;
+        }
+        if (cancelled) return;
+        setCard({
+          nick: resp.nick,
+          profile_picture_url: resp.profile_picture_url ?? null,
+          name_card: resp.name_card,
+          description: resp.description,
+        });
+      } catch (err) {
+        if (cancelled) return;
+        showRequestError(err);
+        navigate('/home', { replace: true });
       }
-    }
+    };
 
-    // If all finished, go to results
-    if (response.all_finished) {
-      navigate(`/rooms/${id}/results`);
-      return;
-    }
+    void run();
 
-    // If user finished but others haven't, go to drawing
-    if (response.is_finished && !response.all_finished) {
-      navigate(`/rooms/${id}/drawing`);
-      return;
-    }
+    return () => {
+      cancelled = true;
+    };
+  }, [id_room, navigate, token]);
 
-    // Otherwise, show next item
-    if (response.next_item) {
-      setCurrentItem(response.next_item);
-    } else if (response.is_finished) {
-      // User finished voting
-      navigate(`/rooms/${id}/drawing`);
-      return;
-    }
+  const handleChoose = async (choose: 0 | 1 | 2) => {
+    if (!id_room) return;
+    try {
+      const resp = await chooseRoomCard({ id_room, token, choose });
+      if (!resp.ok) {
+        navigate('/home', { replace: true });
+        return;
+      }
 
-    setVoting(false);
+      if (choose === 0) {
+        navigate('/home', { replace: true });
+        return;
+      }
+
+      const nextPath = resp.redirect ?? resp.next;
+      if (nextPath) {
+        const normalized = nextPath.startsWith('/')
+          ? nextPath
+          : `/rooms/${id_room}/${nextPath}`;
+        navigate(normalized);
+        return;
+      }
+
+      if (resp.name_card || resp.description || resp.nick) {
+        setCard((prev) => ({
+          nick: resp.nick ?? prev.nick,
+          profile_picture_url: resp.profile_picture_url ?? prev.profile_picture_url,
+          name_card: resp.name_card ?? prev.name_card,
+          description: resp.description ?? prev.description,
+        }));
+      }
+    } catch (err) {
+      showRequestError(err);
+      navigate('/home', { replace: true });
+    }
   };
-
-  const handleLeaveRoom = async () => {
-    if (!id) return;
-
-    const response = await leaveRoom(id);
-    if (response.ok) {
-      navigate('/');
-    } else {
-      setError(response.message || 'Ошибка при выходе');
-    }
-  };
-
-  if (loading) {
-    return (
-      <Box className="room-page" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-        <CircularProgress color="secondary" />
-      </Box>
-    );
-  }
-
-  if (error || !roomState) {
-    return (
-      <Box className="room-page" sx={{ textAlign: 'center', py: 8 }}>
-        <Typography variant="h5" sx={{ mb: 2 }}>
-          Ошибка
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
-          {error || 'Комната не найдена'}
-        </Typography>
-        <Button variant="contained" onClick={() => navigate('/')}>
-          Вернуться на главную
-        </Button>
-      </Box>
-    );
-  }
-
-  if (!currentItem) {
-    return (
-      <Box className="room-page" sx={{ textAlign: 'center', py: 8 }}>
-        <Typography variant="h5" sx={{ mb: 2 }}>
-          Голосование завершено
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
-          Ожидаем остальных участников...
-        </Typography>
-        <CircularProgress color="secondary" />
-      </Box>
-    );
-  }
 
   return (
-    <Box className="room-page">
-      {/* Voting Card */}
-      <Box
-        className="voting-card"
-        sx={{
-          background: `linear-gradient(180deg, ${alpha(theme.palette.primary.main, 0.3)} 0%, ${alpha(theme.palette.secondary.main, 0.3)} 100%)`,
-          borderRadius: 3,
-          overflow: 'hidden',
-          maxWidth: 320,
-          mx: 'auto',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-        }}
-      >
-        {/* Header with avatar and nickname */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1.5,
-            p: 2,
-            bgcolor: alpha(theme.palette.primary.main, 0.2),
-          }}
-        >
-          <Avatar
-            src={currentItem.suggested_by.avatar_url || undefined}
-            sx={{ width: 40, height: 40, bgcolor: 'white' }}
-          />
-          <Typography variant="subtitle1" fontWeight={500}>
-            {currentItem.suggested_by.display_name}
-          </Typography>
-        </Box>
+    <div className="rooms-page">
+      <h1 className="rooms-title">Комната</h1>
 
-        {/* Image */}
-        <Box
-          sx={{
-            width: '100%',
-            height: 280,
-            overflow: 'hidden',
-          }}
-        >
-          {currentItem.image_url ? (
-            <img
-              src={currentItem.image_url}
-              alt={currentItem.title}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-              }}
-            />
-          ) : (
-            <Box
-              sx={{
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                bgcolor: alpha(theme.palette.grey[500], 0.2),
-              }}
-            >
-              <Typography color="text.secondary">Нет изображения</Typography>
-            </Box>
-          )}
-        </Box>
+      <div className="rooms-room-layout">
+        <div className="rooms-card">
+          <div className="rooms-card__header">
+            <div className="rooms-card__avatar" />
+            <div className="rooms-card__nick">{card.nick}</div>
+          </div>
+          <div className="rooms-card__image">
+            {card.profile_picture_url ? (
+              <img src={card.profile_picture_url} alt={card.name_card} />
+            ) : null}
+          </div>
+          <div className="rooms-card__footer">
+            <div className="rooms-card__title">{card.name_card}</div>
+            <div className="rooms-card__description">{card.description}</div>
+          </div>
+        </div>
 
-        {/* Title */}
-        <Box
-          sx={{
-            p: 2.5,
-            background: `linear-gradient(180deg, ${theme.palette.secondary.main} 0%, ${theme.palette.primary.main} 100%)`,
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{
-              color: 'white',
-              textAlign: 'center',
-              fontWeight: 500,
-              textShadow: '0 1px 2px rgba(0,0,0,0.2)',
-            }}
+        <div className="rooms-room-actions">
+          <button
+            className="rooms-action-button rooms-action-button--no"
+            onClick={() => handleChoose(2)}
+            type="button"
           >
-            {currentItem.title}
-          </Typography>
-        </Box>
-      </Box>
+            Нет
+          </button>
+          <button
+            className="rooms-action-button rooms-action-button--yes"
+            onClick={() => handleChoose(1)}
+            type="button"
+          >
+            Да
+          </button>
+        </div>
 
-      {/* Vote Buttons */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 2,
-          mt: 4,
-        }}
-      >
-        <Button
-          variant="contained"
-          onClick={() => handleVote(false)}
-          disabled={voting}
-          sx={{
-            bgcolor: '#E57373',
-            color: 'white',
-            px: 5,
-            py: 1.2,
-            borderRadius: 3,
-            fontSize: '1rem',
-            fontWeight: 500,
-            textTransform: 'none',
-            '&:hover': {
-              bgcolor: '#EF5350',
-            },
-            '&:disabled': {
-              bgcolor: alpha('#E57373', 0.5),
-              color: 'white',
-            },
-          }}
-        >
-          Нет
-        </Button>
-        <Button
-          variant="contained"
-          onClick={() => handleVote(true)}
-          disabled={voting}
-          sx={{
-            bgcolor: '#81C784',
-            color: 'white',
-            px: 5,
-            py: 1.2,
-            borderRadius: 3,
-            fontSize: '1rem',
-            fontWeight: 500,
-            textTransform: 'none',
-            '&:hover': {
-              bgcolor: '#66BB6A',
-            },
-            '&:disabled': {
-              bgcolor: alpha('#81C784', 0.5),
-              color: 'white',
-            },
-          }}
-        >
-          Да
-        </Button>
-      </Box>
-
-      {/* Leave Room Button */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-        <Button
-          variant="contained"
-          onClick={handleLeaveRoom}
-          sx={{
-            background: `linear-gradient(90deg, ${theme.palette.secondary.main} 0%, ${theme.palette.primary.main} 100%)`,
-            color: 'white',
-            px: 4,
-            py: 1,
-            borderRadius: 3,
-            fontSize: '0.95rem',
-            fontWeight: 500,
-            textTransform: 'none',
-            '&:hover': {
-              background: `linear-gradient(90deg, ${alpha(theme.palette.secondary.main, 0.9)} 0%, ${alpha(theme.palette.primary.main, 0.9)} 100%)`,
-            },
-          }}
-        >
+        <button className="rooms-exit-button" onClick={() => handleChoose(0)} type="button">
           Выйти из комнаты
-        </Button>
-      </Box>
-    </Box>
+        </button>
+      </div>
+
+    </div>
   );
 };
-

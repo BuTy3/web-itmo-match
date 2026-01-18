@@ -1,10 +1,9 @@
 import { Box, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import type { SxProps, Theme } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
-import type { RootState, AppDispatch } from '../../../app/store';
-import {
-  setThemeColor,
-  type ThemeColorKey,
-} from '../../../features/ui/model/uiSlice';
+import type { AppDispatch, RootState } from '../../../app/store';
+import { setThemeColor, type ThemeColorKey } from '../../../features/ui/model/uiSlice';
 
 const COLOR_GROUPS: Array<{
   key: ThemeColorKey;
@@ -21,18 +20,14 @@ const COLOR_GROUPS: Array<{
     label: 'Основной цвет 2',
     colors: ['#3AEF30', '#4124F4', '#EF3030'],
   },
-  {
-    key: 'background',
-    label: 'Фон',
-    colors: ['#0E0C1B', '#5E5E5E', '#EFEEEE'],
-  },
 ];
 
-export const ThemeMenu = () => {
+export const ThemeMenu = ({ sx }: { sx?: SxProps<Theme> }) => {
   const dispatch = useDispatch<AppDispatch>();
   const selectedColors = useSelector(
     (state: RootState) => state.ui.themeColors,
   );
+  const theme = useTheme();
 
   const handleSelect = (key: ThemeColorKey, color: string) => {
     dispatch(setThemeColor({ key, color }));
@@ -46,15 +41,16 @@ export const ThemeMenu = () => {
         position: 'absolute',
         top: 'calc(100% + 8px)',
         right: 0,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.palette.background.paper,
         borderRadius: '12px',
-        boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+        boxShadow: theme.shadows[6],
         p: '16px',
         display: 'flex',
         flexDirection: 'column',
         gap: '12px',
         zIndex: 3000,
-        border: '1px solid rgba(0,0,0,0.05)',
+        border: `1px solid ${theme.palette.divider}`,
+        ...sx,
       }}
     >
       {COLOR_GROUPS.map((group) => (
@@ -90,32 +86,37 @@ type ColorSwatchProps = {
   onClick: () => void;
 };
 
-const ColorSwatch = ({ color, selected, onClick }: ColorSwatchProps) => (
-  <Box
-    role="button"
-    tabIndex={0}
-    onClick={onClick}
-    onKeyDown={(event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        onClick();
-      }
-    }}
-    sx={{
-      width: 32,
-      height: 32,
-      borderRadius: '8px',
-      backgroundColor: color,
-      cursor: 'pointer',
-      border: selected ? '2px solid #111111' : '1px solid #cccccc',
-      outline: selected ? `2px solid ${color}` : 'none',
-      outlineOffset: '2px',
-      transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-      boxShadow: selected ? '0 2px 8px rgba(0,0,0,0.25)' : 'none',
-      '&:hover': {
-        transform: 'translateY(-1px)',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-      },
-    }}
-  />
-);
+const ColorSwatch = ({ color, selected, onClick }: ColorSwatchProps) => {
+  const theme = useTheme();
+  const borderColor = selected ? theme.palette.text.primary : theme.palette.divider;
+
+  return (
+    <Box
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      }}
+      sx={{
+        width: 32,
+        height: 32,
+        borderRadius: '8px',
+        backgroundColor: color,
+        cursor: 'pointer',
+        border: selected ? `2px solid ${borderColor}` : `1px solid ${borderColor}`,
+        outline: selected ? `2px solid ${color}` : 'none',
+        outlineOffset: '2px',
+        transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+        boxShadow: selected ? theme.shadows[3] : 'none',
+        '&:hover': {
+          transform: 'translateY(-1px)',
+          boxShadow: theme.shadows[4],
+        },
+      }}
+    />
+  );
+};

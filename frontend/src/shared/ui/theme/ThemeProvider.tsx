@@ -1,3 +1,4 @@
+
 import { useMemo, type ReactNode } from 'react';
 import { useSelector } from 'react-redux';
 import { ThemeProvider, CssBaseline } from '@mui/material';
@@ -18,7 +19,7 @@ const AppThemeProvider = ({ children }: AppThemeProviderProps) => {
 
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
+      <CssBaseline enableColorScheme />
       {children}
     </ThemeProvider>
   );

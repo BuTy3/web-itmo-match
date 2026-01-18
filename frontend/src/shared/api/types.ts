@@ -37,7 +37,14 @@ export type HistoryRoom = {
   date: string;
 };
 
-export type RoomParticipant = {
+// История комнаты (из main)
+export type HistoryRoomCreator = {
+  id: string;
+  display_name: string;
+  avatar_url: string | null;
+};
+
+export type HistoryRoomParticipant = {
   user_id: string;
   display_name: string;
   avatar_url: string | null;
@@ -45,13 +52,7 @@ export type RoomParticipant = {
   finished_at: string | null;
 };
 
-export type RoomCreator = {
-  id: string;
-  display_name: string;
-  avatar_url: string | null;
-};
-
-export type RoomHistoryDetail = {
+export type HistoryRoomDetails = {
   id: string;
   name: string;
   topic: string;
@@ -61,12 +62,12 @@ export type RoomHistoryDetail = {
   created_at: string;
   closed_at: string | null;
   date: string;
-  result: any;
-  creator: RoomCreator;
-  participants: RoomParticipant[];
+  result: unknown;
+  creator: HistoryRoomCreator;
+  participants: HistoryRoomParticipant[];
 };
 
-// Room voting types
+// Room voting types (из rooms-results)
 export type VotingItem = {
   id: string;
   title: string;

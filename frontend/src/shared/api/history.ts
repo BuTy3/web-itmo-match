@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { HistoryRoom, RoomHistoryDetail } from './types';
+import type { HistoryRoom, HistoryRoomDetails } from './types';
 
 export type HistoryFilters = {
   name?: string;
@@ -12,7 +12,7 @@ export type HistoryResponse =
   | { ok: false; message: string };
 
 export type RoomHistoryResponse =
-  | { ok: true; room: RoomHistoryDetail }
+  | { ok: true; room: HistoryRoomDetails }
   | { ok: false; message: string };
 
 const mockRooms: HistoryRoom[] = [
@@ -58,14 +58,69 @@ export const getHistory = async (payload: {
   }
 };
 
-export const getRoomHistory = async (roomId: string): Promise<RoomHistoryResponse> => {
+const placeholderRoomDetails: HistoryRoomDetails = {
+  id: '0',
+  name: 'Название...',
+  topic: 'Тип...',
+  match_mode: 'WATCH_ALL',
+  status: 'CLOSED',
+  access_mode: 'PUBLIC',
+  created_at: new Date().toISOString(),
+  closed_at: new Date().toISOString(),
+  date: '01.01.2025',
+  result: {
+    name: 'Название...',
+    description: 'Описание...',
+    image_url: null,
+  },
+  creator: { id: '1', display_name: 'Никнейм', avatar_url: null },
+  participants: [
+    {
+      user_id: '1',
+      display_name: 'name1',
+      avatar_url: null,
+      joined_at: new Date().toISOString(),
+      finished_at: new Date().toISOString(),
+    },
+    {
+      user_id: '2',
+      display_name: 'name2',
+      avatar_url: null,
+      joined_at: new Date().toISOString(),
+      finished_at: new Date().toISOString(),
+    },
+  ],
+};
+
+const parsePositiveInt = (value: unknown) => {
+  const parsed = typeof value === 'string' ? Number(value) : Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return Math.trunc(parsed);
+};
+
+export const getRoomHistory = async (payload: {
+  token: string;
+  id_room: string | number;
+}): Promise<RoomHistoryResponse> => {
+  const idRoomRaw = String(payload.id_room);
+
+  // "Заглушка" (используется когда нет ответа от бэка)
+  if (idRoomRaw === '0' || idRoomRaw === 'room-1') {
+    return { ok: true, room: placeholderRoomDetails };
+  }
+
+  const idRoom = parsePositiveInt(idRoomRaw);
+  if (!idRoom) {
+    return { ok: false, message: 'Некорректный id комнаты' };
+  }
+
   try {
-    const { data } = await apiClient.get<RoomHistoryResponse>(`/history/${roomId}`);
+    const { data } = await apiClient.get<RoomHistoryResponse>(`/history/${idRoom}`);
     return data;
-  } catch (error: any) {
-    return {
-      ok: false,
-      message: error.response?.data?.message || 'Failed to load room history',
-    };
+  } catch {
+    if (String(placeholderRoomDetails.id) === String(idRoom)) {
+      return { ok: true, room: placeholderRoomDetails };
+    }
+    return { ok: false, message: 'Не удалось загрузить историю комнаты' };
   }
 };

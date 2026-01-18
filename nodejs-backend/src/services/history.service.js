@@ -47,6 +47,32 @@ function mapHistoryRoomDto(room) {
  * @param {string} filters.date - Filter by date (DD.MM.YYYY format)
  */
 export async function fetchHistoryRooms(userId, filters = {}) {
+  console.log(
+    "fetchHistoryRooms - userId (BigInt):",
+    userId.toString(),
+    "type:",
+    typeof userId,
+  );
+
+  // Debug: Check all rooms created by this user
+  const allUserRooms = await prisma.room.findMany({
+    where: { creator_id: userId },
+    select: { id: true, name: true, status: true, creator_id: true },
+  });
+  console.log(
+    "fetchHistoryRooms - all rooms created by user:",
+    allUserRooms.length,
+  );
+  console.log(
+    "fetchHistoryRooms - user rooms details:",
+    allUserRooms.map((r) => ({
+      id: r.id.toString(),
+      name: r.name,
+      status: r.status,
+      creator_id: r.creator_id.toString(),
+    })),
+  );
+
   const where = {
     AND: [
       {
@@ -115,12 +141,47 @@ export async function fetchHistoryRooms(userId, filters = {}) {
     }
   }
 
+  // Debug: Check if there are any closed rooms created by user
+  const userCreatedClosedRooms = await prisma.room.count({
+    where: {
+      creator_id: userId,
+      status: "CLOSED",
+    },
+  });
+  console.log(
+    "fetchHistoryRooms - closed rooms created by user:",
+    userCreatedClosedRooms,
+  );
+
+  console.log(
+    "fetchHistoryRooms - where clause:",
+    JSON.stringify(
+      where,
+      (key, value) => (typeof value === "bigint" ? value.toString() : value),
+      2,
+    ),
+  );
+
   const rooms = await prisma.room.findMany({
     where,
     orderBy: {
       created_at: "desc",
     },
   });
+
+  console.log("fetchHistoryRooms - found rooms:", rooms.length);
+  if (rooms.length > 0) {
+    console.log(
+      "fetchHistoryRooms - first room creator_id:",
+      rooms[0].creator_id.toString(),
+      "requested userId:",
+      userId.toString(),
+    );
+    console.log(
+      "fetchHistoryRooms - rooms creator_ids:",
+      rooms.map((r) => r.creator_id.toString()),
+    );
+  }
 
   // Map to DTO format
   return rooms.map(mapHistoryRoomDto);
