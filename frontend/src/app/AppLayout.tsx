@@ -52,11 +52,11 @@ export const AppLayout: React.FC = () => {
     (state: RootState) => state.auth.user?.login ?? 'Никнейм',
   );
 
-  useEffect(() => {
-    if (!accessToken) {
-      navigate('/login', { replace: true });
-    }
-  }, [accessToken, navigate]);
+   useEffect(() => {
+     if (!accessToken) {
+       navigate('/login', { replace: true });
+     }
+   }, [accessToken, navigate]);
 
   const drawerWidth = sidebarOpen
     ? SIDEBAR_WIDTH_EXPANDED
@@ -68,13 +68,25 @@ export const AppLayout: React.FC = () => {
     '/history': 'История',
     '/histore': 'История',
     '/drawing': 'Рисование',
+    '/rooms/create': 'Создание комнаты',
   };
 
   const pageTitle =
     pageTitleMap[location.pathname] ??
-    (location.pathname.startsWith('/history') || location.pathname.startsWith('/histore')
+    (location.pathname.startsWith('/history') ||
+    location.pathname.startsWith('/histore')
       ? 'История'
-      : 'Страница');
+      : location.pathname.startsWith('/rooms/connect')
+        ? 'Подключение к комнате'
+        : location.pathname.endsWith('/drowing_res')
+          ? 'Комната: рисунки'
+          : location.pathname.endsWith('/results')
+            ? 'Комната: результаты'
+            : location.pathname.includes('/drowing')
+              ? 'Комната'
+              : location.pathname.startsWith('/rooms/')
+                ? 'Комната'
+                : 'Страница');
 
   const theme = useTheme();
   const accentColor = theme.palette.secondary.main;

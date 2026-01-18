@@ -38,7 +38,11 @@ export const HomePage = () => {
             sx={{ maxWidth: 260 }}
             color="secondary"
           />
-          <Button variant="contained" color="primary">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate('/rooms/create')}
+          >
             Создать комнату
           </Button>
           <Button
