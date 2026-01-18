@@ -7,8 +7,6 @@ import CollectionsPage from '../pages/collections/CollectionsPage';
 import { DrawingPage } from '../pages/drawing/DrawingPage';
 import { HistoryPage } from '../pages/history/HistoryPage';
 import { HistoryRoomPage } from '../pages/history/HistoryRoomPage';
-import { RoomPage } from '../pages/rooms/RoomPage';
-import { RoomResultsPage } from '../pages/rooms/RoomResultsPage';
 import { RoomCreatePage } from '../pages/rooms/RoomCreatePage';
 import { RoomConnectPage } from '../pages/rooms/RoomConnectPage';
 import { RoomVotePage } from '../pages/rooms/RoomVotePage';
@@ -55,21 +53,6 @@ const router = createBrowserRouter([
         element: <DrawingPage />,
       },
       {
-        path: 'rooms/:id',
-        element: <RoomPage />,
-      },
-      {
-        path: 'rooms/:id/results',
-        element: <RoomResultsPage />,
-      },
-      {
-        path: 'rooms/:id/drawing',
-        element: <DrawingPage />,
-      },
-      {
-        path: 'rooms/:id/drawing_res',
-        element: <RoomResultsPage />,
-      },
         path: 'rooms/create',
         element: <RoomCreatePage />,
       },

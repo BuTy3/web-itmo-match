@@ -1,4 +1,9 @@
 import { apiClient } from './client';
+import type {
+  RoomVotingState,
+  VoteResponse,
+  RoomResults,
+} from './types';
 
 export type RoomAccessResponse =
   | { ok: true; collection_choose?: number | boolean }
@@ -127,52 +132,6 @@ export const getUserCollections = async (
   return data;
 };
 
-export const checkConnectRoomAccess = async (
-    payload: { token: string; id_room: string | number },
-): Promise<RoomAccessResponse> => {
-  const { id_room, token } = payload;
-  const { data } = await apiClient.post<RoomAccessResponse>(`/rooms/connect/${id_room}`, {
-    token,
-  });
-  return data;
-};
-
-export const connectRoom = async (
-    payload: { id_room: string | number } & RoomConnectPayload,
-): Promise<RoomConnectResponse> => {
-  const { id_room, ...body } = payload;
-  const { data } = await apiClient.post<RoomConnectResponse>(
-      `/rooms/connect/${id_room}`,
-      body,
-  );
-  return data;
-};
-
-export const fetchRoomState = async (
-    payload: { token: string; id_room: string | number },
-): Promise<RoomStateResponse> => {
-  const { id_room, token } = payload;
-  const { data } = await apiClient.post<RoomStateResponse>(`/rooms/${id_room}`, {
-    token,
-  });
-  return data;
-};
-
-export const chooseRoomCard = async (
-    payload: { id_room: string | number } & RoomChoosePayload,
-): Promise<RoomChooseResponse> => {
-  const { id_room, ...body } = payload;
-  const { data } = await apiClient.post<RoomChooseResponse>(`/rooms/${id_room}`, body);
-  return data;
-};
-
-export const getUserCollections = async (
-    payload: { token: string },
-): Promise<RoomCollectionsResponse> => {
-  const { data } = await apiClient.post<RoomCollectionsResponse>('/home', payload);
-  return data;
-};
-
 // Get room voting state (current item to vote on)
 export const getRoomVotingState = async (
   roomId: string,
@@ -182,10 +141,11 @@ export const getRoomVotingState = async (
       `/rooms/${roomId}/voting`,
     );
     return { ok: true, data: response.data };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } } };
     return {
       ok: false,
-      message: error.response?.data?.message || 'Не удалось загрузить данные комнаты',
+      message: err.response?.data?.message || 'Не удалось загрузить данные комнаты',
     };
   }
 };
@@ -202,10 +162,11 @@ export const submitVote = async (
       { item_id: itemId, vote },
     );
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } } };
     return {
       ok: false,
-      message: error.response?.data?.message || 'Ошибка при голосовании',
+      message: err.response?.data?.message || 'Ошибка при голосовании',
       is_finished: false,
       all_finished: false,
     };
@@ -221,12 +182,13 @@ export const getRoomResults = async (
       `/rooms/${roomId}/results`,
     );
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } } };
     return {
       ok: false,
       has_match: false,
       matched_items: [],
-      message: error.response?.data?.message || 'Не удалось загрузить результаты',
+      message: err.response?.data?.message || 'Не удалось загрузить результаты',
     };
   }
 };
@@ -238,10 +200,11 @@ export const leaveRoom = async (
   try {
     await apiClient.post(`/rooms/${roomId}/leave`);
     return { ok: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } } };
     return {
       ok: false,
-      message: error.response?.data?.message || 'Ошибка при выходе из комнаты',
+      message: err.response?.data?.message || 'Ошибка при выходе из комнаты',
     };
   }
 };

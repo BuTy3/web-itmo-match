@@ -53,7 +53,7 @@ test.describe('History (frontend) e2e', () => {
 
     await page.route('**/history', async (route) => {
       if (route.request().method() !== 'POST') return route.continue();
-      const body = (await route.request().postDataJSON()) as any;
+      const body = (await route.request().postDataJSON()) as { filters?: { date?: string } } | null;
       const date = body?.filters?.date ?? '';
 
       const rooms =
