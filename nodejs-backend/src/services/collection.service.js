@@ -438,6 +438,105 @@ export async function updateCollection(
   return updatedDto;
 }
 
+/**
+ * Delete collection (and its items) from PostgreSQL.
+ * Only the owner is allowed to delete.
+ *
+ * Used by:
+ *   [DELETE] /collections/:id
+ */
+export async function deleteCollection(userId, collectionId) {
+  const idNum = Number(collectionId);
+  if (!Number.isFinite(idNum) || idNum <= 0) {
+    const err = new Error("Invalid collection id");
+    err.code = "VALIDATION_ERROR";
+    throw err;
+  }
+
+  const idBigInt = BigInt(idNum);
+
+  const dbCollection = await prisma.collection.findUnique({
+    where: { id: idBigInt },
+  });
+
+  if (!dbCollection) {
+    const err = new Error("Collection not found");
+    err.code = "NOT_FOUND";
+    throw err;
+  }
+
+  if (Number(dbCollection.owner_id) !== userId) {
+    const err = new Error("Access denied");
+    err.code = "FORBIDDEN";
+    throw err;
+  }
+
+  await prisma.collection.delete({
+    where: { id: idBigInt },
+  });
+
+  return { id: idNum };
+}
+
+/**
+ * Delete item from collection.
+ * Only the owner of collection is allowed.
+ *
+ * Used by:
+ *   [DELETE] /collections/:id/items/:item_id
+ */
+export async function deleteCollectionItem(userId, collectionId, itemId) {
+  const collectionNum = Number(collectionId);
+  const itemNum = Number(itemId);
+
+  if (!Number.isFinite(collectionNum) || collectionNum <= 0) {
+    const err = new Error("Invalid collection id");
+    err.code = "VALIDATION_ERROR";
+    throw err;
+  }
+
+  if (!Number.isFinite(itemNum) || itemNum <= 0) {
+    const err = new Error("Invalid item id");
+    err.code = "VALIDATION_ERROR";
+    throw err;
+  }
+
+  const collectionBigInt = BigInt(collectionNum);
+  const itemBigInt = BigInt(itemNum);
+
+  const dbCollection = await prisma.collection.findUnique({
+    where: { id: collectionBigInt },
+  });
+
+  if (!dbCollection) {
+    const err = new Error("Collection not found");
+    err.code = "NOT_FOUND";
+    throw err;
+  }
+
+  if (Number(dbCollection.owner_id) !== userId) {
+    const err = new Error("Access denied");
+    err.code = "FORBIDDEN";
+    throw err;
+  }
+
+  const dbItem = await prisma.item.findFirst({
+    where: { id: itemBigInt, collection_id: collectionBigInt },
+  });
+
+  if (!dbItem) {
+    const err = new Error("Item not found");
+    err.code = "NOT_FOUND";
+    throw err;
+  }
+
+  await prisma.item.delete({
+    where: { id: itemBigInt },
+  });
+
+  return { id: itemNum };
+}
+
 // --- Helper ---
 
 function isValidUrl(url) {

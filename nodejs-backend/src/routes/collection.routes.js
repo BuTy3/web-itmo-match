@@ -7,6 +7,8 @@ import {
   createItem,
   getCollection,
   updateCollectionController,
+  deleteCollectionController,
+  deleteCollectionItemController,
 } from "../controllers/collection.controller.js";
 
 const collectionRouter = Router();
@@ -35,5 +37,17 @@ collectionRouter.get("/:id", authApiRequired, getCollection);
 // [PUT] /collections/:id
 // Private: only owner can update collection metadata
 collectionRouter.put("/:id", authApiRequired, updateCollectionController);
+
+// [DELETE] /collections/:id
+// Private: only owner can delete collection
+collectionRouter.delete("/:id", authApiRequired, deleteCollectionController);
+
+// [DELETE] /collections/:id/items/:item_id
+// Private: only owner can delete item from collection
+collectionRouter.delete(
+  "/:id/items/:item_id",
+  authApiRequired,
+  deleteCollectionItemController,
+);
 
 export default collectionRouter;

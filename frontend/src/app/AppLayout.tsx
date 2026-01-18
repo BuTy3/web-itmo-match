@@ -34,7 +34,7 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { label: 'Главная', path: '/', icon: <HomeIcon /> },
+  { label: 'Главная', path: '/home', icon: <HomeIcon /> },
   { label: 'Коллекции', path: '/collections', icon: <CollectionsIcon /> },
   { label: 'История', path: '/history', icon: <HistoryIcon /> },
   { label: 'Рисование', path: '/drawing', icon: <BrushIcon /> },
@@ -63,17 +63,25 @@ export const AppLayout: React.FC = () => {
     : SIDEBAR_WIDTH_COLLAPSED;
 
   const pageTitleMap: Record<string, string> = {
-    '/': 'Главная',
+    '/home': 'Главная',
     '/collections': 'Коллекции',
     '/history': 'История',
     '/histore': 'История',
     '/drawing': 'Рисование',
+    '/rooms/create': 'Создание комнаты',
   };
 
   const pageTitle =
     pageTitleMap[location.pathname] ??
-    (location.pathname.startsWith('/history') || location.pathname.startsWith('/histore')
+    (location.pathname.startsWith('/history') ||
+    location.pathname.startsWith('/histore')
       ? 'История'
+      : location.pathname.startsWith('/home')
+      ? 'Главная'
+      : location.pathname.startsWith('/rooms/connect')
+      ? 'Подключение к комнате'
+      : location.pathname.startsWith('/rooms/')
+      ? 'Комната'
       : 'Страница');
 
   const theme = useTheme();

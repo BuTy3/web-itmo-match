@@ -19,7 +19,7 @@ export const LoginPage = () => {
 
   useEffect(() => {
     if (accessToken) {
-      navigate('/', { replace: true });
+      navigate('/home', { replace: true });
     }
   }, [accessToken, navigate]);
 
@@ -41,7 +41,7 @@ export const LoginPage = () => {
         setSuccess('Успешный вход');
         localStorage.setItem('nickname', loginValue);
         localStorage.setItem('accessToken', resp.token);
-        navigate('/');
+        navigate('/home');
       } else {
         setError(resp.message || 'Неверный логин или пароль');
       }
