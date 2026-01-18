@@ -26,13 +26,8 @@ jest.unstable_mockModule("../../src/db.js", () => ({
 }));
 
 // Import after mocking
-const {
-  getVotingState,
-  submitVote,
-  getRoomResults,
-  leaveRoom,
-  joinRoom,
-} = await import("../../src/services/room.service.js");
+const { getVotingState, submitVote, getRoomResults, leaveRoom, joinRoom } =
+  await import("../../src/services/room.service.js");
 
 describe("room.service", () => {
   beforeEach(() => {
@@ -56,12 +51,22 @@ describe("room.service", () => {
         creator_id: BigInt(1),
         users: { id: BigInt(1), display_name: "Creator", avatar_url: null },
         room_participant: [
-          { user_id: BigInt(2), users: { id: BigInt(2), display_name: "Other", avatar_url: null } },
+          {
+            user_id: BigInt(2),
+            users: { id: BigInt(2), display_name: "Other", avatar_url: null },
+          },
         ],
       });
       mockPrisma.collection.findFirst.mockResolvedValue({
         id: BigInt(1),
-        item: [{ id: BigInt(1), title: "Item 1", description: null, image_url: null }],
+        item: [
+          {
+            id: BigInt(1),
+            title: "Item 1",
+            description: null,
+            image_url: null,
+          },
+        ],
       });
 
       const result = await getVotingState(BigInt(1), "999");
@@ -77,14 +82,27 @@ describe("room.service", () => {
         creator_id: BigInt(1),
         users: { id: BigInt(1), display_name: "Creator", avatar_url: null },
         room_participant: [
-          { user_id: BigInt(1), users: { id: BigInt(1), display_name: "Creator", avatar_url: null } },
+          {
+            user_id: BigInt(1),
+            users: { id: BigInt(1), display_name: "Creator", avatar_url: null },
+          },
         ],
       };
       const collectionData = {
         id: BigInt(1),
         item: [
-          { id: BigInt(1), title: "Item 1", description: "Desc 1", image_url: "http://img1.jpg" },
-          { id: BigInt(2), title: "Item 2", description: "Desc 2", image_url: "http://img2.jpg" },
+          {
+            id: BigInt(1),
+            title: "Item 1",
+            description: "Desc 1",
+            image_url: "http://img1.jpg",
+          },
+          {
+            id: BigInt(2),
+            title: "Item 2",
+            description: "Desc 2",
+            image_url: "http://img2.jpg",
+          },
         ],
       };
 
@@ -112,12 +130,22 @@ describe("room.service", () => {
         creator_id: BigInt(1),
         users: { id: BigInt(1), display_name: "Creator", avatar_url: null },
         room_participant: [
-          { user_id: BigInt(1), users: { id: BigInt(1), display_name: "Creator", avatar_url: null } },
+          {
+            user_id: BigInt(1),
+            users: { id: BigInt(1), display_name: "Creator", avatar_url: null },
+          },
         ],
       };
       const collectionData = {
         id: BigInt(1),
-        item: [{ id: BigInt(1), title: "Item 1", description: null, image_url: null }],
+        item: [
+          {
+            id: BigInt(1),
+            title: "Item 1",
+            description: null,
+            image_url: null,
+          },
+        ],
       };
 
       mockPrisma.room.findUnique.mockResolvedValue(roomData);
@@ -149,12 +177,22 @@ describe("room.service", () => {
         creator_id: BigInt(1),
         users: { id: BigInt(1), display_name: "Creator", avatar_url: null },
         room_participant: [
-          { user_id: BigInt(1), users: { id: BigInt(1), display_name: "Creator", avatar_url: null } },
+          {
+            user_id: BigInt(1),
+            users: { id: BigInt(1), display_name: "Creator", avatar_url: null },
+          },
         ],
       });
       mockPrisma.collection.findFirst.mockResolvedValue({
         id: BigInt(1),
-        item: [{ id: BigInt(1), title: "Item 1", description: null, image_url: null }],
+        item: [
+          {
+            id: BigInt(1),
+            title: "Item 1",
+            description: null,
+            image_url: null,
+          },
+        ],
       });
 
       const result = await submitVote(BigInt(1), "1", "1", true);
@@ -171,14 +209,27 @@ describe("room.service", () => {
         creator_id: BigInt(1),
         users: { id: BigInt(1), display_name: "Creator", avatar_url: null },
         room_participant: [
-          { user_id: BigInt(1), users: { id: BigInt(1), display_name: "Creator", avatar_url: null } },
+          {
+            user_id: BigInt(1),
+            users: { id: BigInt(1), display_name: "Creator", avatar_url: null },
+          },
         ],
       };
       const collectionData = {
         id: BigInt(1),
         item: [
-          { id: BigInt(1), title: "Item 1", description: null, image_url: null },
-          { id: BigInt(2), title: "Item 2", description: null, image_url: null },
+          {
+            id: BigInt(1),
+            title: "Item 1",
+            description: null,
+            image_url: null,
+          },
+          {
+            id: BigInt(2),
+            title: "Item 2",
+            description: null,
+            image_url: null,
+          },
         ],
       };
 
@@ -201,13 +252,26 @@ describe("room.service", () => {
         creator_id: BigInt(1),
         users: { id: BigInt(1), display_name: "Creator", avatar_url: null },
         room_participant: [
-          { user_id: BigInt(1), users: { id: BigInt(1), display_name: "Creator", avatar_url: null } },
-          { user_id: BigInt(2), users: { id: BigInt(2), display_name: "Other", avatar_url: null } },
+          {
+            user_id: BigInt(1),
+            users: { id: BigInt(1), display_name: "Creator", avatar_url: null },
+          },
+          {
+            user_id: BigInt(2),
+            users: { id: BigInt(2), display_name: "Other", avatar_url: null },
+          },
         ],
       };
       const collectionData = {
         id: BigInt(1),
-        item: [{ id: BigInt(1), title: "Item 1", description: null, image_url: null }],
+        item: [
+          {
+            id: BigInt(1),
+            title: "Item 1",
+            description: null,
+            image_url: null,
+          },
+        ],
       };
 
       mockPrisma.room.findUnique.mockResolvedValue(roomData);
@@ -248,7 +312,12 @@ describe("room.service", () => {
 
     it("should return results for closed room", async () => {
       const matchedItems = [
-        { id: "1", title: "Item 1", description: null, image_url: "http://img.jpg" },
+        {
+          id: "1",
+          title: "Item 1",
+          description: null,
+          image_url: "http://img.jpg",
+        },
       ];
 
       mockPrisma.room.findUnique.mockResolvedValue({
@@ -382,4 +451,3 @@ describe("room.service", () => {
     });
   });
 });
-
