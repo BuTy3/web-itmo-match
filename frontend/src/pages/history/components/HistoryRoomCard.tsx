@@ -9,9 +9,11 @@ export const HistoryRoomCard = ({ room }: { room: HistoryRoom }) => {
 
   return (
     <Link className="history-card" to={`/history/${room.id}`} aria-label={`Открыть ${room.name}`}>
+      {room.url_image && (
       <div className="history-card__image">
         <img className="history-card__img" src={imgSrc} alt={room.name} loading="lazy" />
       </div>
+      )}
 
       <div className="history-card__info">
         <div className="history-card__name">{room.name}</div>

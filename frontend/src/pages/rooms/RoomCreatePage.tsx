@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './rooms.css';
 
@@ -23,9 +23,8 @@ export const RoomCreatePage = () => {
     'single',
   );
 
-  const roomId = useMemo(
+  const [roomId] = useState(
     () => `room-${Math.floor(Date.now() / 1000)}`,
-    [],
   );
 
   const handleCreate = () => {

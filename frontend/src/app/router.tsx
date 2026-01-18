@@ -37,7 +37,7 @@ const router = createBrowserRouter([
         element: <HistoryPage />,
       },
       {
-        path: 'history/:id_room',
+        path: 'history/:id',
         element: <HistoryRoomPage />,
       },
       {

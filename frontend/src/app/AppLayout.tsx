@@ -62,31 +62,52 @@ export const AppLayout: React.FC = () => {
     ? SIDEBAR_WIDTH_EXPANDED
     : SIDEBAR_WIDTH_COLLAPSED;
 
-  const pageTitleMap: Record<string, string> = {
-    '/home': 'Главная',
-    '/collections': 'Коллекции',
-    '/history': 'История',
-    '/histore': 'История',
-    '/drawing': 'Рисование',
-    '/rooms/create': 'Создание комнаты',
-  };
+    const pageTitleMap: Record<string, string> = {
+        '/home': 'Главная',
+        '/collections': 'Коллекции',
+        '/history': 'История',
+        '/histore': 'История', // опечатка из main
+        '/drawing': 'Рисование',
+        '/rooms/create': 'Создание комнаты',
+    };
 
-  const pageTitle =
-    pageTitleMap[location.pathname] ??
-    (location.pathname.startsWith('/history') ||
-    location.pathname.startsWith('/histore')
-      ? 'История'
-      : location.pathname.startsWith('/rooms/connect')
-        ? 'Подключение к комнате'
-        : location.pathname.endsWith('/drowing_res')
-          ? 'Комната: рисунки'
-          : location.pathname.endsWith('/results')
-            ? 'Комната: результаты'
-            : location.pathname.includes('/drowing')
-              ? 'Комната'
-              : location.pathname.startsWith('/rooms/')
-                ? 'Комната'
-                : 'Страница');
+    const getPageTitle = () => {
+        // Сначала проверяем точные совпадения
+        if (pageTitleMap[location.pathname]) {
+            return pageTitleMap[location.pathname];
+        }
+
+        const path = location.pathname;
+
+        // История (с опечаткой histore)
+        if (path.startsWith('/history/') || path.startsWith('/histore/')) {
+            return 'История комнаты';
+        }
+        if (path.startsWith('/history') || path.startsWith('/histore')) {
+            return 'История';
+        }
+
+        // Комнаты
+        if (path.startsWith('/rooms/')) {
+            if (path.includes('/connect')) {
+                return 'Подключение к комнате';
+            }
+            if (path.endsWith('/drowing_res') || path.endsWith('/drawing_res')) {
+                return 'Комната: рисунки';
+            }
+            if (path.endsWith('/results')) {
+                return 'Комната: результаты';
+            }
+            if (path.includes('/drowing') || path.includes('/drawing')) {
+                return 'Комната';
+            }
+            return 'Комната';
+        }
+
+        return 'Страница';
+    };
+
+    const pageTitle = getPageTitle();
 
   const theme = useTheme();
   const accentColor = theme.palette.secondary.main;

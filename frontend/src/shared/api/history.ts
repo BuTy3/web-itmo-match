@@ -31,14 +31,18 @@ const includesCaseInsensitive = (value: string, query: string) =>
   value.toLowerCase().includes(query.trim().toLowerCase());
 
 export const getHistory = async (payload: {
-  token: string;
   filters?: HistoryFilters;
 }): Promise<HistoryResponse> => {
   try {
-    const { data } = await apiClient.post<HistoryResponse>('/history', {
-      token: payload.token,
-      filters: payload.filters,
-    });
+    const params = new URLSearchParams();
+    if (payload.filters?.name) params.append('name', payload.filters.name);
+    if (payload.filters?.type) params.append('type', payload.filters.type);
+    if (payload.filters?.date) params.append('date', payload.filters.date);
+
+    const queryString = params.toString();
+    const url = queryString ? `/history?${queryString}` : '/history';
+
+    const { data } = await apiClient.get<HistoryResponse>(url);
     return data;
   } catch {
     const filters = payload.filters ?? {};

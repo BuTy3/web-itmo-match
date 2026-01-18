@@ -46,7 +46,7 @@ export function authPageRequired(req, res, next) {
       ukey: payload.ukey,
     };
     next();
-  } catch (err) {
+  } catch {
     return res.redirect("/login");
   }
 }

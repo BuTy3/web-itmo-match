@@ -19,16 +19,16 @@ export const RoomDrawingsResultsPage = () => {
     useSelector((state: RootState) => state.auth.user?.login) ?? 'Никнейм';
 
   const roomId = id_room ?? 'unknown';
-  const participants =
-    useSelector((state: RootState) => state.rooms.participantsByRoom[roomId]) ??
-    [];
+  const participantsFromStore = useSelector(
+    (state: RootState) => state.rooms.participantsByRoom[roomId],
+  );
   const drawings =
     useSelector((state: RootState) => state.rooms.drawingsByRoom[roomId]) ?? {};
 
-  const resolvedParticipants = useMemo(
-    () => (participants.length ? participants : buildFallbackParticipants(nickname)),
-    [nickname, participants],
-  );
+  const resolvedParticipants = useMemo(() => {
+    const participants = participantsFromStore ?? [];
+    return participants.length ? participants : buildFallbackParticipants(nickname);
+  }, [nickname, participantsFromStore]);
 
   return (
     <div className="room-page">

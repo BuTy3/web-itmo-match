@@ -203,11 +203,9 @@ const CollectionsPage = () => {
   const panelBorder = `1px solid ${alpha(theme.palette.text.primary, 0.18)}`;
 
   useEffect(() => {
-    if (!accessToken) {
-      setCollections([]);
+    if (!accessToken || viewMode !== 'list') {
       return;
     }
-    if (viewMode !== 'list') return;
 
     let active = true;
     const load = async () => {
@@ -233,11 +231,9 @@ const CollectionsPage = () => {
   }, [accessToken, viewMode]);
 
   useEffect(() => {
-    if (!accessToken) {
-      setSelectedCollection(null);
+    if (!accessToken || !collectionId) {
       return;
     }
-    if (!collectionId) return;
     if (viewMode !== 'collectionDetail' && viewMode !== 'itemView') return;
 
     let active = true;
