@@ -8,6 +8,8 @@ import {
   finalizeDraft,
   getCollectionById,
   updateCollection,
+  deleteCollection,
+  deleteCollectionItem,
 } from "../services/collection.service.js";
 
 // call service creates draft collection, return new_id
@@ -359,6 +361,85 @@ export async function updateCollectionController(req, res) {
     return res.status(status).json({
       ok: false,
       message: err.message || "Internal server error while updating collection",
+    });
+  }
+}
+
+/**
+ * [DELETE] /collections/:id
+ * Private endpoint: only owner can delete collection.
+ */
+export async function deleteCollectionController(req, res) {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        ok: false,
+        message: "User is not authenticated",
+      });
+    }
+
+    const userId = req.user.id;
+    const paramId = req.params.id;
+
+    const deleted = await deleteCollection(userId, paramId);
+
+    return res.json({
+      ok: true,
+      id: deleted.id,
+    });
+  } catch (err) {
+    console.error("Error in deleteCollectionController:", err);
+
+    const code = err.code;
+    let status = 500;
+
+    if (code === "VALIDATION_ERROR") status = 400;
+    else if (code === "NOT_FOUND") status = 404;
+    else if (code === "FORBIDDEN") status = 403;
+
+    return res.status(status).json({
+      ok: false,
+      message: err.message || "Internal server error while deleting collection",
+    });
+  }
+}
+
+/**
+ * [DELETE] /collections/:id/items/:item_id
+ * Private endpoint: only owner can delete item from collection.
+ */
+export async function deleteCollectionItemController(req, res) {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        ok: false,
+        message: "User is not authenticated",
+      });
+    }
+
+    const userId = req.user.id;
+    const paramId = req.params.id;
+    const itemId = req.params.item_id;
+
+    const deleted = await deleteCollectionItem(userId, paramId, itemId);
+
+    return res.json({
+      ok: true,
+      id: deleted.id,
+    });
+  } catch (err) {
+    console.error("Error in deleteCollectionItemController:", err);
+
+    const code = err.code;
+    let status = 500;
+
+    if (code === "VALIDATION_ERROR") status = 400;
+    else if (code === "NOT_FOUND") status = 404;
+    else if (code === "FORBIDDEN") status = 403;
+
+    return res.status(status).json({
+      ok: false,
+      message: err.message || "Internal server error while deleting item",
     });
   }
 }

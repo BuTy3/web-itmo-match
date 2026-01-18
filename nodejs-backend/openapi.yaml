@@ -514,6 +514,129 @@ components:
           $ref: "#/components/schemas/RoomHistoryDetail"
       required: [ok, room]
 
+    VotingItemSuggestor:
+      type: object
+      properties:
+        user_id:
+          type: string
+          example: "1"
+        display_name:
+          type: string
+          example: "Test User"
+        avatar_url:
+          type: string
+          nullable: true
+
+    VotingItem:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "1"
+        title:
+          type: string
+          example: "Мираж синема"
+        description:
+          type: string
+          nullable: true
+        image_url:
+          type: string
+          nullable: true
+        suggested_by:
+          $ref: "#/components/schemas/VotingItemSuggestor"
+
+    RoomVotingState:
+      type: object
+      properties:
+        room_id:
+          type: string
+          example: "1"
+        room_name:
+          type: string
+          example: "Вечерняя прогулка"
+        current_item:
+          $ref: "#/components/schemas/VotingItem"
+          nullable: true
+        total_items:
+          type: integer
+          example: 5
+        voted_count:
+          type: integer
+          example: 2
+        is_finished:
+          type: boolean
+          example: false
+        all_finished:
+          type: boolean
+          example: false
+
+    VoteRequest:
+      type: object
+      required:
+        - item_id
+        - vote
+      properties:
+        item_id:
+          type: string
+          example: "1"
+        vote:
+          type: boolean
+          example: true
+
+    VoteResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        next_item:
+          $ref: "#/components/schemas/VotingItem"
+          nullable: true
+        is_finished:
+          type: boolean
+          example: false
+        all_finished:
+          type: boolean
+          example: false
+        redirect_to:
+          type: string
+          nullable: true
+          enum: [drawing, drawing_res, results]
+          example: "results"
+
+    MatchedItem:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "1"
+        title:
+          type: string
+          example: "Мираж синема"
+        description:
+          type: string
+          nullable: true
+        image_url:
+          type: string
+          nullable: true
+
+    RoomResultsResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        has_match:
+          type: boolean
+          example: true
+        matched_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MatchedItem"
+        message:
+          type: string
+          nullable: true
+
 paths:
   /auth/register:
     post:
@@ -1064,3 +1187,109 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OkFalseResponse"
+
+  /rooms/{id}/voting:
+    get:
+      tags:
+        - Rooms
+      summary: Get current voting state for user in room
+      description: Returns current item to vote on and progress status.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Room ID
+      responses:
+        "200":
+          description: Voting state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoomVotingState"
+        "404":
+          description: Room not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+
+  /rooms/{id}/vote:
+    post:
+      tags:
+        - Rooms
+      summary: Submit a vote for an item
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoteRequest"
+      responses:
+        "200":
+          description: Vote submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VoteResponse"
+
+  /rooms/{id}/results:
+    get:
+      tags:
+        - Rooms
+      summary: Get room voting results
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Room results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoomResultsResponse"
+
+  /rooms/{id}/leave:
+    post:
+      tags:
+        - Rooms
+      summary: Leave a room
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Left successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true

@@ -5,12 +5,23 @@ type Props = {
   color: string;
   brushSize: number;
   clearSignal: number;
+  onSnapshot?: (dataUrl: string) => void;
+  initialImage?: string | null;
 };
 
-export function DrawingCanvas({ tool, color, brushSize, clearSignal }: Props) {
+export function DrawingCanvas({
+  tool,
+  color,
+  brushSize,
+  clearSignal,
+  onSnapshot,
+  initialImage = null,
+}: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const isDownRef = useRef(false);
+  const lastImageRef = useRef<string | null>(null);
+  const snapshotRef = useRef<Props["onSnapshot"]>(onSnapshot);
 
   const toolRef = useRef<Props["tool"]>(tool);
   const colorRef = useRef<Props["color"]>(color);
@@ -29,6 +40,10 @@ export function DrawingCanvas({ tool, color, brushSize, clearSignal }: Props) {
   }, [brushSize]);
 
   useEffect(() => {
+    snapshotRef.current = onSnapshot;
+  }, [onSnapshot]);
+
+  useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = ctxRef.current;
     if (!canvas || !ctx) return;
@@ -37,6 +52,8 @@ export function DrawingCanvas({ tool, color, brushSize, clearSignal }: Props) {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
+
+    snapshotRef.current?.("");
   }, [clearSignal]);
 
   useEffect(() => {
@@ -136,6 +153,10 @@ export function DrawingCanvas({ tool, color, brushSize, clearSignal }: Props) {
       const ctx = ctxRef.current;
       isDownRef.current = false;
       ctx?.closePath();
+
+      if (canvasRef.current) {
+        snapshotRef.current?.(canvasRef.current.toDataURL("image/png"));
+      }
     };
 
     canvas.addEventListener("pointerdown", onDown);
@@ -149,6 +170,24 @@ export function DrawingCanvas({ tool, color, brushSize, clearSignal }: Props) {
       window.removeEventListener("pointerup", onUp);
     };
   }, []);
+
+  useEffect(() => {
+    if (!initialImage || initialImage === lastImageRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = ctxRef.current;
+    if (!canvas || !ctx) return;
+
+    const image = new Image();
+    image.onload = () => {
+      const dpr = window.devicePixelRatio || 1;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    image.src = initialImage;
+    lastImageRef.current = initialImage;
+  }, [initialImage]);
 
   return (
     <div

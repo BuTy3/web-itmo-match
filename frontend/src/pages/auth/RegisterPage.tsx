@@ -7,6 +7,7 @@ import {
   TextField,
   Typography,
   Alert,
+  Link as MuiLink,
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
@@ -179,7 +180,15 @@ export const RegisterPage = () => {
             </Stack>
 
             <Typography variant="body2" color="text.secondary" align="center">
-              Если возникли проблемы, напишите сюда
+              <MuiLink
+                href="https://docs.google.com/forms/d/e/1FAIpQLSeIP1uebWz4RujMdUqtLVDX5pBTkmBfpwCqq3Sn3ZLL9h5c2A/viewform?usp=dialog"
+                target="_blank"
+                rel="noopener noreferrer"
+                color="inherit"
+                underline="hover"
+              >
+                Если возникли проблемы, напишите сюда
+              </MuiLink>
             </Typography>
           </Stack>
         </Box>

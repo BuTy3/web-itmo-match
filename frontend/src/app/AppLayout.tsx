@@ -66,10 +66,45 @@ export const AppLayout: React.FC = () => {
     '/home': 'Главная',
     '/collections': 'Коллекции',
     '/history': 'История',
+    '/histore': 'История',
     '/drawing': 'Рисование',
+    '/rooms/create': 'Создание комнаты',
   };
 
-  const pageTitle = pageTitleMap[location.pathname] ?? 'Страница';
+  const getPageTitle = () => {
+    if (pageTitleMap[location.pathname]) {
+      return pageTitleMap[location.pathname];
+    }
+
+    const path = location.pathname;
+
+    if (path.startsWith('/history/') || path.startsWith('/histore/')) {
+      return 'История комнаты';
+    }
+    if (path.startsWith('/history') || path.startsWith('/histore')) {
+      return 'История';
+    }
+
+    if (path.startsWith('/rooms/')) {
+      if (path.includes('/connect')) {
+        return 'Подключение к комнате';
+      }
+      if (path.endsWith('/drowing_res') || path.endsWith('/drawing_res')) {
+        return 'Комната: рисунки';
+      }
+      if (path.endsWith('/results')) {
+        return 'Комната: результаты';
+      }
+      if (path.includes('/drowing') || path.includes('/drawing')) {
+        return 'Комната';
+      }
+      return 'Комната';
+    }
+
+    return 'Страница';
+  };
+
+  const pageTitle = getPageTitle();
 
   const theme = useTheme();
   const accentColor = theme.palette.secondary.main;
@@ -79,7 +114,6 @@ export const AppLayout: React.FC = () => {
   const sidebarBorderColor = alpha(accentColor, 0.35);
 
   return (
-    // ВНЕШНИЙ КОНТЕЙНЕР: центрируем макет фиксированной ширины
     <Box
       sx={{
         display: 'flex',
@@ -88,15 +122,13 @@ export const AppLayout: React.FC = () => {
         bgcolor: pageBackground,
       }}
     >
-      {/* КОНТЕЙНЕР МАКЕТА (ширина фигмы) */}
       <Box
         sx={{
           display: 'flex',
-          width: '1900px',      // фиксируем ширину макета
+          width: '1900px',
           minHeight: '100vh',
         }}
       >
-        {/* SIDEBAR */}
         <Drawer
           variant="permanent"
           sx={{
@@ -105,7 +137,7 @@ export const AppLayout: React.FC = () => {
             '& .MuiDrawer-paper': {
               width: drawerWidth,
               boxSizing: 'border-box',
-              bgcolor: pageBackground,
+              bgcolor: theme.palette.background.paper,
               borderRight: `1px solid ${sidebarBorderColor}`,
               position: 'relative',
               overflow: 'visible',
@@ -121,7 +153,6 @@ export const AppLayout: React.FC = () => {
               pb: 2,
             }}
           >
-            {/* ЛОГО — 90×90 */}
             <Box
               sx={{
                 width: LOGO_BOX_SIZE,
@@ -136,10 +167,11 @@ export const AppLayout: React.FC = () => {
               <BrandLogo />
             </Box>
 
-            {/* МЕНЮ */}
             <List sx={{ width: '100%', mt: '105px' }}>
               {navItems.map((item, index) => {
-                const active = location.pathname === item.path;
+                const active =
+                  location.pathname === item.path ||
+                  location.pathname.startsWith(`${item.path}/`);
 
                 return (
                   <ListItemButton
@@ -202,7 +234,6 @@ export const AppLayout: React.FC = () => {
               })}
             </List>
 
-            {/* КНОПКА СВОРАЧИВАНИЯ */}
             <Box
               sx={{
                 position: 'absolute',
@@ -236,16 +267,13 @@ export const AppLayout: React.FC = () => {
           </Box>
         </Drawer>
 
-        {/* ПРАВАЯ ЧАСТЬ */}
         <Box sx={{ flexGrow: 1, position: 'relative' }}>
-          {/* ШАПКА */}
           <Header
             title={pageTitle}
             username={username}
             sidebarWidth={drawerWidth}
           />
 
-          {/* КОНТЕНТ */}
           <Box sx={{ mt: '74px', px: 8, py: 4 }}>
             <Outlet />
           </Box>

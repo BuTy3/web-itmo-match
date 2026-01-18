@@ -9,7 +9,7 @@ const router = Router();
 // [POST] /auth/register
 router.post("/register", async (req, res) => {
   try {
-    const { token, login, password } = req.body;
+    const { token: _token, login, password } = req.body;
 
     // Validate login and password
     if (!login || !password) {
@@ -31,7 +31,7 @@ router.post("/register", async (req, res) => {
     if (existing) {
       return res.json({
         ok: false,
-        message: "Такой логин уже занят",
+        message: "Ошибка регистрации, некорректные данные",
       });
     }
 
@@ -70,7 +70,7 @@ router.post("/register", async (req, res) => {
 // [POST] /auth/login
 router.post("/login", async (req, res) => {
   try {
-    const { token, login, password } = req.body;
+    const { token: _token, login, password } = req.body;
 
     if (!login || !password) {
       return res.json({

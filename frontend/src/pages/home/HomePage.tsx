@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Box, Typography, TextField, Button, Stack, Alert } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
-import { getReadyCollections, searchRoom } from '../../shared/api/home';
+import { getReadyCollections } from '../../shared/api/home';
 import type { HomeCollection } from '../../shared/api/types';
 import '../history/history.css';
 
@@ -17,8 +17,7 @@ export const HomePage = () => {
     items: 'all',
   });
   const [roomId, setRoomId] = useState('');
-  const [roomError, setRoomError] = useState<string | null>(null);
-  const [roomLoading, setRoomLoading] = useState(false);
+
   const roomsPanelStyles = {
     p: 3,
     borderRadius: 3,
@@ -87,39 +86,12 @@ export const HomePage = () => {
     [filteredCollections],
   );
 
-  const handleSearchRoom = async () => {
-    setRoomError(null);
-    const idNum = Number(roomId);
-
-    if (!Number.isFinite(idNum) || idNum <= 0 || !Number.isInteger(idNum)) {
-      setRoomError('Введите корректный id комнаты');
-      return;
-    }
-
-    try {
-      setRoomLoading(true);
-      const resp = await searchRoom({ id: idNum });
-      if (resp.ok) {
-        navigate(`/rooms/connect/${resp.id_room}`);
-      } else {
-        setRoomError(resp.message || 'Комната не найдена');
-      }
-    } catch (error) {
-      console.error('Room search failed', error);
-      setRoomError('Не удалось найти комнату');
-    } finally {
-      setRoomLoading(false);
-    }
-  };
-
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      {/* Заголовок страницы */}
       <Typography variant="h4" sx={{ mb: 3 }}>
         Главная
       </Typography>
 
-      {/* Блок "Комнаты" */}
       <Box sx={roomsPanelStyles}>
         <Typography variant="h6" sx={{ mb: 1.5 }}>
           Комнаты
@@ -134,14 +106,19 @@ export const HomePage = () => {
             value={roomId}
             onChange={(event) => setRoomId(event.target.value)}
             inputProps={{ inputMode: 'numeric' }}
+            onKeyDown={(event) => {
+              if (event.key !== 'Enter') return;
+              const trimmed = roomId.trim();
+              if (!trimmed) return;
+              navigate(`/rooms/connect/${trimmed}`);
+            }}
           />
           <Button
             variant="contained"
             color="primary"
-            onClick={handleSearchRoom}
-            disabled={roomLoading}
+            onClick={() => navigate('/rooms/create')}
           >
-            Найти комнату
+            Создать комнату
           </Button>
           <Button
             variant="outlined"
@@ -151,15 +128,8 @@ export const HomePage = () => {
             История комнат
           </Button>
         </Stack>
-
-        {roomError && (
-          <Alert severity="error" sx={{ maxWidth: 420 }}>
-            {roomError}
-          </Alert>
-        )}
       </Box>
 
-      {/* Блок "Коллекции" */}
       <Box sx={collectionsPanelStyles}>
         <Typography variant="h6" sx={{ mb: 2 }}>
           Коллекции

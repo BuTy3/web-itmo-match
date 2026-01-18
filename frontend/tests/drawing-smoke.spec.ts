@@ -1,21 +1,46 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from '@playwright/test';
 
-// Лёгкие smoke-тесты для страницы рисования.
-test.describe("Drawing page smoke", () => {
-  test("baseline assertion", async () => {
-    expect(true).toBe(true);
-  });
+test.describe('Drawing (frontend) e2e', () => {
+  test('topic loads and can be refreshed; toolbar toggles', async ({ page }) => {
+    const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:5173';
 
-  test("can create a simple canvas state placeholder", async () => {
-    const width = 800;
-    const height = 600;
-    expect(width).toBeGreaterThan(0);
-    expect(height).toBeGreaterThan(0);
-  });
+    await page.addInitScript(() => {
+      localStorage.clear();
+    });
 
-  test("toolbar default color palette placeholder", async () => {
-    const colors = ["#e53935", "#0d47a1", "#000000", "#ffffff", "#fdd835", "#00c853"];
-    expect(colors).toHaveLength(6);
-    expect(colors[0]).toMatch(/^#/);
+    await page.route('**/auth/login', async (route) => {
+      if (route.request().method() !== 'POST') return route.continue();
+      return route.fulfill({ json: { ok: true, token: 'token-1' } });
+    });
+
+    await page.route('**/drawing/topic**', async (route) => {
+      if (route.request().method() !== 'GET') return route.continue();
+      const url = new URL(route.request().url());
+      const lastTopic = url.searchParams.get('last_topic');
+      const topic = lastTopic === 'Topic 1' ? 'Topic 2' : 'Topic 1';
+      return route.fulfill({ json: { ok: true, topic } });
+    });
+
+    await page.goto(`${baseURL}/login`);
+    await page.getByLabel('Никнейм').fill('user1');
+    await page.getByLabel('Пароль').fill('pass');
+    await page.getByRole('button', { name: 'Войти' }).click();
+
+    const drawer = page.locator('.MuiDrawer-root');
+    await drawer.getByRole('button', { name: 'Рисование' }).click();
+
+    await expect(page.locator('.drawing-title')).toContainText('Тут можно создавать шедевры');
+    await expect(page.locator('.drawing-canvas')).toBeVisible();
+
+    await expect(page.locator('.topic-card__text')).toHaveText('Topic 1');
+    await page.locator('.topic-card__action').click();
+    await expect(page.locator('.topic-card__text')).toHaveText('Topic 2');
+
+    await page.getByRole('button', { name: 'Ластик' }).click();
+    await expect(page.getByRole('button', { name: 'Ластик' })).toHaveClass(/toolbar__icon-button--active/);
+
+    await expect(page.getByRole('button', { name: 'Цвет #1C1C1E' })).toHaveClass(/toolbar__color-button--active/);
+    await page.getByRole('button', { name: 'Цвет #FFFFFF' }).click();
+    await expect(page.getByRole('button', { name: 'Цвет #FFFFFF' })).toHaveClass(/toolbar__color-button--active/);
   });
 });
