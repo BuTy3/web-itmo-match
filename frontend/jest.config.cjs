@@ -5,6 +5,9 @@ module.exports = {
   roots: ['<rootDir>/src'],
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
   setupFilesAfterEnv: ['<rootDir>/src/test/setupTests.ts'],
+  moduleNameMapper: {
+    '\\.(css|less|scss)$': '<rootDir>/src/test/styleMock.js',
+  },
   transform: {
     '^.+\\.(ts|tsx)$': [
       'ts-jest',
