@@ -111,7 +111,7 @@ export async function getVotingState(roomId, oderId) {
   // Check if user finished
   if (currentIndex >= items.length) {
     // Check if all participants finished
-    const allFinished = room.room_participant.every((p) => {
+    const allParticipantsFinished = room.room_participant.every((p) => {
       const pIndex = roomProgress.get(p.user_id.toString()) || 0;
       return pIndex >= items.length;
     });
@@ -123,7 +123,7 @@ export async function getVotingState(roomId, oderId) {
       total_items: items.length,
       voted_count: currentIndex,
       is_finished: true,
-      all_finished,
+      all_finished: allParticipantsFinished,
     };
   }
 

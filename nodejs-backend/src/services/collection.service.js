@@ -356,7 +356,7 @@ export async function getCollectionById(collectionId) {
 export async function updateCollection(
   userId,
   collectionId,
-  { urlImage, imagePath, description },
+  { urlImage, imagePath: _imagePath, description },
 ) {
   const idNum = Number(collectionId);
   if (!Number.isFinite(idNum) || idNum <= 0) {
