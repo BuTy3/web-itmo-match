@@ -25,6 +25,11 @@ export const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const authFieldSx = {
+    '& .MuiInputBase-input': { color: '#1f1f1f' },
+    '& .MuiInputLabel-root': { color: '#1f1f1f' },
+    '& .MuiInputLabel-root.Mui-focused': { color: '#1f1f1f' },
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -124,6 +129,7 @@ export const RegisterPage = () => {
                 label="Никнейм"
                 fullWidth
                 size="small"
+                sx={authFieldSx}
                 value={login}
                 onChange={(e) => setLogin(e.target.value)}
               />
@@ -132,6 +138,7 @@ export const RegisterPage = () => {
                 type="password"
                 fullWidth
                 size="small"
+                sx={authFieldSx}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -140,6 +147,7 @@ export const RegisterPage = () => {
                 type="password"
                 fullWidth
                 size="small"
+                sx={authFieldSx}
                 value={passwordRepeat}
                 onChange={(e) => setPasswordRepeat(e.target.value)}
               />

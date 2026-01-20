@@ -16,6 +16,11 @@ export const LoginPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+  const authFieldSx = {
+    '& .MuiInputBase-input': { color: '#1f1f1f' },
+    '& .MuiInputLabel-root': { color: '#1f1f1f' },
+    '& .MuiInputLabel-root.Mui-focused': { color: '#1f1f1f' },
+  };
 
   useEffect(() => {
     if (accessToken) {
@@ -113,6 +118,7 @@ export const LoginPage = () => {
                 label="Никнейм"
                 fullWidth
                 size="small"
+                sx={authFieldSx}
                 value={loginValue}
                 onChange={(e) => setLoginValue(e.target.value)}
               />
@@ -121,6 +127,7 @@ export const LoginPage = () => {
                 type="password"
                 fullWidth
                 size="small"
+                sx={authFieldSx}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />

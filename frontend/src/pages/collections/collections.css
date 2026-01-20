@@ -15,6 +15,7 @@
   background: #E8E8E8;
   padding: 0 16px;
   font-size: 16px;
+  color: #1f1f1f;
   outline: none;
   box-sizing: border-box;
 }
@@ -31,4 +32,8 @@
 .collections-filter--active {
   border-color: rgba(65, 36, 244, 0.55);
   background: rgba(65, 36, 244, 0.18);
+}
+
+.collections-filter option {
+  color: #1f1f1f;
 }
