@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Box, Typography, TextField, Button, Stack, Alert } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
-import { getReadyCollections } from '../../shared/api/home';
+import { getUserCollections } from '../../shared/api/home';
 import type { HomeCollection } from '../../shared/api/types';
 import '../history/history.css';
 
@@ -92,7 +92,7 @@ export const HomePage = () => {
 
     const loadCollections = async () => {
       try {
-        const resp = await getReadyCollections();
+        const resp = await getUserCollections();
         if (!mounted) return;
         if (resp.ok) {
           setCollections(resp.collections);
@@ -197,7 +197,7 @@ export const HomePage = () => {
           </Alert>
         )}
 
-        <div className="history-filters">
+        <div className="history-filters" style={{ marginBottom: 18 }}>
           <input
             className={`history-filter${
               collectionFilters.description ? ' history-filter--active' : ''
@@ -232,23 +232,6 @@ export const HomePage = () => {
                 {type}
               </option>
             ))}
-          </select>
-          <select
-            className={`history-filter history-filter--select${
-              collectionFilters.items !== 'all' ? ' history-filter--active' : ''
-            }`}
-            aria-label="Фильтр по наличию элементов"
-            value={collectionFilters.items}
-            onChange={(event) =>
-              setCollectionFilters((prev) => ({
-                ...prev,
-                items: event.target.value,
-              }))
-            }
-          >
-            <option value="all">Все коллекции</option>
-            <option value="with">С элементами</option>
-            <option value="empty">Без элементов</option>
           </select>
         </div>
 
