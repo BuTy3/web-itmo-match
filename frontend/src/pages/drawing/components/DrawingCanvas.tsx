@@ -152,6 +152,9 @@ export function DrawingCanvas({
     const onUp = () => {
       const ctx = ctxRef.current;
       isDownRef.current = false;
+      if (ctx) {
+        ctx.globalCompositeOperation = "source-over";
+      }
       ctx?.closePath();
 
       if (canvasRef.current) {
@@ -180,6 +183,7 @@ export function DrawingCanvas({
     const image = new Image();
     image.onload = () => {
       const dpr = window.devicePixelRatio || 1;
+      ctx.globalCompositeOperation = "source-over";
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);

@@ -5,6 +5,8 @@ import type { HistoryRoom } from '../../shared/api/types';
 import { HistoryRoomCard } from './components/HistoryRoomCard';
 import './history.css';
 
+const HISTORY_PLACEHOLDER_IMAGE = 'https://i.ytimg.com/vi/ilUPzCADxoA/maxresdefault.jpg';
+
 type FiltersState = {
   name: string;
   type: string;
@@ -55,6 +57,20 @@ export const HistoryPage = () => {
     return Array.from(unique).sort((a, b) => a.localeCompare(b));
   }, [rooms]);
 
+  const roomsToShow = useMemo(() => {
+    if (rooms.length) return rooms;
+    return [
+      {
+        id: '0',
+        name: 'Пример комнаты',
+        url_image: HISTORY_PLACEHOLDER_IMAGE,
+        type: 'Демо',
+        description: 'Заглушка истории',
+        date: '—',
+      },
+    ];
+  }, [rooms]);
+
   return (
     <div className="history-page">
       <h1 className="history-title">История</h1>
@@ -102,7 +118,7 @@ export const HistoryPage = () => {
       </div>
 
       <div className="history-grid">
-        {rooms.map((room) => (
+        {roomsToShow.map((room) => (
           <HistoryRoomCard key={room.id} room={room} />
         ))}
       </div>
