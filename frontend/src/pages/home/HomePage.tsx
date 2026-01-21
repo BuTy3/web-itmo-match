@@ -6,6 +6,62 @@ import { getReadyCollections } from '../../shared/api/home';
 import type { HomeCollection } from '../../shared/api/types';
 import '../history/history.css';
 
+const gradient = 'linear-gradient(135deg, #ff5f6d 0%, #845bff 100%)';
+const sampleImage =
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Palace_Bridge_SPB_%28img2%29.jpg/640px-Palace_Bridge_SPB_%28img2%29.jpg';
+
+const buildTitle = (value: string | null | undefined, fallback: string) => {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed.slice(0, 32) : fallback;
+};
+
+const pickCollectionImage = (collection: HomeCollection) => {
+  if (collection.url_image && collection.url_image.trim()) return collection.url_image;
+  const firstItemImage = collection.items[0]?.url_image ?? null;
+  if (firstItemImage && firstItemImage.trim()) return firstItemImage;
+  return sampleImage;
+};
+
+const Card = ({
+  title,
+  subtitle,
+  image,
+}: {
+  title: string;
+  subtitle?: string;
+  image: string;
+}) => (
+  <Box
+    sx={{
+      borderRadius: 2,
+      overflow: 'hidden',
+      background: gradient,
+      color: '#fff',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.18)',
+      width: 170,
+      minHeight: 200,
+      display: 'flex',
+      flexDirection: 'column',
+    }}
+  >
+    <Box
+      sx={{
+        height: 90,
+        backgroundImage: `url(${image})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        flexShrink: 0,
+      }}
+    />
+    <Box sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <Box sx={{ fontWeight: 700, fontSize: 16, lineHeight: '20px' }}>{title}</Box>
+      {subtitle ? (
+        <Box sx={{ fontSize: 13, opacity: 0.85, lineHeight: '16px' }}>{subtitle}</Box>
+      ) : null}
+    </Box>
+  </Box>
+);
+
 export const HomePage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -196,31 +252,24 @@ export const HomePage = () => {
           </select>
         </div>
 
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 170px))',
+            gap: 2,
+          }}
+        >
           {previewCollections.map((collection) => (
             <Box
               key={collection.id}
-              sx={{
-                borderRadius: 2,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                backgroundColor: '#FFFFFF',
-                overflow: 'hidden',
-              }}
+              sx={{ cursor: 'pointer' }}
+              onClick={() => navigate(`/collections/${collection.id}`)}
             >
-              <Box
-                component="img"
-                src={collection.url_image ?? '/itmo-logo-1.png'}
-                alt={collection.description ?? 'Коллекция'}
-                sx={{ width: '100%', height: 140, objectFit: 'cover' }}
+              <Card
+                title={buildTitle(collection.description, 'Коллекция')}
+                subtitle={collection.type ?? undefined}
+                image={pickCollectionImage(collection)}
               />
-              <Box sx={{ p: 1.5 }}>
-                <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                  {collection.type ?? 'Без типа'}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {collection.description ?? 'Нет описания'}
-                </Typography>
-              </Box>
             </Box>
           ))}
         </Box>
