@@ -8,13 +8,13 @@ import type { HistoryRoomDetails } from '../../shared/api/types';
 import { extractResultCard } from './historyRoom.utils';
 import './history.css';
 
-const FALLBACK_IMAGE =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23EF3030'/%3E%3Cstop offset='100%25' stop-color='%234124F4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='%23D2D2D7'/%3E%3Crect width='100%25' height='100%25' fill='url(%23g)' opacity='0.18'/%3E%3C/svg%3E";
+const FALLBACK_IMAGE = 'https://i.ytimg.com/vi/ilUPzCADxoA/maxresdefault.jpg';
 
 export const HistoryRoomPage = () => {
-  const { id_room } = useParams<{ id_room: string }>();
+  const { id_room, id } = useParams<{ id_room?: string; id?: string }>();
   const navigate = useNavigate();
   const token = useSelector((state: RootState) => state.auth.accessToken) ?? '';
+  const roomId = id_room ?? id ?? '';
 
   const [room, setRoom] = useState<HistoryRoomDetails | null>(null);
   const [error, setError] = useState<string>('');
@@ -28,7 +28,7 @@ export const HistoryRoomPage = () => {
       setError('');
       setRoom(null);
 
-      if (!id_room) {
+      if (!roomId) {
         setError('Не указан id комнаты');
         setLoading(false);
         return;
@@ -40,7 +40,7 @@ export const HistoryRoomPage = () => {
         return;
       }
 
-      const resp = await getRoomHistory({ token, id_room });
+      const resp = await getRoomHistory({ token, id_room: roomId });
       if (cancelled) return;
 
       if (!resp.ok) {
@@ -58,7 +58,7 @@ export const HistoryRoomPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [id_room, token]);
+  }, [roomId, token]);
 
   const resultCard = useMemo(() => extractResultCard(room?.result), [room?.result]);
   const imageSrc = resultCard.imageUrl || FALLBACK_IMAGE;
