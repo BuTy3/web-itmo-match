@@ -14,6 +14,7 @@ import uploadRoutes from "./routes/upload.routes.js";
 import homeRoutes from "./routes/home.routes.js";
 import historyRoutes from "./routes/history.routes.js";
 import roomsRoutes from "./routes/rooms.routes.js";
+import roomVotingRoutes from "./routes/room.routes.js";
 
 import { authPageRequired } from "./middlewares/auth.middleware.js";
 import { prisma } from "./db.js";
@@ -68,6 +69,7 @@ app.use("/history", historyRoutes);
 
 // Rooms routes
 app.use("/rooms", roomsRoutes);
+app.use("/rooms", roomVotingRoutes);
 
 // login page / home demo
 app.get("/login", (req, res) => {

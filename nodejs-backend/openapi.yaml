@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Guider Backend API
-  version: 1.0.0
+  version: 2.0.0
   description: >
     API documentation for authentication, collections constructor,
     items, uploads, finalized collections, and room history.
@@ -345,6 +345,26 @@ components:
           type: integer
           example: 1
       required: [ok, id_room]
+
+    DrawingPoint:
+      type: object
+      required: [x, y]
+      properties:
+        x:
+          type: number
+          example: 120.5
+        y:
+          type: number
+          example: 42.2
+        color:
+          type: string
+          nullable: true
+          example: "#000000"
+
+    DrawingPoints:
+      type: array
+      items:
+        $ref: "#/components/schemas/DrawingPoint"
 
     HistoryFilters:
       type: object
@@ -1088,6 +1108,313 @@ paths:
               schema:
                 $ref: "#/components/schemas/OkFalseResponse"
 
+  /rooms/create:
+    post:
+      tags: [Rooms]
+      summary: Create room or check access
+      description: |
+        Mode 1 (empty body): check access
+        Mode 2: create a new room
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                type_match:
+                  type: integer
+                  enum: [1, 2]
+                password:
+                  type: string
+                type_collections:
+                  type: integer
+                  enum: [1, 2]
+                collection_id:
+                  oneOf:
+                    - type: integer
+                    - type: array
+                      items:
+                        type: integer
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        example: true
+                  - type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        example: true
+                      id_room:
+                        type: integer
+        "400":
+          description: Bad request / validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+
+  /rooms/connect/{id_room}:
+    post:
+      tags: [Rooms]
+      summary: Connect to room or get collections
+      description: |
+        Mode 1 (empty body): return user's collections
+        Mode 2: submit password + collection_id
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id_room
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                collection_id:
+                  type: integer
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        example: true
+                      collection_choose:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            type:
+                              type: string
+                            url_image:
+                              type: string
+                              nullable: true
+                            description:
+                              type: string
+                              nullable: true
+                            title:
+                              type: string
+                  - type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        example: true
+        "400":
+          description: Bad request / validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+
+  /rooms/{id_room}:
+    post:
+      tags: [Rooms]
+      summary: Room cards flow
+      description: |
+        Mode 1 (empty body): get current card
+        Mode 2: submit choice (0 exit, 1 yes, 2 no)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id_room
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                choose:
+                  type: integer
+                  enum: [0, 1, 2]
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        example: true
+                      nick:
+                        type: string
+                      profile_picture_url:
+                        type: string
+                        nullable: true
+                      name_card:
+                        type: string
+                      description:
+                        type: string
+                  - type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        example: true
+                      redirect:
+                        type: string
+        "400":
+          description: Bad request / validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+
+  /rooms/{id_room}/drawing:
+    post:
+      tags: [Rooms]
+      summary: Drawing page
+      description: |
+        Mode 1 (empty body): get topic and existing points
+        Mode 2: submit full points list
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id_room
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                points:
+                  $ref: "#/components/schemas/DrawingPoints"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        example: true
+                      topic:
+                        type: string
+                        nullable: true
+                      points:
+                        $ref: "#/components/schemas/DrawingPoints"
+                  - type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        example: true
+        "400":
+          description: Bad request / validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+
   /history:
     get:
       tags:
@@ -1267,6 +1594,61 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RoomResultsResponse"
+    post:
+      tags:
+        - Results
+      summary: Room results
+      description: Return selected cards for all users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  cards:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        profile_picture_url:
+                          type: string
+                          nullable: true
+                        name_card:
+                          type: string
+                        description:
+                          type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkFalseResponse"
 
   /rooms/{id}/leave:
     post:
