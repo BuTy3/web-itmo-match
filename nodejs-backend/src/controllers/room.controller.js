@@ -1,324 +1,200 @@
-// Rooms controller
+// Room controller (voting endpoints)
 import {
-  createRoomService,
-  getConnectStateService,
-  submitConnectService,
-  getRoomCardStateService,
-  submitRoomChoiceService,
-  getDrawingStateService,
-  submitDrawingPointsService,
-  getDrawingResService,
-  getResultsService,
+  getVotingState,
+  submitVote,
+  getRoomResults,
+  leaveRoom,
+  joinRoom,
 } from "../services/room.service.js";
 
-// [POST] /rooms/create
-export async function createRoom(req, res) {
+/**
+ * [GET] /rooms/:id/voting
+ * Get current voting state for the user
+ */
+export async function getVoting(req, res) {
   try {
-    // Mode 1: just check access (A requirement)
-    // If body is empty or has no "name" -> return ok: true
-    const body = req.body || {};
-    const hasCreatePayload =
-      body.name !== undefined ||
-      body.type_collections !== undefined ||
-      body.collection_id !== undefined;
-
-    if (!hasCreatePayload) {
-      return res.json({ ok: true });
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        ok: false,
+        message: "Unauthorized",
+      });
     }
 
-    // Mode 2: create room
-    const userId = BigInt(req.user.id);
+    const rawId = req.params?.id;
+    const idNum = Number(rawId);
 
-    const {
-      name,
-      type_match,
-      password,
-      type_collections,
-      collection_id, // can be number OR array
-    } = body;
-
-    const created = await createRoomService(userId, {
-      name,
-      typeMatch: type_match,
-      password,
-      typeCollections: type_collections,
-      collectionId: collection_id,
-    });
-
-    return res.json({
-      ok: true,
-      id_room: Number(created.id),
-    });
-  } catch (err) {
-    console.error("Error in createRoom:", err);
-
-    const code = err.code;
-    let status = 500;
-
-    if (code === "VALIDATION_ERROR") status = 400;
-    else if (code === "FORBIDDEN") status = 403;
-
-    return res.status(status).json({
-      ok: false,
-      message: err.message || "Internal server error",
-    });
-  }
-}
-
-// [POST] /rooms/connect/:id_room
-export async function connectRoom(req, res) {
-  try {
-    const userId = BigInt(req.user.id);
-
-    // Validate room id in URL
-    const roomIdNum = Number(req.params.id_room);
-    if (
-      !Number.isFinite(roomIdNum) ||
-      roomIdNum <= 0 ||
-      !Number.isInteger(roomIdNum)
-    ) {
+    if (!Number.isFinite(idNum) || idNum <= 0) {
       return res.status(400).json({
         ok: false,
         message: "Invalid room id",
       });
     }
-    const roomId = BigInt(roomIdNum);
 
-    const body = req.body || {};
-    const hasSubmitPayload =
-      body.password !== undefined || body.collection_id !== undefined;
+    const roomId = BigInt(idNum);
+    const userId = req.user.id.toString();
 
-    // Mode 1: check access and return choose list
-    if (!hasSubmitPayload) {
-      const state = await getConnectStateService(userId, roomId);
+    // Ensure user is joined to the room
+    const joinResult = await joinRoom(roomId, userId);
+    if (!joinResult.ok) {
+      return res.status(400).json(joinResult);
+    }
 
-      return res.json({
-        ok: true,
-        collection_choose: state.collection_choose,
+    const state = await getVotingState(roomId, userId);
+
+    if (state.error) {
+      return res.status(404).json({
+        ok: false,
+        message: state.error,
       });
     }
 
-    // Mode 2: submit connect
-    const { password, collection_id } = body;
-
-    await submitConnectService(userId, roomId, {
-      password,
-      collectionId: collection_id,
-    });
-
-    return res.json({ ok: true });
+    return res.json(state);
   } catch (err) {
-    console.error("Error in connectRoom:", err);
-
-    const code = err.code;
-    let status = 500;
-
-    if (code === "VALIDATION_ERROR") status = 400;
-    else if (code === "NOT_FOUND") status = 404;
-    else if (code === "FORBIDDEN") status = 403;
-
-    return res.status(status).json({
+    console.error("Error in getVoting:", err);
+    return res.status(500).json({
       ok: false,
       message: err.message || "Internal server error",
     });
   }
 }
 
-// [POST] /rooms/:id_room
-export async function roomPage(req, res) {
+/**
+ * [POST] /rooms/:id/vote
+ * Submit a vote for an item
+ * Body: { item_id: string, vote: boolean }
+ */
+export async function postVote(req, res) {
   try {
-    const userId = BigInt(req.user.id);
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        ok: false,
+        message: "Unauthorized",
+      });
+    }
 
-    // Validate room id in URL
-    const roomIdNum = Number(req.params.id_room);
-    if (
-      !Number.isFinite(roomIdNum) ||
-      roomIdNum <= 0 ||
-      !Number.isInteger(roomIdNum)
-    ) {
+    const rawId = req.params?.id;
+    const idNum = Number(rawId);
+
+    if (!Number.isFinite(idNum) || idNum <= 0) {
       return res.status(400).json({
         ok: false,
         message: "Invalid room id",
       });
     }
-    const roomId = BigInt(roomIdNum);
 
-    const body = req.body || {};
-    const hasChoosePayload = body.choose !== undefined;
+    const { item_id, vote } = req.body;
 
-    // Mode 1: enter room (no choose in body)
-    if (!hasChoosePayload) {
-      const state = await getRoomCardStateService(userId, roomId);
-
-      return res.json({
-        ok: true,
-        nick: state.nick,
-        profile_picture_url: state.profile_picture_url,
-        name_card: state.name_card,
-        description: state.description,
+    if (!item_id) {
+      return res.status(400).json({
+        ok: false,
+        message: "item_id is required",
       });
     }
 
-    // Mode 2: user chooses (0 exit, 1 yes, 2 no)
-    const { choose } = body;
-
-    const result = await submitRoomChoiceService(userId, roomId, { choose });
-
-    // If service returns a "redirect", FE can navigate
-    if (result.redirect) {
-      return res.json({
-        ok: true,
-        redirect: result.redirect,
+    if (typeof vote !== "boolean") {
+      return res.status(400).json({
+        ok: false,
+        message: "vote must be a boolean",
       });
     }
 
-    // Otherwise return the next card info
-    return res.json({
-      ok: true,
-      nick: result.nick,
-      profile_picture_url: result.profile_picture_url,
-      name_card: result.name_card,
-      description: result.description,
-    });
+    const roomId = BigInt(idNum);
+    const userId = req.user.id.toString();
+
+    const result = await submitVote(roomId, userId, item_id, vote);
+
+    if (!result.ok) {
+      return res.status(400).json(result);
+    }
+
+    return res.json(result);
   } catch (err) {
-    console.error("Error in roomPage:", err);
-
-    const code = err.code;
-    let status = 500;
-
-    if (code === "VALIDATION_ERROR") status = 400;
-    else if (code === "NOT_FOUND") status = 404;
-    else if (code === "FORBIDDEN") status = 403;
-
-    return res.status(status).json({
+    console.error("Error in postVote:", err);
+    return res.status(500).json({
       ok: false,
       message: err.message || "Internal server error",
     });
   }
 }
 
-// [POST] /rooms/:id_room/drawing
-export async function drawingRoom(req, res) {
+/**
+ * [GET] /rooms/:id/results
+ * Get room voting results
+ */
+export async function getResults(req, res) {
   try {
-    const userId = BigInt(req.user.id);
-
-    const roomIdNum = Number(req.params.id_room);
-    if (
-      !Number.isFinite(roomIdNum) ||
-      roomIdNum <= 0 ||
-      !Number.isInteger(roomIdNum)
-    ) {
-      return res.status(400).json({ ok: false, message: "Invalid room id" });
-    }
-    const roomId = BigInt(roomIdNum);
-
-    const body = req.body || {};
-    const hasPointsPayload = body.points !== undefined;
-
-    // Mode 1: enter drawing page
-    if (!hasPointsPayload) {
-      const state = await getDrawingStateService(userId, roomId);
-
-      return res.json({
-        ok: true,
-        topic: state.topic,
-        points: state.points,
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        ok: false,
+        message: "Unauthorized",
       });
     }
 
-    // Mode 2: submit points
-    await submitDrawingPointsService(userId, roomId, {
-      points: body.points,
-    });
+    const rawId = req.params?.id;
+    const idNum = Number(rawId);
 
-    return res.json({ ok: true });
+    if (!Number.isFinite(idNum) || idNum <= 0) {
+      return res.status(400).json({
+        ok: false,
+        message: "Invalid room id",
+      });
+    }
+
+    const roomId = BigInt(idNum);
+    const userId = req.user.id.toString();
+
+    const result = await getRoomResults(roomId, userId);
+
+    if (!result.ok) {
+      return res.status(404).json(result);
+    }
+
+    return res.json(result);
   } catch (err) {
-    console.error("Error in drowingRoom:", err);
-
-    const code = err.code;
-    let status = 500;
-
-    if (code === "VALIDATION_ERROR") status = 400;
-    else if (code === "NOT_FOUND") status = 404;
-    else if (code === "FORBIDDEN") status = 403;
-
-    return res.status(status).json({
+    console.error("Error in getResults:", err);
+    return res.status(500).json({
       ok: false,
       message: err.message || "Internal server error",
     });
   }
 }
 
-// [POST] /rooms/:id_room/drawing_res
-export async function drawingResRoom(req, res) {
+/**
+ * [POST] /rooms/:id/leave
+ * Leave a room
+ */
+export async function postLeave(req, res) {
   try {
-    const userId = BigInt(req.user.id);
-
-    const roomIdNum = Number(req.params.id_room);
-    if (
-      !Number.isFinite(roomIdNum) ||
-      roomIdNum <= 0 ||
-      !Number.isInteger(roomIdNum)
-    ) {
-      return res.status(400).json({ ok: false, message: "Invalid room id" });
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        ok: false,
+        message: "Unauthorized",
+      });
     }
-    const roomId = BigInt(roomIdNum);
 
-    const result = await getDrawingResService(userId, roomId);
+    const rawId = req.params?.id;
+    const idNum = Number(rawId);
 
-    return res.json({
-      ok: true,
-      picture: result.picture,
-    });
-  } catch (err) {
-    console.error("Error in drawingResRoom:", err);
-
-    const code = err.code;
-    let status = 500;
-
-    if (code === "VALIDATION_ERROR") status = 400;
-    else if (code === "NOT_FOUND") status = 404;
-    else if (code === "FORBIDDEN") status = 403;
-
-    return res.status(status).json({
-      ok: false,
-      message: err.message || "Internal server error",
-    });
-  }
-}
-
-// [POST] /rooms/:id_room/results
-export async function resultsRoom(req, res) {
-  try {
-    const userId = BigInt(req.user.id);
-
-    const roomIdNum = Number(req.params.id_room);
-    if (
-      !Number.isFinite(roomIdNum) ||
-      roomIdNum <= 0 ||
-      !Number.isInteger(roomIdNum)
-    ) {
-      return res.status(400).json({ ok: false, message: "Invalid room id" });
+    if (!Number.isFinite(idNum) || idNum <= 0) {
+      return res.status(400).json({
+        ok: false,
+        message: "Invalid room id",
+      });
     }
-    const roomId = BigInt(roomIdNum);
 
-    const result = await getResultsService(userId, roomId);
+    const roomId = BigInt(idNum);
+    const userId = req.user.id.toString();
 
-    return res.json({
-      ok: true,
-      cards: result.cards,
-    });
+    const result = await leaveRoom(roomId, userId);
+
+    if (!result.ok) {
+      return res.status(400).json(result);
+    }
+
+    return res.json(result);
   } catch (err) {
-    console.error("Error in resultsRoom:", err);
-
-    const code = err.code;
-    let status = 500;
-
-    if (code === "VALIDATION_ERROR") status = 400;
-    else if (code === "NOT_FOUND") status = 404;
-    else if (code === "FORBIDDEN") status = 403;
-
-    return res.status(status).json({
+    console.error("Error in postLeave:", err);
+    return res.status(500).json({
       ok: false,
       message: err.message || "Internal server error",
     });

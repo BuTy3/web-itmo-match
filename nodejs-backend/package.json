@@ -9,7 +9,8 @@
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
-    "test": "jest --passWithNoTests"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest tests/unit --runInBand",
+    "e2e": "NODE_OPTIONS=--experimental-vm-modules jest tests/e2e --runInBand"
   },
   "repository": {
     "type": "git",

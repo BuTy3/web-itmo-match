@@ -9,20 +9,20 @@ const router = Router();
 // [POST] /auth/register
 router.post("/register", async (req, res) => {
   try {
-    const { token, login, password } = req.body;
+    const { token: _token, login, password } = req.body;
 
     // Validate login and password
     if (!login || !password) {
       return res.json({
         ok: false,
-        message: "Login and password are required",
+        message: "Введите логин и пароль",
       });
     }
 
-    if (password.length < 4) {
+    if (password.length < 8) {
       return res.json({
         ok: false,
-        message: "Password must be at least 4 characters",
+        message: "Пароль должен быть не менее 8 символов",
       });
     }
 
@@ -31,7 +31,7 @@ router.post("/register", async (req, res) => {
     if (existing) {
       return res.json({
         ok: false,
-        message: "Login is already taken",
+        message: "Ошибка регистрации, некорректные данные",
       });
     }
 
@@ -62,7 +62,7 @@ router.post("/register", async (req, res) => {
     console.error("Error in /auth/register:", err);
     return res.status(500).json({
       ok: false,
-      message: "Internal server error during registration",
+      message: "Ошибка сервера при регистрации",
     });
   }
 });
@@ -70,12 +70,12 @@ router.post("/register", async (req, res) => {
 // [POST] /auth/login
 router.post("/login", async (req, res) => {
   try {
-    const { token, login, password } = req.body;
+    const { token: _token, login, password } = req.body;
 
     if (!login || !password) {
       return res.json({
         ok: false,
-        message: "Login and password are required",
+        message: "Введите логин и пароль",
       });
     }
 
@@ -84,7 +84,7 @@ router.post("/login", async (req, res) => {
     if (!dbUser) {
       return res.json({
         ok: false,
-        message: "Invalid login or password",
+        message: "Неверный логин или пароль",
       });
     }
 
@@ -93,7 +93,7 @@ router.post("/login", async (req, res) => {
     if (!ok) {
       return res.json({
         ok: false,
-        message: "Invalid login or password",
+        message: "Неверный логин или пароль",
       });
     }
 
@@ -115,7 +115,7 @@ router.post("/login", async (req, res) => {
     console.error("Error in /auth/login:", err);
     return res.status(500).json({
       ok: false,
-      message: "Internal server error during login",
+      message: "Ошибка сервера при входе",
     });
   }
 });

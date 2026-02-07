@@ -7,9 +7,13 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "jest",
+    "e2e:history:chromium": "bash scripts/e2e-history-chromium.sh",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@bugsnag/js": "^8.6.0",
+    "@bugsnag/plugin-react": "^8.6.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.6",
@@ -38,6 +42,7 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
     "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
     "msw": "^2.12.4",
     "stylelint": "^16.26.1",
     "stylelint-config-standard": "^39.0.1",

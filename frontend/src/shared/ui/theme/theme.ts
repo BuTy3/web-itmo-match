@@ -1,86 +1,65 @@
 import { createTheme } from '@mui/material';
-import type { PaletteMode, ThemeOptions } from '@mui/material';
+import type { PaletteMode } from '@mui/material';
+import type { ThemeColors } from '../../../features/ui/model/uiSlice';
 
+export const SIDEBAR_WIDTH_EXPANDED = 192;
+export const SIDEBAR_WIDTH_COLLAPSED = 90;
 
-const getPalette = (mode: PaletteMode): ThemeOptions['palette'] => {
-  if (mode === 'dark') {
-    return {
+export const createAppTheme = (mode: PaletteMode, colors: ThemeColors) =>
+  createTheme({
+    palette: {
       mode,
-      primary: {
-        main: '#90caf9',
-        contrastText: '#0d1b2a',
-      },
-      secondary: {
-        main: '#f48fb1',
-        contrastText: '#0d1b2a',
-      },
+      primary: { main: colors.primary },
+      secondary: { main: colors.secondary },
+
       background: {
-        default: '#0d1b2a',
-        paper: '#14213d',
+        default: mode === 'dark' ? '#0d111a' : '#f4f5f7',
+        paper: mode === 'dark' ? '#151a23' : '#ffffff',
       },
+
       text: {
-        primary: '#f5f5f5',
-        secondary: '#c1c9d6',
+        primary: mode === 'dark' ? '#f2f4f8' : '#1f1f1f',
+        secondary: mode === 'dark' ? '#c7cad1' : '#3e3b3b',
       },
-    };
-  }
 
-  return {
-    mode,
-    primary: {
-      main: '#0055ff',
-      contrastText: '#ffffff',
+      // (опционально, но удобно для бордеров/разделителей)
+      divider: mode === 'dark' ? 'rgba(242,244,248,0.16)' : 'rgba(31,31,31,0.16)',
     },
-    secondary: {
-      main: '#ff6f61',
-      contrastText: '#ffffff',
-    },
-    background: {
-      default: '#f4f6fb',
-      paper: '#ffffff',
-    },
-    text: {
-      primary: '#0f172a',
-      secondary: '#475569',
-    },
-  };
-};
 
-const typography: ThemeOptions['typography'] = {
-  fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-  h1: {
-    fontWeight: 600,
-    fontSize: '3rem',
-  },
-  h2: {
-    fontWeight: 600,
-    fontSize: '2.5rem',
-  },
-  h3: {
-    fontWeight: 600,
-    fontSize: '2rem',
-  },
-  h4: {
-    fontWeight: 600,
-    fontSize: '1.75rem',
-  },
-  h5: {
-    fontWeight: 600,
-    fontSize: '1.5rem',
-  },
-  h6: {
-    fontWeight: 600,
-    fontSize: '1.25rem',
-  },
-  body1: {
-    fontSize: '1rem',
-    lineHeight: 1.5,
-  },
-};
+    components: {
+      MuiCssBaseline: {
+        styleOverrides: (t) => ({
+          ':root': {
+            colorScheme: t.palette.mode,
+          },
+          html: { height: '100%' },
+          body: {
+            height: '100%',
+            margin: 0,
+            backgroundColor: t.palette.background.default,
+            color: t.palette.text.primary,
+          },
+          '#root': { height: '100%' },
+          a: { color: 'inherit' },
 
-export const createAppTheme = (mode: PaletteMode = 'light') => {
-  return createTheme({
-    palette: getPalette(mode),
-    typography,
+          // ✅ важное: поля ввода/текстарии тоже читаемые в dark
+          input: { color: t.palette.text.primary },
+          textarea: { color: t.palette.text.primary },
+        }),
+      },
+
+      // ✅ базовые компоненты МУИ сами берут цвета из theme.palette
+      MuiPaper: {
+        styleOverrides: {
+          root: { backgroundImage: 'none' },
+        },
+      },
+    },
+
+    typography: {
+      fontFamily:
+        'Roboto, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      h1: { fontSize: 48, fontWeight: 700, lineHeight: 1.2 },
+      body1: { fontSize: 16 },
+    },
   });
-};

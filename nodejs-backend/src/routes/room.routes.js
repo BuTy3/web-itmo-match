@@ -1,43 +1,29 @@
-// Rooms routes
+// Room routes (voting)
 import { Router } from "express";
 import { authApiRequired } from "../middlewares/auth.middleware.js";
 import {
-  createRoom,
-  connectRoom,
-  roomPage,
-  drawingRoom,
-  drawingResRoom,
-  resultsRoom,
+  getVoting,
+  postVote,
+  getResults,
+  postLeave,
 } from "../controllers/room.controller.js";
 
-const roomsRouter = Router();
+const roomRouter = Router();
 
-// [POST] /rooms/create
-// Mode 1: check access (empty body) -> { ok: true }
-// Mode 2: create room (body with fields) -> { ok: true, id_room: <id> }
-roomsRouter.post("/create", authApiRequired, createRoom);
+// [GET] /rooms/:id/voting
+// Private: get current voting state for user
+roomRouter.get("/:id/voting", authApiRequired, getVoting);
 
-// [POST] /rooms/connect/:id_room
-// Mode 1: check access (empty body) -> { ok: true, collection_choose: [...] }
-// Mode 2: submit connect (password + collection_id) -> { ok: true }
-roomsRouter.post("/connect/:id_room", authApiRequired, connectRoom);
+// [POST] /rooms/:id/vote
+// Private: submit a vote for an item
+roomRouter.post("/:id/vote", authApiRequired, postVote);
 
-// [POST] /rooms/:id_room/drowing
-// Mode 1: enter drawing page (empty body) -> { ok: true, topic, points }
-// Mode 2: submit points (body { points }) -> { ok: true }
-roomsRouter.post("/:id_room/drawing", authApiRequired, drawingRoom);
+// [GET] /rooms/:id/results
+// Private: get room voting results
+roomRouter.get("/:id/results", authApiRequired, getResults);
 
-// [POST] /rooms/:id_room/drawing_res
-// Return all users drawings: { ok: true, picture: [...] }
-roomsRouter.post("/:id_room/drawing_res", authApiRequired, drawingResRoom);
+// [POST] /rooms/:id/leave
+// Private: leave room
+roomRouter.post("/:id/leave", authApiRequired, postLeave);
 
-// [POST] /rooms/:id_room/results
-// Return final cards: { ok: true, cards: [...] }
-roomsRouter.post("/:id_room/results", authApiRequired, resultsRoom);
-
-// [POST] /rooms/:id_room
-// Mode 1: enter room (empty body) -> { ok: true, nick, profile_picture_url, name_card, description }
-// Mode 2: choose card (body { choose }) -> { ok: true, ... } or redirect stage
-roomsRouter.post("/:id_room", authApiRequired, roomPage);
-
-export default roomsRouter;
+export default roomRouter;
