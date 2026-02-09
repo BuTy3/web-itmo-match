@@ -6,6 +6,7 @@ import { login } from '../../shared/api/auth';
 import type { RootState, AppDispatch } from '../../app/store';
 import { loginSuccess } from '../../features/auth/model/authSlice';
 import { ThemeToggleButton } from '../../shared/ui/header/ThemeToggleButton';
+import { METRIKA_GOALS, trackGoal } from '../../shared/lib/analytics/metrika';
 
 export const LoginPage = () => {
   const [loginValue, setLoginValue] = useState('');
@@ -34,23 +35,34 @@ export const LoginPage = () => {
     setSuccess(null);
 
     if (!loginValue || !password) {
+      trackGoal(METRIKA_GOALS.AuthLoginFailure, {
+        reason: 'empty_fields',
+      });
       setError('Заполните все поля');
       return;
     }
 
     try {
+      trackGoal(METRIKA_GOALS.AuthLoginAttempt, {
+        has_login: Boolean(loginValue.trim()),
+      });
       setLoading(true);
       const resp = await login({ login: loginValue, password });
       if (resp.ok && resp.token) {
+        trackGoal(METRIKA_GOALS.AuthLoginSuccess);
         dispatch(loginSuccess({ user: { login: loginValue }, accessToken: resp.token }));
         setSuccess('Успешный вход');
         localStorage.setItem('nickname', loginValue);
         localStorage.setItem('accessToken', resp.token);
         navigate('/home');
       } else {
+        trackGoal(METRIKA_GOALS.AuthLoginFailure, {
+          reason: resp.message ?? 'invalid_credentials',
+        });
         setError(resp.message || 'Неверный логин или пароль');
       }
     } catch (error) {
+      trackGoal(METRIKA_GOALS.AuthLoginFailure, { reason: 'request_failed' });
       console.error('Login request failed', error);
       setError('Ошибка запроса. Проверьте соединение с сервером.');
     } finally {
@@ -162,6 +174,7 @@ export const LoginPage = () => {
                 variant="contained"
                 size="large"
                 fullWidth
+                onClick={() => trackGoal(METRIKA_GOALS.AuthRegisterAttempt, { source: 'login_page_link' })}
                 sx={{ py: { xs: 1.25, md: 1.6 }, fontSize: { xs: 14, md: 16 } }}
               >
                 Регистрация

@@ -4,6 +4,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { getUserCollections } from '../../shared/api/home';
 import type { HomeCollection } from '../../shared/api/types';
+import { METRIKA_GOALS, trackGoal } from '../../shared/lib/analytics/metrika';
 import '../history/history.css';
 
 const gradient = 'linear-gradient(135deg, #ff5f6d 0%, #845bff 100%)';
@@ -142,6 +143,16 @@ export const HomePage = () => {
     [filteredCollections],
   );
 
+  const connectToRoom = (source: 'button' | 'enter') => {
+    const trimmed = roomId.trim();
+    if (!trimmed) return;
+    trackGoal(METRIKA_GOALS.HomeConnectClick, {
+      source,
+      has_room_id: Boolean(trimmed),
+    });
+    navigate(`/rooms/connect/${trimmed}`);
+  };
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <Typography variant="h4" sx={{ mb: 3 }}>
@@ -164,33 +175,33 @@ export const HomePage = () => {
             inputProps={{ inputMode: 'numeric' }}
             onKeyDown={(event) => {
               if (event.key !== 'Enter') return;
-              const trimmed = roomId.trim();
-              if (!trimmed) return;
-              navigate(`/rooms/connect/${trimmed}`);
+              connectToRoom('enter');
             }}
           />
           <Button
             variant="outlined"
             color="secondary"
-            onClick={() => {
-              const trimmed = roomId.trim();
-              if (!trimmed) return;
-              navigate(`/rooms/connect/${trimmed}`);
-            }}
+            onClick={() => connectToRoom('button')}
           >
             Подключиться
           </Button>
           <Button
             variant="contained"
             color="primary"
-            onClick={() => navigate('/rooms/create')}
+            onClick={() => {
+              trackGoal(METRIKA_GOALS.HomeCreateRoomClick);
+              navigate('/rooms/create');
+            }}
           >
             Создать комнату
           </Button>
           <Button
             variant="outlined"
             color="secondary"
-            onClick={() => navigate('/history')}
+            onClick={() => {
+              trackGoal(METRIKA_GOALS.HomeHistoryClick);
+              navigate('/history');
+            }}
           >
             История комнат
           </Button>
@@ -257,7 +268,12 @@ export const HomePage = () => {
             <Box
               key={collection.id}
               sx={{ cursor: 'pointer' }}
-              onClick={() => navigate(`/collections/${collection.id}`)}
+              onClick={() => {
+                trackGoal(METRIKA_GOALS.HomeCollectionOpen, {
+                  collection_id: String(collection.id),
+                });
+                navigate(`/collections/${collection.id}`);
+              }}
             >
               <Card
                 title={buildTitle(collection.description, 'Коллекция')}

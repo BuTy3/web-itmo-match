@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getUserCollections } from '../../shared/api/home';
 import { createRoom } from '../../shared/api/rooms';
 import type { HomeCollection } from '../../shared/api/types';
+import { METRIKA_GOALS, trackGoal } from '../../shared/lib/analytics/metrika';
 import './rooms.css';
 
 const buildCollectionLabel = (collection: HomeCollection) =>
@@ -62,15 +63,22 @@ export const RoomCreatePage = () => {
 
   const handleCreate = async () => {
     if (!name.trim()) {
+      trackGoal(METRIKA_GOALS.RoomCreateFailure, { reason: 'empty_room_name' });
       window.alert('Введите название комнаты.');
       return;
     }
     if (!selectedCollectionId) {
+      trackGoal(METRIKA_GOALS.RoomCreateFailure, { reason: 'no_collection' });
       window.alert('Выберите коллекцию.');
       return;
     }
 
     try {
+      trackGoal(METRIKA_GOALS.RoomCreateAttempt, {
+        match_mode: matchMode,
+        collection_mode: collectionMode,
+        has_password: Boolean(password.trim()),
+      });
       const payload = {
         name: name.trim(),
         type_match: matchMode === 'first' ? 1 : 2,
@@ -82,6 +90,9 @@ export const RoomCreatePage = () => {
 
       const resp = await createRoom(payload);
       if (!resp.ok) {
+        trackGoal(METRIKA_GOALS.RoomCreateFailure, {
+          reason: resp.message ?? 'create_failed',
+        });
         window.alert(resp.message || 'Не удалось создать комнату');
         return;
       }
@@ -89,14 +100,19 @@ export const RoomCreatePage = () => {
       const id =
         resp.id_room ?? resp.room_id ?? resp.id;
       if (!id) {
+        trackGoal(METRIKA_GOALS.RoomCreateFailure, { reason: 'missing_room_id' });
         window.alert('Не удалось получить id комнаты');
         return;
       }
 
+      trackGoal(METRIKA_GOALS.RoomCreateSuccess, {
+        room_id: String(id),
+      });
       localStorage.setItem('activeRoomId', String(id));
       localStorage.setItem('activeRoomPath', `/rooms/${id}`);
       navigate(`/rooms/${id}`);
     } catch (err) {
+      trackGoal(METRIKA_GOALS.RoomCreateFailure, { reason: 'request_failed' });
       console.error('Failed to create room', err);
       window.alert('Не удалось создать комнату');
     }
