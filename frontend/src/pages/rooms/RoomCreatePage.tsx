@@ -6,7 +6,7 @@ import type { HomeCollection } from '../../shared/api/types';
 import './rooms.css';
 
 const buildCollectionLabel = (collection: HomeCollection) =>
-  collection.title || collection.type || `Коллекция ${collection.id}`;
+  collection.type || collection.description || `Коллекция ${collection.id}`;
 
 export const RoomCreatePage = () => {
   const navigate = useNavigate();

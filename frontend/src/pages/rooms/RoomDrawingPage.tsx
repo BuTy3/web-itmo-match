@@ -4,11 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { DrawingCanvas } from '../drawing/components/DrawingCanvas';
 import { ToolBar } from '../drawing/components/ToolBar';
 import type { AppDispatch, RootState } from '../../app/store';
-import {
-  setParticipants,
-  upsertDrawing,
-  type RoomParticipant,
-} from '../../features/rooms/model/roomsSlice';
+import { setParticipants, upsertDrawing } from '../../features/rooms/model/roomsSlice';
 import {
   fetchRoomDrawing,
   getRoomResults,

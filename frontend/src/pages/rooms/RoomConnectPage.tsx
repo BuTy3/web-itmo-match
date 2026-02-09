@@ -104,11 +104,17 @@ export const RoomConnectPage = () => {
     }
 
     try {
-      const resp = await connectRoom({
+      const trimmedPassword = password.trim();
+      const payloadBase = {
         id_room,
-        password: password.trim() || undefined,
-        ...(collectionRequired ? { collection_id: selectedCollectionId } : {}),
-      });
+        ...(trimmedPassword ? { password: trimmedPassword } : {}),
+      };
+      const resp = collectionRequired
+        ? await connectRoom({
+            ...payloadBase,
+            collection_id: selectedCollectionId,
+          })
+        : await connectRoom(payloadBase);
 
       if (!resp.ok) {
         window.alert(resp.message || 'Не удалось подключиться');

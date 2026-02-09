@@ -19,7 +19,7 @@ export type RoomCreateResponse =
 
 export type RoomConnectPayload = {
   password?: string;
-  collection_id: number | string;
+  collection_id?: number | string;
 };
 
 export type RoomConnectResponse =

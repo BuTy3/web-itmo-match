@@ -73,7 +73,7 @@ export const RoomResultsPage = () => {
             </p>
             <div className="room-results-grid">
               {matchedItems.map((item, index) => (
-                <div key={item.id || index} className="room-results-card">
+                <div key={`${item.title ?? 'match'}-${index}`} className="room-results-card">
                   <div className="room-results-card__image">
                     <img
                       src={item.image_url || '/itmo-logo-1.png'}

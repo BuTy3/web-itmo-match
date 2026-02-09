@@ -88,7 +88,6 @@ export const RoomPage = () => {
       navigate('/home', { replace: true });
       return;
     }
-    let cancelled = false;
 
     const run = async () => {
       await requestRoomState();
@@ -96,9 +95,7 @@ export const RoomPage = () => {
 
     void run();
 
-    return () => {
-      cancelled = true;
-    };
+    return undefined;
   }, [id_room, navigate]);
 
   const handleChoose = async (choose: 0 | 1 | 2) => {
