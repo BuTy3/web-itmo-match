@@ -40,7 +40,7 @@ const getRoomTypeCollections = (room) => {
       return value;
     }
   }
-  return room?.type === 'COMBINED' ? 2 : 1;
+  return 1;
 };
 
 const getCollectionById = async (collectionId) => {
@@ -221,14 +221,12 @@ export async function createRoom({
   const accessMode = password ? 'PRIVATE' : 'PUBLIC';
   const normalizedTypeCollections = Number(typeCollections) === 2 ? 2 : 1;
   const topic = getRandomTopic(null);
-  const roomType = normalizedTypeCollections === 2 ? 'COMBINED' : 'SINGLE';
 
   const room = await prisma.room.create({
     data: {
       creator_id: userId,
       name: name.trim(),
       topic: null,
-      type: roomType,
       match_mode: matchMode,
       status: 'OPEN',
       access_mode: accessMode,
