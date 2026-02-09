@@ -170,6 +170,17 @@ export const HomePage = () => {
             }}
           />
           <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => {
+              const trimmed = roomId.trim();
+              if (!trimmed) return;
+              navigate(`/rooms/connect/${trimmed}`);
+            }}
+          >
+            Подключиться
+          </Button>
+          <Button
             variant="contained"
             color="primary"
             onClick={() => navigate('/rooms/create')}

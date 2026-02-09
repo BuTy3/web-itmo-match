@@ -149,7 +149,6 @@
 }
 
 .history-room-card {
-  grid-area: card;
   width: 100%;
   max-width: clamp(320px, 28vw, 560px);
   border-radius: 16px;
@@ -157,6 +156,26 @@
   box-shadow: 0 10px 18px rgba(0, 0, 0, 0.12);
   background: #D2D2D7;
   justify-self: center;
+}
+
+.history-room-layout > .history-room-card {
+  grid-area: card;
+}
+
+.history-room-layout > .history-room-cards {
+  grid-area: card;
+}
+
+.history-room-cards {
+  width: 100%;
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  justify-items: center;
+}
+
+.history-room-card--compact {
+  max-width: 320px;
 }
 
 .history-room-card__image {

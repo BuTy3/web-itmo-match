@@ -5,6 +5,11 @@ import {
   connectToRoom,
   createRoom,
   getRoomState,
+  getUserCollectionsForRoom,
+  getRoomDrawing,
+  getRoomDrawingsResults,
+  saveRoomDrawing,
+  verifyRoomPassword,
 } from "../services/rooms.service.js";
 
 const getStatusByError = (err) => {
@@ -65,11 +70,32 @@ export async function handleRoomConnect(req, res) {
     }
 
     const { id_room } = req.params || {};
-    const { password, collection_id } = req.body || {};
+    const { password, collection_id, check } = req.body || {};
+    const room = await checkRoomAccess({ roomId: id_room });
+
+    if (check) {
+      await verifyRoomPassword(room, password);
+      if (room.type === "SINGLE") {
+        return res.json({ ok: true, collection_choose: false });
+      }
+      const collections = await getUserCollectionsForRoom(BigInt(req.user.id));
+      return res.json({ ok: true, collection_choose: collections });
+    }
 
     if (!password && !collection_id) {
-      await checkRoomAccess({ roomId: id_room });
-      return res.json({ ok: true, collection_choose: true });
+      if (room.type === "SINGLE") {
+        if (room.access_mode === "PRIVATE") {
+          return res.status(403).json({ ok: false, message: "Password is required" });
+        }
+        await connectToRoom({
+          userId: BigInt(req.user.id),
+          roomId: id_room,
+        });
+        return res.json({ ok: true });
+      }
+      await verifyRoomPassword(room, password);
+      const collections = await getUserCollectionsForRoom(BigInt(req.user.id));
+      return res.json({ ok: true, collection_choose: collections });
     }
 
     await connectToRoom({
@@ -120,6 +146,64 @@ export async function handleRoomState(req, res) {
     return res.json(resp);
   } catch (err) {
     console.error("Error in handleRoomState:", err);
+    const status = getStatusByError(err);
+    return res.status(status).json({
+      ok: false,
+      message: err.message || "Internal server error",
+    });
+  }
+}
+
+// [POST] /rooms/:id_room/drawing
+export async function handleRoomDrawing(req, res) {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ ok: false, message: "Unauthorized" });
+    }
+
+    const { id_room } = req.params || {};
+    const { points, snapshot } = req.body || {};
+
+    if (!points && !snapshot) {
+      const resp = await getRoomDrawing({
+        userId: BigInt(req.user.id),
+        roomId: id_room,
+      });
+      return res.json(resp);
+    }
+
+    const resp = await saveRoomDrawing({
+      userId: BigInt(req.user.id),
+      roomId: id_room,
+      points,
+      snapshot,
+    });
+    return res.json(resp);
+  } catch (err) {
+    console.error("Error in handleRoomDrawing:", err);
+    const status = getStatusByError(err);
+    return res.status(status).json({
+      ok: false,
+      message: err.message || "Internal server error",
+    });
+  }
+}
+
+// [GET] /rooms/:id_room/drawings
+export async function handleRoomDrawingsResults(req, res) {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ ok: false, message: "Unauthorized" });
+    }
+
+    const { id_room } = req.params || {};
+    const resp = await getRoomDrawingsResults({
+      userId: BigInt(req.user.id),
+      roomId: id_room,
+    });
+    return res.json(resp);
+  } catch (err) {
+    console.error("Error in handleRoomDrawingsResults:", err);
     const status = getStatusByError(err);
     return res.status(status).json({
       ok: false,

@@ -1,12 +1,20 @@
 import { useEffect, useRef } from "react";
 
+type DrawingPoint = {
+  x: number;
+  y: number;
+  color?: string | null;
+};
+
 type Props = {
   tool: "pen" | "eraser";
   color: string;
   brushSize: number;
   clearSignal: number;
   onSnapshot?: (dataUrl: string) => void;
+  onPointsChange?: (points: DrawingPoint[]) => void;
   initialImage?: string | null;
+  initialPoints?: DrawingPoint[] | null;
 };
 
 export function DrawingCanvas({
@@ -15,13 +23,17 @@ export function DrawingCanvas({
   brushSize,
   clearSignal,
   onSnapshot,
+  onPointsChange,
   initialImage = null,
+  initialPoints = null,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const isDownRef = useRef(false);
   const lastImageRef = useRef<string | null>(null);
   const snapshotRef = useRef<Props["onSnapshot"]>(onSnapshot);
+  const pointsChangeRef = useRef<Props["onPointsChange"]>(onPointsChange);
+  const pointsRef = useRef<DrawingPoint[]>([]);
 
   const toolRef = useRef<Props["tool"]>(tool);
   const colorRef = useRef<Props["color"]>(color);
@@ -44,6 +56,10 @@ export function DrawingCanvas({
   }, [onSnapshot]);
 
   useEffect(() => {
+    pointsChangeRef.current = onPointsChange;
+  }, [onPointsChange]);
+
+  useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = ctxRef.current;
     if (!canvas || !ctx) return;
@@ -53,7 +69,9 @@ export function DrawingCanvas({
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
 
+    pointsRef.current = [];
     snapshotRef.current?.("");
+    pointsChangeRef.current?.([]);
   }, [clearSignal]);
 
   useEffect(() => {
@@ -124,6 +142,7 @@ export function DrawingCanvas({
       const { x, y } = getPos(e);
       ctx.beginPath();
       ctx.moveTo(x, y);
+      pointsRef.current.push({ x, y, color: null });
     };
 
     const onMove = (e: PointerEvent) => {
@@ -140,9 +159,11 @@ export function DrawingCanvas({
       if (toolRef.current === "eraser") {
         ctx.globalCompositeOperation = "destination-out";
         ctx.strokeStyle = "rgba(0,0,0,1)";
+        pointsRef.current.push({ x, y, color: "erase" });
       } else {
         ctx.globalCompositeOperation = "source-over";
         ctx.strokeStyle = colorRef.current;
+        pointsRef.current.push({ x, y, color: colorRef.current });
       }
 
       ctx.lineTo(x, y);
@@ -160,6 +181,7 @@ export function DrawingCanvas({
       if (canvasRef.current) {
         snapshotRef.current?.(canvasRef.current.toDataURL("image/png"));
       }
+      pointsChangeRef.current?.([...pointsRef.current]);
     };
 
     canvas.addEventListener("pointerdown", onDown);
@@ -173,6 +195,53 @@ export function DrawingCanvas({
       window.removeEventListener("pointerup", onUp);
     };
   }, []);
+
+  useEffect(() => {
+    if (!initialPoints) return;
+    const canvas = canvasRef.current;
+    const ctx = ctxRef.current;
+    if (!canvas || !ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    let hasPath = false;
+    for (const point of initialPoints) {
+      if (point.color == null) {
+        ctx.beginPath();
+        ctx.moveTo(point.x, point.y);
+        hasPath = true;
+        continue;
+      }
+
+      if (!hasPath) {
+        ctx.beginPath();
+        ctx.moveTo(point.x, point.y);
+        hasPath = true;
+      }
+
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.lineWidth = brushSizeRef.current;
+
+      if (point.color === "erase") {
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.strokeStyle = "rgba(0,0,0,1)";
+      } else {
+        ctx.globalCompositeOperation = "source-over";
+        ctx.strokeStyle = point.color || "#1c1c1e";
+      }
+
+      ctx.lineTo(point.x, point.y);
+      ctx.stroke();
+    }
+
+    ctx.globalCompositeOperation = "source-over";
+    ctx.closePath();
+    pointsRef.current = [...initialPoints];
+  }, [initialPoints]);
 
   useEffect(() => {
     if (!initialImage || initialImage === lastImageRef.current) return;
