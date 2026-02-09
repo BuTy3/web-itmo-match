@@ -12,6 +12,11 @@ import {
   type DrawingPoint,
 } from '../../shared/api/rooms';
 import { METRIKA_GOALS, trackGoal } from '../../shared/lib/analytics/metrika';
+import {
+  normalizeDrawingPoints,
+  type DrawingWorkerRequest,
+  type DrawingWorkerResponse,
+} from './workers/pointsProcessing';
 import './rooms.css';
 import '../drawing/drawing.css';
 
@@ -32,6 +37,8 @@ export const RoomDrawingPage = () => {
   const [points, setPoints] = useState<DrawingPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const snapshotRef = useRef<string | null>(null);
+  const drawingWorkerRef = useRef<Worker | null>(null);
+  const latestPointsRequestIdRef = useRef(0);
 
   const roomId = id_room ?? 'unknown';
   const currentUserId = useMemo(() => nickname || 'me', [nickname]);
@@ -125,6 +132,58 @@ export const RoomDrawingPage = () => {
     }
   }, [currentUserId, dispatch, nickname, participants.length, roomId]);
 
+  const submitProcessedPoints = async (
+    requestId: number,
+    nextPoints: DrawingPoint[],
+  ) => {
+    if (!id_room) return;
+    setPoints(nextPoints);
+    try {
+      const resp = await submitRoomDrawing({
+        id_room,
+        points: nextPoints,
+        snapshot: snapshotRef.current,
+      });
+      if (requestId !== latestPointsRequestIdRef.current) return;
+
+      if (!resp.ok) {
+        console.warn('Failed to save drawing', resp);
+      }
+      if (resp.ok && resp.redirect) {
+        const nextPath = resp.redirect.startsWith('/')
+          ? resp.redirect
+          : `/rooms/${id_room}/${resp.redirect}`;
+        navigate(nextPath, { replace: true });
+      }
+    } catch (err) {
+      if (requestId !== latestPointsRequestIdRef.current) return;
+      console.error('Failed to save drawing', err);
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof Worker === 'undefined') {
+      return;
+    }
+
+    const worker = new Worker(
+      new URL('./workers/drawingPoints.worker.ts', import.meta.url),
+      { type: 'module' },
+    );
+    drawingWorkerRef.current = worker;
+
+    worker.onmessage = (event: MessageEvent<DrawingWorkerResponse>) => {
+      const payload = event.data;
+      if (payload.requestId !== latestPointsRequestIdRef.current) return;
+      void submitProcessedPoints(payload.requestId, payload.points);
+    };
+
+    return () => {
+      drawingWorkerRef.current?.terminate();
+      drawingWorkerRef.current = null;
+    };
+  }, [id_room, navigate]);
+
   const handleSnapshot = (dataUrl: string) => {
     snapshotRef.current = dataUrl || null;
     dispatch(
@@ -138,26 +197,21 @@ export const RoomDrawingPage = () => {
   };
 
   const handlePointsChange = async (nextPoints: DrawingPoint[]) => {
-    if (!id_room) return;
-    setPoints(nextPoints);
-    try {
-      const resp = await submitRoomDrawing({
-        id_room,
-        points: nextPoints,
-        snapshot: snapshotRef.current,
-      });
-      if (!resp.ok) {
-        console.warn('Failed to save drawing', resp);
-      }
-      if (resp.ok && resp.redirect) {
-        const nextPath = resp.redirect.startsWith('/')
-          ? resp.redirect
-          : `/rooms/${id_room}/${resp.redirect}`;
-        navigate(nextPath, { replace: true });
-      }
-    } catch (err) {
-      console.error('Failed to save drawing', err);
+    const requestId = latestPointsRequestIdRef.current + 1;
+    latestPointsRequestIdRef.current = requestId;
+
+    const worker = drawingWorkerRef.current;
+    if (!worker) {
+      const fallbackProcessedPoints = normalizeDrawingPoints(nextPoints);
+      void submitProcessedPoints(requestId, fallbackProcessedPoints);
+      return;
     }
+
+    const payload: DrawingWorkerRequest = {
+      requestId,
+      points: nextPoints,
+    };
+    worker.postMessage(payload);
   };
 
   const handleShowResults = async () => {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, TextField, Typography, useTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
@@ -41,6 +41,36 @@ type ViewMode =
   | 'itemForm'
   | 'collectionDetail'
   | 'itemView';
+
+type FiltersState = {
+  name: string;
+  type: string;
+};
+
+type CollectionProjection = {
+  id: number;
+  title: string;
+  type: string;
+};
+
+type WorkerRequest = {
+  requestId: number;
+  collections: CollectionProjection[];
+  filters: FiltersState;
+};
+
+type WorkerResponse = {
+  requestId: number;
+  nameOptions: string[];
+  typeOptions: string[];
+  filteredIds: number[];
+};
+
+type FilterResult = {
+  nameOptions: string[];
+  typeOptions: string[];
+  filteredIds: number[];
+};
 
 const gradient = 'linear-gradient(135deg, #ff5f6d 0%, #845bff 100%)';
 const sampleImage =
@@ -90,6 +120,29 @@ const mapDetailsCollection = (collection: CollectionDetails): Collection => ({
     image: item.urlImage ?? sampleImage,
   })),
 });
+
+const runFilterCalculation = (
+  collections: CollectionProjection[],
+  filters: FiltersState,
+): FilterResult => {
+  const nameOptions = Array.from(
+    new Set(collections.map((collection) => collection.title).filter(Boolean)),
+  ).sort((a, b) => a.localeCompare(b));
+
+  const typeOptions = Array.from(
+    new Set(collections.map((collection) => collection.type).filter(Boolean)),
+  ).sort((a, b) => a.localeCompare(b));
+
+  const filteredIds = collections
+    .filter((collection) => {
+      if (filters.name && collection.title !== filters.name) return false;
+      if (filters.type && collection.type !== filters.type) return false;
+      return true;
+    })
+    .map((collection) => collection.id);
+
+  return { nameOptions, typeOptions, filteredIds };
+};
 
 const Card = ({
   title,
@@ -164,7 +217,14 @@ const CollectionsPage = () => {
 
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
-  const [filters, setFilters] = useState({ name: '', type: '' });
+  const [filters, setFilters] = useState<FiltersState>({ name: '', type: '' });
+  const [filterResult, setFilterResult] = useState<FilterResult>({
+    nameOptions: [],
+    typeOptions: [],
+    filteredIds: [],
+  });
+  const workerRef = useRef<Worker | null>(null);
+  const workerRequestIdRef = useRef(0);
   const [collectionForm, setCollectionForm] = useState({
     title: '',
     image: '',
@@ -181,23 +241,78 @@ const CollectionsPage = () => {
     return selectedCollection.items.find((it) => it.id === itemId) ?? null;
   }, [selectedCollection, itemId]);
 
-  const nameOptions = useMemo(() => {
-    const unique = new Set(collections.map((collection) => collection.title).filter(Boolean));
-    return Array.from(unique).sort((a, b) => a.localeCompare(b));
-  }, [collections]);
+  const collectionProjection = useMemo<CollectionProjection[]>(
+    () =>
+      collections.map((collection) => ({
+        id: collection.id,
+        title: collection.title,
+        type: collection.type,
+      })),
+    [collections],
+  );
 
-  const typeOptions = useMemo(() => {
-    const unique = new Set(collections.map((collection) => collection.type).filter(Boolean));
-    return Array.from(unique).sort((a, b) => a.localeCompare(b));
+  const collectionsById = useMemo(() => {
+    return new Map(collections.map((collection) => [collection.id, collection]));
   }, [collections]);
 
   const filteredCollections = useMemo(() => {
-    return collections.filter((collection) => {
-      if (filters.name && collection.title !== filters.name) return false;
-      if (filters.type && collection.type !== filters.type) return false;
-      return true;
-    });
-  }, [collections, filters.name, filters.type]);
+    if (!filterResult.filteredIds.length) return [];
+    return filterResult.filteredIds
+      .map((id) => collectionsById.get(id))
+      .filter((collection): collection is Collection => Boolean(collection));
+  }, [collectionsById, filterResult.filteredIds]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof Worker === 'undefined') {
+      return;
+    }
+
+    const worker = new Worker(
+      new URL('./workers/collectionsFilter.worker.ts', import.meta.url),
+      { type: 'module' },
+    );
+    workerRef.current = worker;
+
+    worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
+      const payload = event.data;
+      if (payload.requestId !== workerRequestIdRef.current) return;
+
+      setFilterResult({
+        nameOptions: payload.nameOptions,
+        typeOptions: payload.typeOptions,
+        filteredIds: payload.filteredIds,
+      });
+    };
+
+    return () => {
+      workerRef.current?.terminate();
+      workerRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (viewMode !== 'list') return;
+
+    const nextRequestId = workerRequestIdRef.current + 1;
+    workerRequestIdRef.current = nextRequestId;
+
+    const requestPayload: WorkerRequest = {
+      requestId: nextRequestId,
+      collections: collectionProjection,
+      filters,
+    };
+
+    const worker = workerRef.current;
+    if (!worker) {
+      setFilterResult(runFilterCalculation(collectionProjection, filters));
+      return;
+    }
+
+    worker.postMessage(requestPayload);
+  }, [collectionProjection, filters, viewMode]);
+
+  const nameOptions = filterResult.nameOptions;
+  const typeOptions = filterResult.typeOptions;
 
   const pageSurface = theme.palette.background.paper;
   const panelBorder = `1px solid ${alpha(theme.palette.text.primary, 0.18)}`;
