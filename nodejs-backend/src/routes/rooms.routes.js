@@ -5,6 +5,8 @@ import {
   handleRoomConnect,
   handleRoomCreate,
   handleRoomState,
+  handleRoomDrawing,
+  handleRoomDrawingsResults,
 } from "../controllers/rooms.controller.js";
 
 const roomsRouter = Router();
@@ -17,5 +19,15 @@ roomsRouter.post("/connect/:id_room", authApiRequired, handleRoomConnect);
 
 // [POST] /rooms/:id_room
 roomsRouter.post("/:id_room", authApiRequired, handleRoomState);
+
+// [POST] /rooms/:id_room/drawing
+roomsRouter.post("/:id_room/drawing", authApiRequired, handleRoomDrawing);
+
+// [GET] /rooms/:id_room/drawings
+roomsRouter.get(
+  "/:id_room/drawings",
+  authApiRequired,
+  handleRoomDrawingsResults,
+);
 
 export default roomsRouter;

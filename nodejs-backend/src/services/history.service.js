@@ -19,11 +19,21 @@ function mapHistoryRoomDto(room) {
   const year = createdAt.getFullYear();
   const dateStr = `${day}.${month}.${year}`;
 
-  // Extract image from result JSON if available, otherwise null
-  let url_image = null;
-  if (room.result && typeof room.result === "object") {
-    url_image = room.result.image_url || room.result.url_image || null;
-  }
+  const toStringOrEmpty = (value) => (typeof value === "string" ? value : "");
+  const result =
+    room.result && typeof room.result === "object" ? room.result : null;
+  const matchedItems = Array.isArray(result?.matched_items)
+    ? result.matched_items
+    : null;
+  const firstMatch =
+    matchedItems?.find((item) => item && typeof item === "object") ?? null;
+  const resultSource = firstMatch ?? result ?? {};
+
+  const url_image =
+    toStringOrEmpty(resultSource.image_url) ||
+    toStringOrEmpty(resultSource.url_image) ||
+    null;
+  const description = toStringOrEmpty(resultSource.description);
 
   // Use topic as type, fallback to match_mode
   const type = room.topic || room.match_mode || "DEFAULT";
@@ -33,7 +43,7 @@ function mapHistoryRoomDto(room) {
     name: room.name,
     url_image: url_image,
     type: type,
-    description: room.topic || "",
+    description: description || room.topic || "",
     date: dateStr,
   };
 }
@@ -76,8 +86,11 @@ export async function fetchHistoryRooms(userId, filters = {}) {
   const where = {
     AND: [
       {
-        // Only show rooms created by the user
-        creator_id: userId,
+        // Only show rooms where the user participated or created.
+        OR: [
+          { creator_id: userId },
+          { room_participant: { some: { user_id: userId } } },
+        ],
       },
       {
         // Only show closed rooms in history
@@ -144,7 +157,10 @@ export async function fetchHistoryRooms(userId, filters = {}) {
   // Debug: Check if there are any closed rooms created by user
   const userCreatedClosedRooms = await prisma.room.count({
     where: {
-      creator_id: userId,
+      OR: [
+        { creator_id: userId },
+        { room_participant: { some: { user_id: userId } } },
+      ],
       status: "CLOSED",
     },
   });

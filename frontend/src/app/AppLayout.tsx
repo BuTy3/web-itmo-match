@@ -26,6 +26,7 @@ import {
   SIDEBAR_WIDTH_EXPANDED,
 } from '../shared/ui/theme/theme';
 import type { RootState } from './store';
+import { fetchRoomState } from '../shared/api/rooms';
 
 type NavItem = {
   label: string;
@@ -57,6 +58,69 @@ export const AppLayout: React.FC = () => {
       navigate('/login', { replace: true });
     }
   }, [accessToken, navigate]);
+
+  useEffect(() => {
+    if (!accessToken) return;
+    if (location.pathname.startsWith('/rooms/')) return;
+
+    const activeRoomId = localStorage.getItem('activeRoomId');
+    const activeRoomPath = localStorage.getItem('activeRoomPath');
+    if (!activeRoomId) return;
+
+    let mounted = true;
+
+    const restoreRoom = async () => {
+      try {
+        const resp = await fetchRoomState({ id_room: activeRoomId });
+        if (!mounted) return;
+        if (!resp.ok) {
+          if (resp.message === 'WAITING_FOR_PARTICIPANTS') {
+            return;
+          }
+          if (resp.message === 'ROOM_SESSION_MISSING') {
+            localStorage.removeItem('activeRoomId');
+            localStorage.removeItem('activeRoomPath');
+            return;
+          }
+          localStorage.removeItem('activeRoomId');
+          localStorage.removeItem('activeRoomPath');
+          return;
+        }
+
+        const nextPath = resp.redirect ?? resp.next;
+        if (nextPath) {
+          const normalized = nextPath.startsWith('/')
+            ? nextPath
+            : `/rooms/${activeRoomId}/${nextPath}`;
+          navigate(normalized, { replace: true });
+          return;
+        }
+
+        if (activeRoomPath && activeRoomPath.startsWith('/rooms/')) {
+          navigate(activeRoomPath, { replace: true });
+        } else {
+          navigate(`/rooms/${activeRoomId}`, { replace: true });
+        }
+      } catch (err) {
+        const status =
+          typeof err === 'object' && err !== null && 'response' in err
+            ? (err as { response?: { status?: number } }).response?.status
+            : undefined;
+        if (status === 404) {
+          localStorage.removeItem('activeRoomId');
+          localStorage.removeItem('activeRoomPath');
+          return;
+        }
+        console.error('Failed to restore room state', err);
+      }
+    };
+
+    restoreRoom();
+
+    return () => {
+      mounted = false;
+    };
+  }, [accessToken, location.pathname, navigate]);
 
   const drawerWidth = sidebarOpen
     ? SIDEBAR_WIDTH_EXPANDED

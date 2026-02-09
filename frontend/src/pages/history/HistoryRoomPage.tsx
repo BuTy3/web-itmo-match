@@ -5,7 +5,7 @@ import { Button } from '@mui/material';
 import type { RootState } from '../../app/store';
 import { getRoomHistory } from '../../shared/api/history';
 import type { HistoryRoomDetails } from '../../shared/api/types';
-import { extractResultCard } from './historyRoom.utils';
+import { extractResultCards } from './historyRoom.utils';
 import './history.css';
 
 const FALLBACK_IMAGE = 'https://i.ytimg.com/vi/ilUPzCADxoA/maxresdefault.jpg';
@@ -60,8 +60,7 @@ export const HistoryRoomPage = () => {
     };
   }, [roomId, token]);
 
-  const resultCard = useMemo(() => extractResultCard(room?.result), [room?.result]);
-  const imageSrc = resultCard.imageUrl || FALLBACK_IMAGE;
+  const resultCards = useMemo(() => extractResultCards(room?.result), [room?.result]);
 
   const participants = useMemo(() => {
     const names = room?.participants?.map((p) => p.display_name).filter(Boolean) ?? [];
@@ -74,20 +73,58 @@ export const HistoryRoomPage = () => {
 
       <div className="history-room-subtitle">
         В комнате <span className="history-room-subtitle__name">{room?.name ?? '...'}</span>{' '}
-        участники выбрали эту карточку 🤔
+        {resultCards.length === 0
+          ? 'совпадений не было'
+          : `участники выбрали ${resultCards.length > 1 ? 'эти карточки' : 'эту карточку'} 🤔`}
       </div>
 
       <div className="history-room-layout">
-        <div className="history-room-card" aria-busy={loading}>
-          <div className="history-room-card__image">
-            <img className="history-room-card__img" src={imageSrc} alt={resultCard.name || 'Карточка'} />
+        {resultCards.length === 0 ? (
+          <div className="history-room-card" aria-busy={loading}>
+            <div className="history-room-card__text">
+              <div className="history-room-card__title">Совпадений не было</div>
+              <div className="history-room-card__description">
+                Участники комнаты не выбрали общую карточку.
+              </div>
+            </div>
           </div>
+        ) : resultCards.length > 1 ? (
+          <div className="history-room-cards" aria-busy={loading}>
+            {resultCards.map((card, index) => (
+              <div key={`${card.name}-${index}`} className="history-room-card history-room-card--compact">
+                <div className="history-room-card__image">
+                  <img
+                    className="history-room-card__img"
+                    src={card.imageUrl || FALLBACK_IMAGE}
+                    alt={card.name || 'Карточка'}
+                  />
+                </div>
 
-          <div className="history-room-card__text">
-            <div className="history-room-card__title">{resultCard.name || 'Название...'}</div>
-            <div className="history-room-card__description">{resultCard.description || 'Описание...'}</div>
+                <div className="history-room-card__text">
+                  <div className="history-room-card__title">{card.name || 'Название...'}</div>
+                  <div className="history-room-card__description">{card.description || 'Описание...'}</div>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        ) : (
+          <div className="history-room-card" aria-busy={loading}>
+            <div className="history-room-card__image">
+              <img
+                className="history-room-card__img"
+                src={resultCards[0].imageUrl || FALLBACK_IMAGE}
+                alt={resultCards[0].name || 'Карточка'}
+              />
+            </div>
+
+            <div className="history-room-card__text">
+              <div className="history-room-card__title">{resultCards[0].name || 'Название...'}</div>
+              <div className="history-room-card__description">
+                {resultCards[0].description || 'Описание...'}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="history-room-participants">
           <div className="history-room-participants__title">Участники комнаты:</div>

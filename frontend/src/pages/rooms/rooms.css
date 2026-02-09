@@ -293,6 +293,14 @@
   box-shadow: 0 14px 26px rgba(0, 0, 0, 0.14);
 }
 
+.room-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  width: 100%;
+  justify-items: center;
+}
+
 .room-results-card__image {
   height: 240px;
   background: #d6d6d6;
@@ -355,6 +363,111 @@
 
 .room-drawings-card__name {
   font-size: 15px;
+}
+
+.rooms-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.rooms-title {
+  font-size: 36px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.rooms-room-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.rooms-card {
+  width: min(320px, 100%);
+  border-radius: 22px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(239, 48, 48, 0.2) 0%, rgba(65, 36, 243, 0.5) 100%);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.14);
+}
+
+.rooms-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  color: #1f1f1f;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.rooms-card__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.rooms-card__nick {
+  font-weight: 600;
+}
+
+.rooms-card__image {
+  height: 320px;
+  background: #d6d6d6;
+}
+
+.rooms-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rooms-card__footer {
+  padding: 16px;
+  color: #ffffff;
+  text-align: center;
+}
+
+.rooms-card__title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.rooms-room-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.rooms-action-button {
+  min-width: 110px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rooms-action-button--no {
+  background: #ef3030;
+}
+
+.rooms-action-button--yes {
+  background: #34c759;
+}
+
+.rooms-exit-button {
+  min-width: 180px;
+  height: 40px;
+  border-radius: 12px;
+  border: none;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(180deg, #ef3030 0%, #4124f3 100%);
 }
 
 @media (max-width: 1200px) {

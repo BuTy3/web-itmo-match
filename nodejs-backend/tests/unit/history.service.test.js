@@ -56,7 +56,16 @@ describe("history.service", () => {
       expect.objectContaining({
         where: expect.objectContaining({
           AND: expect.arrayContaining([
-            expect.objectContaining({ creator_id: userId }),
+            expect.objectContaining({
+              OR: expect.arrayContaining([
+                expect.objectContaining({ creator_id: userId }),
+                expect.objectContaining({
+                  room_participant: expect.objectContaining({
+                    some: expect.objectContaining({ user_id: userId }),
+                  }),
+                }),
+              ]),
+            }),
             expect.objectContaining({ status: "CLOSED" }),
           ]),
         }),

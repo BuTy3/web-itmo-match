@@ -1,42 +1,105 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getUserCollections } from '../../shared/api/home';
+import { createRoom } from '../../shared/api/rooms';
+import type { HomeCollection } from '../../shared/api/types';
 import './rooms.css';
 
-const COLLECTIONS = [
-  'Коллекция 1',
-  'Коллекция 2',
-  'Коллекция 3',
-  'Коллекция 4',
-  'Коллекция 5',
-  'Коллекция 6',
-  'Коллекция 7',
-  'Коллекция 8',
-];
+const buildCollectionLabel = (collection: HomeCollection) =>
+  collection.type || collection.description || `Коллекция ${collection.id}`;
 
 export const RoomCreatePage = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
-  const [selectedCollection, setSelectedCollection] = useState(COLLECTIONS[0]);
+  const [collections, setCollections] = useState<HomeCollection[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedCollectionId, setSelectedCollectionId] = useState<number | string>('');
   const [matchMode, setMatchMode] = useState<'first' | 'all'>('first');
   const [collectionMode, setCollectionMode] = useState<'single' | 'multiple'>(
     'single',
   );
 
-  const [roomId] = useState(
-    () => `room-${Math.floor(Date.now() / 1000)}`,
+  useEffect(() => {
+    let mounted = true;
+
+    const loadCollections = async () => {
+      try {
+        const resp = await getUserCollections();
+        if (!mounted) return;
+        if (resp.ok) {
+          setCollections(resp.collections);
+          setSelectedCollectionId(resp.collections[0]?.id ?? '');
+          setError(null);
+        } else {
+          setError(resp.message || 'Не удалось загрузить коллекции');
+        }
+      } catch (err) {
+        console.error('Failed to load collections', err);
+        if (mounted) setError('Не удалось загрузить коллекции');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadCollections();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const hasCollections = collections.length > 0;
+  const collectionOptions = useMemo(
+    () =>
+      collections.map((collection) => ({
+        id: collection.id,
+        label: buildCollectionLabel(collection),
+      })),
+    [collections],
   );
 
-  const handleCreate = () => {
-    navigate(`/rooms/connect/${roomId}`, {
-      state: {
-        name,
-        password,
-        selectedCollection,
-        matchMode,
-        collectionMode,
-      },
-    });
+  const handleCreate = async () => {
+    if (!name.trim()) {
+      window.alert('Введите название комнаты.');
+      return;
+    }
+    if (!selectedCollectionId) {
+      window.alert('Выберите коллекцию.');
+      return;
+    }
+
+    try {
+      const payload = {
+        name: name.trim(),
+        type_match: matchMode === 'first' ? 1 : 2,
+        type_collections: collectionMode === 'single' ? 1 : 2,
+        password: password.trim() || undefined,
+        collection_id:
+          collectionMode === 'multiple' ? [selectedCollectionId] : selectedCollectionId,
+      } as const;
+
+      const resp = await createRoom(payload);
+      if (!resp.ok) {
+        window.alert(resp.message || 'Не удалось создать комнату');
+        return;
+      }
+
+      const id =
+        resp.id_room ?? resp.room_id ?? resp.id;
+      if (!id) {
+        window.alert('Не удалось получить id комнаты');
+        return;
+      }
+
+      localStorage.setItem('activeRoomId', String(id));
+      localStorage.setItem('activeRoomPath', `/rooms/${id}`);
+      navigate(`/rooms/${id}`);
+    } catch (err) {
+      console.error('Failed to create room', err);
+      window.alert('Не удалось создать комнату');
+    }
   };
 
   return (
@@ -88,17 +151,20 @@ export const RoomCreatePage = () => {
               <select
                 className="room-form__select room-form__select--list"
                 size={8}
-                value={selectedCollection}
-                onChange={(event) => setSelectedCollection(event.target.value)}
+                value={selectedCollectionId}
+                onChange={(event) => setSelectedCollectionId(event.target.value)}
                 aria-label="Выбор коллекции"
+                disabled={!hasCollections || loading}
               >
-                {COLLECTIONS.map((collection) => (
-                  <option key={collection} value={collection}>
-                    {collection}
+                {collectionOptions.map((collection) => (
+                  <option key={collection.id} value={collection.id}>
+                    {collection.label}
                   </option>
                 ))}
               </select>
             </div>
+            {loading && <span className="room-form__label">Загрузка...</span>}
+            {!loading && error && <span className="room-form__label">{error}</span>}
           </div>
 
           <div className="room-form__field" style={{ gridArea: 'password' }}>
@@ -139,7 +205,12 @@ export const RoomCreatePage = () => {
         </div>
 
         <div className="room-form__footer">
-          <button type="button" className="room-button" onClick={handleCreate}>
+          <button
+            type="button"
+            className="room-button"
+            onClick={handleCreate}
+            disabled={loading}
+          >
             Создать
           </button>
         </div>

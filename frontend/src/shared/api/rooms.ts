@@ -1,21 +1,16 @@
 import { apiClient } from './client';
-import type {
-  RoomVotingState,
-  VoteResponse,
-  RoomResults,
-} from './types';
+import type { RoomVotingState, VoteResponse, RoomResults } from './types';
 
 export type RoomAccessResponse =
-  | { ok: true; collection_choose?: number | boolean }
+  | { ok: true; collection_choose?: RoomCollection[] | boolean }
   | { ok: false; message: string };
 
 export type RoomCreatePayload = {
-  token: string;
   name: string;
   type_match: 1 | 2;
   password?: string;
   type_collections: 1 | 2;
-  collection_id: number | string;
+  collection_id: number | string | Array<number | string>;
 };
 
 export type RoomCreateResponse =
@@ -23,9 +18,8 @@ export type RoomCreateResponse =
     | { ok: false; message: string };
 
 export type RoomConnectPayload = {
-  token: string;
   password?: string;
-  collection_id: number | string;
+  collection_id?: number | string;
 };
 
 export type RoomConnectResponse =
@@ -39,13 +33,13 @@ export type RoomStateResponse =
       profile_picture_url?: string | null;
       name_card: string;
       description: string;
+      owner_nick?: string | null;
       redirect?: string;
       next?: string;
     }
   | { ok: false; message: string };
 
 export type RoomChoosePayload = {
-  token: string;
   choose: 0 | 1 | 2;
 };
 
@@ -56,6 +50,7 @@ export type RoomChooseResponse =
       profile_picture_url?: string | null;
       name_card?: string;
       description?: string;
+      owner_nick?: string | null;
       redirect?: string;
       next?: string;
     }
@@ -73,7 +68,7 @@ export type RoomCollectionsResponse =
   | { ok: false; message: string };
 
 export const checkCreateRoomAccess = async (
-  payload: { token: string },
+  payload?: Record<string, never>,
 ): Promise<RoomAccessResponse> => {
   const { data } = await apiClient.post<RoomAccessResponse>('/rooms/create', payload);
   return data;
@@ -87,13 +82,22 @@ export const createRoom = async (
 };
 
 export const checkConnectRoomAccess = async (
-  payload: { token: string; id_room: string | number },
+  payload: { id_room: string | number; password?: string },
 ): Promise<RoomAccessResponse> => {
-  const { id_room, token } = payload;
-  const { data } = await apiClient.post<RoomAccessResponse>(`/rooms/connect/${id_room}`, {
-    token,
-  });
-  return data;
+  const { id_room, password } = payload;
+  try {
+    const { data } = await apiClient.post<RoomAccessResponse>(`/rooms/connect/${id_room}`, {
+      check: true,
+      password,
+    });
+    return data;
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } } };
+    return {
+      ok: false,
+      message: err.response?.data?.message || 'Не удалось загрузить данные комнаты',
+    };
+  }
 };
 
 export const connectRoom = async (
@@ -108,12 +112,10 @@ export const connectRoom = async (
 };
 
 export const fetchRoomState = async (
-  payload: { token: string; id_room: string | number },
+  payload: { id_room: string | number },
 ): Promise<RoomStateResponse> => {
-  const { id_room, token } = payload;
-  const { data } = await apiClient.post<RoomStateResponse>(`/rooms/${id_room}`, {
-    token,
-  });
+  const { id_room } = payload;
+  const { data } = await apiClient.post<RoomStateResponse>(`/rooms/${id_room}`);
   return data;
 };
 
@@ -126,10 +128,115 @@ export const chooseRoomCard = async (
 };
 
 export const getUserCollections = async (
-  payload: { token: string },
+  payload?: Record<string, never>,
 ): Promise<RoomCollectionsResponse> => {
   const { data } = await apiClient.post<RoomCollectionsResponse>('/home', payload);
   return data;
+};
+
+export type DrawingPoint = {
+  x: number;
+  y: number;
+  color?: string | null;
+};
+
+export type RoomDrawingResponse =
+  | {
+      ok: true;
+      topic?: string | null;
+      participants?: Array<{ id: string; nickname: string }>;
+      points?: DrawingPoint[] | null;
+      snapshot?: string | null;
+      redirect?: string;
+    }
+  | { ok: false; message: string; redirect?: string };
+
+export type RoomDrawingSubmitResponse =
+  | { ok: true; redirect?: string }
+  | { ok: false; message: string };
+
+export type RoomResultCard = {
+  profile_picture_url?: string | null;
+  name_card: string;
+  description: string;
+};
+
+export type RoomDrawingResult = {
+  user_id: string;
+  nickname: string;
+  snapshot: string | null;
+};
+
+export type RoomDrawingsResultsResponse =
+  | { ok: true; drawings: RoomDrawingResult[] }
+  | { ok: false; message: string };
+
+export type RoomResultsCardsResponse =
+  | { ok: true; cards: RoomResultCard[] }
+  | { ok: false; message: string };
+
+export const fetchRoomDrawing = async (
+  payload: { id_room: string | number },
+): Promise<RoomDrawingResponse> => {
+  const { id_room } = payload;
+  const { data } = await apiClient.post<RoomDrawingResponse>(`/rooms/${id_room}/drawing`);
+  return data;
+};
+
+export const submitRoomDrawing = async (
+  payload: { id_room: string | number; points?: DrawingPoint[]; snapshot?: string | null },
+): Promise<RoomDrawingSubmitResponse> => {
+  const { id_room, ...body } = payload;
+  const { data } = await apiClient.post<RoomDrawingSubmitResponse>(
+    `/rooms/${id_room}/drawing`,
+    body,
+  );
+  return data;
+};
+
+export const getRoomCardsResults = async (
+  roomId: string,
+): Promise<RoomResultsCardsResponse> => {
+  try {
+    const response = await apiClient.get<RoomResults>(`/rooms/${roomId}/results`);
+    if (response.data.ok) {
+      return {
+        ok: true,
+        cards: response.data.matched_items.map((item) => ({
+          name_card: item.title,
+          description: item.description ?? '',
+          profile_picture_url: item.image_url ?? null,
+        })),
+      };
+    }
+    return {
+      ok: false,
+      message: response.data.message || 'Не удалось загрузить результаты',
+    };
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } } };
+    return {
+      ok: false,
+      message: err.response?.data?.message || 'Не удалось загрузить результаты',
+    };
+  }
+};
+
+export const getRoomDrawingsResults = async (
+  roomId: string,
+): Promise<RoomDrawingsResultsResponse> => {
+  try {
+    const response = await apiClient.get<RoomDrawingsResultsResponse>(
+      `/rooms/${roomId}/drawings`,
+    );
+    return response.data;
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } } };
+    return {
+      ok: false,
+      message: err.response?.data?.message || 'Не удалось загрузить рисунки',
+    };
+  }
 };
 
 // Get room voting state (current item to vote on)

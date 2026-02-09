@@ -1,27 +1,133 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { getUserCollections } from '../../shared/api/home';
+import { checkConnectRoomAccess, connectRoom, type RoomCollection } from '../../shared/api/rooms';
 import './rooms.css';
 
-const COLLECTIONS = [
-  'Коллекция 1',
-  'Коллекция 2',
-  'Коллекция 3',
-  'Коллекция 4',
-  'Коллекция 5',
-  'Коллекция 6',
-  'Коллекция 7',
-  'Коллекция 8',
-];
+const buildCollectionLabel = (collection: RoomCollection) =>
+  collection.title || collection.type || `Коллекция ${collection.id}`;
 
 export const RoomConnectPage = () => {
   const navigate = useNavigate();
   const { id_room } = useParams();
   const [password, setPassword] = useState('');
-  const [selectedCollection, setSelectedCollection] = useState(COLLECTIONS[0]);
+  const [collections, setCollections] = useState<RoomCollection[]>([]);
+  const [selectedCollectionId, setSelectedCollectionId] = useState<number | string>('');
+  const [collectionRequired, setCollectionRequired] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleConnect = () => {
+  useEffect(() => {
+    if (!id_room) {
+      navigate('/home', { replace: true });
+      return;
+    }
+
+    let mounted = true;
+
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const access = await checkConnectRoomAccess({
+          id_room,
+          password: password.trim() || undefined,
+        });
+        if (!mounted) return;
+        if (!access.ok) {
+          const message =
+            access.message === 'Password is required'
+              ? 'Введите пароль'
+              : access.message || 'Комната недоступна';
+          setError(message);
+          return;
+        }
+
+        if (Array.isArray(access.collection_choose)) {
+          setCollections(access.collection_choose);
+          setSelectedCollectionId(access.collection_choose[0]?.id ?? '');
+          setCollectionRequired(true);
+          if (!access.collection_choose.length) {
+            setError('Нет доступных коллекций для подключения');
+          } else {
+            setError(null);
+          }
+        } else if (access.collection_choose === false) {
+          setCollections([]);
+          setSelectedCollectionId('');
+          setCollectionRequired(false);
+          setError(null);
+        } else {
+          const resp = await getUserCollections();
+          if (!mounted) return;
+          if (resp.ok) {
+            setCollections(resp.collections);
+            setSelectedCollectionId(resp.collections[0]?.id ?? '');
+            setCollectionRequired(true);
+            setError(null);
+          } else {
+            setError(resp.message || 'Не удалось загрузить коллекции');
+          }
+        }
+      } catch (err) {
+        const message =
+          typeof err === 'object' && err !== null && 'response' in err
+            ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+            : undefined;
+        console.error('Failed to load room data', err);
+        if (mounted) setError(message || 'Не удалось загрузить данные комнаты');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadData();
+
+    return () => {
+      mounted = false;
+    };
+  }, [id_room, navigate, password]);
+
+  const collectionOptions = useMemo(
+    () =>
+      collections.map((collection) => ({
+        id: collection.id,
+        label: buildCollectionLabel(collection),
+      })),
+    [collections],
+  );
+
+  const handleConnect = async () => {
     if (!id_room) return;
-    navigate(`/rooms/${id_room}`);
+    if (collectionRequired && !selectedCollectionId) {
+      window.alert('Выберите коллекцию.');
+      return;
+    }
+
+    try {
+      const trimmedPassword = password.trim();
+      const payloadBase = {
+        id_room,
+        ...(trimmedPassword ? { password: trimmedPassword } : {}),
+      };
+      const resp = collectionRequired
+        ? await connectRoom({
+            ...payloadBase,
+            collection_id: selectedCollectionId,
+          })
+        : await connectRoom(payloadBase);
+
+      if (!resp.ok) {
+        window.alert(resp.message || 'Не удалось подключиться');
+        return;
+      }
+
+      localStorage.setItem('activeRoomId', String(id_room));
+      localStorage.setItem('activeRoomPath', `/rooms/${id_room}`);
+      navigate(`/rooms/${id_room}`);
+    } catch (err) {
+      console.error('Failed to connect to room', err);
+      window.alert('Не удалось подключиться');
+    }
   };
 
   return (
@@ -51,21 +157,29 @@ export const RoomConnectPage = () => {
             <label className="room-form__label" htmlFor="room-connect-collection">
               Выберите коллекцию
             </label>
-            <div className="room-form__collection-box">
-              <select
-                id="room-connect-collection"
-                className="room-form__select room-form__select--list"
-                size={8}
-                value={selectedCollection}
-                onChange={(event) => setSelectedCollection(event.target.value)}
-              >
-                {COLLECTIONS.map((collection) => (
-                  <option key={collection} value={collection}>
-                    {collection}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {collectionRequired ? (
+              <div className="room-form__collection-box">
+                <select
+                  id="room-connect-collection"
+                  className="room-form__select room-form__select--list"
+                  size={8}
+                  value={selectedCollectionId}
+                  onChange={(event) => setSelectedCollectionId(event.target.value)}
+                  disabled={loading}
+                >
+                  {collectionOptions.map((collection) => (
+                    <option key={collection.id} value={collection.id}>
+                      {collection.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
+            {loading && <span className="room-form__label">Загрузка...</span>}
+            {!loading && error && <span className="room-form__label">{error}</span>}
+            {!loading && !collectionRequired && (
+              <span className="room-form__label">Коллекция выбрана создателем</span>
+            )}
           </div>
         </div>
 
@@ -77,7 +191,12 @@ export const RoomConnectPage = () => {
           >
             Отключиться
           </button>
-          <button type="button" className="room-button" onClick={handleConnect}>
+          <button
+            type="button"
+            className="room-button"
+            onClick={handleConnect}
+            disabled={loading}
+          >
             Подключиться
           </button>
         </div>
