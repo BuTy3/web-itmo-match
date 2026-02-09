@@ -33,8 +33,7 @@ export const METRIKA_GOALS = {
   Logout: 'logout',
 } as const;
 
-export type MetrikaGoalName =
-  (typeof METRIKA_GOALS)[keyof typeof METRIKA_GOALS];
+export type MetrikaGoalName = (typeof METRIKA_GOALS)[keyof typeof METRIKA_GOALS];
 
 declare global {
   interface Window {
@@ -56,11 +55,7 @@ const sanitizeParams = (params?: MetrikaParams) => {
 
   const payload: Record<string, MetrikaPrimitive> = {};
   Object.entries(params).forEach(([key, value]) => {
-    if (
-      typeof value === 'string' ||
-      typeof value === 'number' ||
-      typeof value === 'boolean'
-    ) {
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
       payload[key] = value;
     }
   });
@@ -120,10 +115,7 @@ export const initMetrika = () => {
   }
 };
 
-export const trackGoal = (
-  goal: MetrikaGoalName,
-  params?: MetrikaParams,
-) => {
+export const trackGoal = (goal: MetrikaGoalName, params?: MetrikaParams) => {
   if (!isEnabled) return;
   const goalParams = sanitizeParams(params);
   if (goalParams) {

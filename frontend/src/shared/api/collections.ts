@@ -4,9 +4,11 @@ export type CollectionListItem = {
   id: number;
   url_image: string | null;
   type: string;
+  title?: string | null;
   description: string | null;
   items: {
     item_id: number;
+    title?: string | null;
     url_image: string | null;
     description: string | null;
   }[];
@@ -21,6 +23,7 @@ export type CollectionDetails = {
   ownerId: number;
   urlImage: string | null;
   imagePath: string | null;
+  title?: string | null;
   description: string | null;
   createdAt: string;
   updatedAt: string;
@@ -29,6 +32,7 @@ export type CollectionDetails = {
     collectionId: number;
     urlImage: string | null;
     imagePath: string | null;
+    title?: string | null;
     description: string | null;
   }[];
 };
@@ -37,9 +41,7 @@ export type CollectionDetailsResponse =
   | { ok: true; collection: CollectionDetails }
   | { ok: false; message: string };
 
-export type ConstructorResponse =
-  | { ok: true; new_id: number }
-  | { ok: false; message: string };
+export type ConstructorResponse = { ok: true; new_id: number } | { ok: false; message: string };
 
 export type ConstructorStateResponse =
   | { ok: true; new_id: number; item_id: number }
@@ -50,9 +52,7 @@ export type CreateItemResponse =
   | { ok: true; collection_id: number }
   | { ok: false; message: string; new_id?: number; item_id?: number };
 
-export type DeleteResponse =
-  | { ok: true; id: number }
-  | { ok: false; message: string };
+export type DeleteResponse = { ok: true; id: number } | { ok: false; message: string };
 
 export const getMyCollections = async (): Promise<CollectionsResponse> => {
   const { data } = await apiClient.post<CollectionsResponse>('/home');
@@ -71,9 +71,17 @@ export const createConstructor = async (): Promise<ConstructorResponse> => {
 
 export const saveConstructorMeta = async (
   id: number,
-  payload: { url_image?: string | null; image?: string | null; description: string },
+  payload: {
+    url_image?: string | null;
+    image?: string | null;
+    title?: string | null;
+    description: string;
+  },
 ): Promise<ConstructorResponse> => {
-  const { data } = await apiClient.post<ConstructorResponse>(`/collections/constructor/${id}`, payload);
+  const { data } = await apiClient.post<ConstructorResponse>(
+    `/collections/constructor/${id}`,
+    payload,
+  );
   return data;
 };
 
@@ -86,11 +94,15 @@ export const createConstructorItem = async (payload: {
   item_id?: number | null;
   url_image?: string | null;
   image?: string | null;
+  title?: string | null;
   description: string;
   next?: boolean;
   save_exit?: boolean;
 }): Promise<CreateItemResponse> => {
-  const { data } = await apiClient.post<CreateItemResponse>('/collections/constructor/item', payload);
+  const { data } = await apiClient.post<CreateItemResponse>(
+    '/collections/constructor/item',
+    payload,
+  );
   return data;
 };
 
@@ -103,6 +115,8 @@ export const deleteCollectionItem = async (
   collectionId: number,
   itemId: number,
 ): Promise<DeleteResponse> => {
-  const { data } = await apiClient.delete<DeleteResponse>(`/collections/${collectionId}/items/${itemId}`);
+  const { data } = await apiClient.delete<DeleteResponse>(
+    `/collections/${collectionId}/items/${itemId}`,
+  );
   return data;
 };

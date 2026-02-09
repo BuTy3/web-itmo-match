@@ -32,8 +32,7 @@ const roomsSlice = createSlice({
       state,
       action: PayloadAction<{ roomId: string; participants: RoomParticipant[] }>,
     ) {
-      state.participantsByRoom[action.payload.roomId] =
-        action.payload.participants;
+      state.participantsByRoom[action.payload.roomId] = action.payload.participants;
     },
     upsertDrawing(
       state,

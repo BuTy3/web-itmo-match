@@ -13,7 +13,10 @@ describe('auth API', () => {
     const mockedPost = apiClient.post as jest.MockedFunction<typeof apiClient.post>;
     mockedPost.mockResolvedValueOnce({ data: { ok: true, token: 't1' } as never });
     const resp = await register({ login: 'user1', password: 'pass' });
-    expect(apiClient.post).toHaveBeenCalledWith('/auth/register', { login: 'user1', password: 'pass' });
+    expect(apiClient.post).toHaveBeenCalledWith('/auth/register', {
+      login: 'user1',
+      password: 'pass',
+    });
     expect(resp).toEqual({ ok: true, token: 't1' });
   });
 
@@ -21,7 +24,10 @@ describe('auth API', () => {
     const mockedPost = apiClient.post as jest.MockedFunction<typeof apiClient.post>;
     mockedPost.mockResolvedValueOnce({ data: { ok: true, token: 't2' } as never });
     const resp = await login({ login: 'user1', password: 'pass' });
-    expect(apiClient.post).toHaveBeenCalledWith('/auth/login', { login: 'user1', password: 'pass' });
+    expect(apiClient.post).toHaveBeenCalledWith('/auth/login', {
+      login: 'user1',
+      password: 'pass',
+    });
     expect(resp).toEqual({ ok: true, token: 't2' });
   });
 

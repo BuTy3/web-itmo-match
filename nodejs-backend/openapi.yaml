@@ -33,7 +33,7 @@ components:
           example: testuser
         password:
           type: string
-          example: "1234"
+          example: '1234'
 
     AuthResponse:
       type: object
@@ -58,7 +58,7 @@ components:
           example: false
         message:
           type: string
-          example: "Something went wrong"
+          example: 'Something went wrong'
         new_id:
           type: integer
           nullable: true
@@ -81,15 +81,15 @@ components:
         urlImage:
           type: string
           nullable: true
-          example: "https://example.com/item-preview.png"
+          example: 'https://example.com/item-preview.png'
         imagePath:
           type: string
           nullable: true
-          example: "/uploads/items/item-1700000000000.png"
+          example: '/uploads/items/item-1700000000000.png'
         description:
           type: string
           nullable: true
-          example: "Item description"
+          example: 'Item description'
 
     CollectionMeta:
       type: object
@@ -103,15 +103,15 @@ components:
         urlImage:
           type: string
           nullable: true
-          example: "https://example.com/collection-header.png"
+          example: 'https://example.com/collection-header.png'
         imagePath:
           type: string
           nullable: true
-          example: "/uploads/collections/col-1700000000000.png"
+          example: '/uploads/collections/col-1700000000000.png'
         description:
           type: string
           nullable: true
-          example: "My first collection"
+          example: 'My first collection'
 
     CollectionFull:
       type: object
@@ -125,15 +125,15 @@ components:
         urlImage:
           type: string
           nullable: true
-          description: "Currently always null, collection images are not stored in DB"
+          description: 'Currently always null, collection images are not stored in DB'
         imagePath:
           type: string
           nullable: true
-          description: "Currently always null, collection images are not stored in DB"
+          description: 'Currently always null, collection images are not stored in DB'
         description:
           type: string
           nullable: true
-          example: "My first collection from draft"
+          example: 'My first collection from draft'
         createdAt:
           type: string
           format: date-time
@@ -143,7 +143,7 @@ components:
         items:
           type: array
           items:
-            $ref: "#/components/schemas/CollectionItem"
+            $ref: '#/components/schemas/CollectionItem'
 
     DraftConstructorResponse:
       type: object
@@ -161,16 +161,16 @@ components:
         url_image:
           type: string
           nullable: true
-          example: "https://example.com/collection-header.png"
+          example: 'https://example.com/collection-header.png'
         image:
           type: string
           nullable: true
           description: Local server image path returned by /upload/collection-image.
-          example: "/uploads/collections/col-1700000000000.png"
+          example: '/uploads/collections/col-1700000000000.png'
         description:
           type: string
           nullable: true
-          example: "My first collection"
+          example: 'My first collection'
 
     CreateItemRequest:
       type: object
@@ -185,15 +185,15 @@ components:
         url_image:
           type: string
           nullable: true
-          example: "https://example.com/item-preview.png"
+          example: 'https://example.com/item-preview.png'
         image:
           type: string
           nullable: true
           description: Local server image path returned by /upload/item-image.
-          example: "/uploads/items/item-1700000000000.png"
+          example: '/uploads/items/item-1700000000000.png'
         description:
           type: string
-          example: "Item description"
+          example: 'Item description'
         next:
           type: boolean
           description: If true, user wants to create another item.
@@ -234,7 +234,7 @@ components:
           example: true
         imagePath:
           type: string
-          example: "/uploads/collections/col-1700000000000.png"
+          example: '/uploads/collections/col-1700000000000.png'
 
     DrawingTopicResponse:
       type: object
@@ -245,11 +245,11 @@ components:
         topic:
           type: string
           nullable: true
-          example: "Draw a flying cat in the city"
+          example: 'Draw a flying cat in the city'
         message:
           type: string
           nullable: true
-          example: "No topics available"
+          example: 'No topics available'
 
     HomeItem:
       type: object
@@ -260,11 +260,11 @@ components:
         url_image:
           type: string
           nullable: true
-          example: "https://example.com/item.png"
+          example: 'https://example.com/item.png'
         description:
           type: string
           nullable: true
-          example: "Item description"
+          example: 'Item description'
       required: [item_id, url_image, description]
 
     CollectionType:
@@ -290,17 +290,17 @@ components:
         url_image:
           type: string
           nullable: true
-          example: "https://example.com/collection.png"
+          example: 'https://example.com/collection.png'
         type:
-          $ref: "#/components/schemas/CollectionType"
+          $ref: '#/components/schemas/CollectionType'
         description:
           type: string
           nullable: true
-          example: "Collection description"
+          example: 'Collection description'
         items:
           type: array
           items:
-            $ref: "#/components/schemas/HomeItem"
+            $ref: '#/components/schemas/HomeItem'
       required: [id, url_image, type, description, items]
 
     HomeCollectionsResponse:
@@ -312,7 +312,7 @@ components:
         collections:
           type: array
           items:
-            $ref: "#/components/schemas/HomeCollection"
+            $ref: '#/components/schemas/HomeCollection'
       required: [ok, collections]
 
     OkFalseResponse:
@@ -323,7 +323,7 @@ components:
           example: false
         message:
           type: string
-          example: "Internal server error"
+          example: 'Internal server error'
       required: [ok, message]
 
     SearchRoomRequest:
@@ -359,12 +359,12 @@ components:
         color:
           type: string
           nullable: true
-          example: "#000000"
+          example: '#000000'
 
     DrawingPoints:
       type: array
       items:
-        $ref: "#/components/schemas/DrawingPoint"
+        $ref: '#/components/schemas/DrawingPoint'
 
     HistoryFilters:
       type: object
@@ -373,41 +373,41 @@ components:
           type: string
           nullable: true
           description: Filter by room name (case-insensitive partial match)
-          example: "Вечерняя"
+          example: 'Вечерняя'
         type:
           type: string
           nullable: true
           description: Filter by type/topic (exact match)
-          example: "Прогулка"
+          example: 'Прогулка'
         date:
           type: string
           nullable: true
           description: Filter by date in DD.MM.YYYY format
-          example: "15.12.2024"
+          example: '15.12.2024'
 
     HistoryRoom:
       type: object
       properties:
         id:
           type: string
-          example: "1"
+          example: '1'
         name:
           type: string
-          example: "Вечерняя прогулка по городу"
+          example: 'Вечерняя прогулка по городу'
         url_image:
           type: string
           nullable: true
-          example: "https://example.com/image.jpg"
+          example: 'https://example.com/image.jpg'
         type:
           type: string
-          example: "Прогулка"
+          example: 'Прогулка'
         description:
           type: string
-          example: "Прогулка"
+          example: 'Прогулка'
         date:
           type: string
           description: Date in DD.MM.YYYY format
-          example: "15.12.2024"
+          example: '15.12.2024'
       required: [id, name, url_image, type, description, date]
 
     HistoryResponse:
@@ -419,7 +419,7 @@ components:
         rooms:
           type: array
           items:
-            $ref: "#/components/schemas/HistoryRoom"
+            $ref: '#/components/schemas/HistoryRoom'
       required: [ok, rooms]
 
     RoomParticipant:
@@ -427,23 +427,23 @@ components:
       properties:
         user_id:
           type: string
-          example: "1"
+          example: '1'
         display_name:
           type: string
-          example: "Test User"
+          example: 'Test User'
         avatar_url:
           type: string
           nullable: true
-          example: "https://example.com/avatar.jpg"
+          example: 'https://example.com/avatar.jpg'
         joined_at:
           type: string
           format: date-time
-          example: "2024-12-15T10:00:00Z"
+          example: '2024-12-15T10:00:00Z'
         finished_at:
           type: string
           format: date-time
           nullable: true
-          example: "2024-12-15T12:00:00Z"
+          example: '2024-12-15T12:00:00Z'
       required: [user_id, display_name, avatar_url, joined_at, finished_at]
 
     RoomCreator:
@@ -451,14 +451,14 @@ components:
       properties:
         id:
           type: string
-          example: "1"
+          example: '1'
         display_name:
           type: string
-          example: "Test User"
+          example: 'Test User'
         avatar_url:
           type: string
           nullable: true
-          example: "https://example.com/avatar.jpg"
+          example: 'https://example.com/avatar.jpg'
       required: [id, display_name, avatar_url]
 
     RoomHistoryDetail:
@@ -466,48 +466,48 @@ components:
       properties:
         id:
           type: string
-          example: "1"
+          example: '1'
         name:
           type: string
-          example: "Вечерняя прогулка по городу"
+          example: 'Вечерняя прогулка по городу'
         topic:
           type: string
-          example: "Прогулка"
+          example: 'Прогулка'
         match_mode:
           type: string
           enum: [FIRST_MATCH, WATCH_ALL]
-          example: "FIRST_MATCH"
+          example: 'FIRST_MATCH'
         status:
           type: string
           enum: [OPEN, ACTIVE, CLOSED]
-          example: "CLOSED"
+          example: 'CLOSED'
         access_mode:
           type: string
           enum: [PUBLIC, PRIVATE]
-          example: "PUBLIC"
+          example: 'PUBLIC'
         created_at:
           type: string
           format: date-time
-          example: "2024-12-15T10:00:00Z"
+          example: '2024-12-15T10:00:00Z'
         closed_at:
           type: string
           format: date-time
           nullable: true
-          example: "2024-12-15T12:00:00Z"
+          example: '2024-12-15T12:00:00Z'
         date:
           type: string
           description: Date in DD.MM.YYYY format
-          example: "15.12.2024"
+          example: '15.12.2024'
         result:
           type: object
           nullable: true
           description: Room matching result (JSON object)
         creator:
-          $ref: "#/components/schemas/RoomCreator"
+          $ref: '#/components/schemas/RoomCreator'
         participants:
           type: array
           items:
-            $ref: "#/components/schemas/RoomParticipant"
+            $ref: '#/components/schemas/RoomParticipant'
       required:
         [
           id,
@@ -531,7 +531,7 @@ components:
           type: boolean
           example: true
         room:
-          $ref: "#/components/schemas/RoomHistoryDetail"
+          $ref: '#/components/schemas/RoomHistoryDetail'
       required: [ok, room]
 
     VotingItemSuggestor:
@@ -539,10 +539,10 @@ components:
       properties:
         user_id:
           type: string
-          example: "1"
+          example: '1'
         display_name:
           type: string
-          example: "Test User"
+          example: 'Test User'
         avatar_url:
           type: string
           nullable: true
@@ -552,10 +552,10 @@ components:
       properties:
         id:
           type: string
-          example: "1"
+          example: '1'
         title:
           type: string
-          example: "Мираж синема"
+          example: 'Мираж синема'
         description:
           type: string
           nullable: true
@@ -563,19 +563,19 @@ components:
           type: string
           nullable: true
         suggested_by:
-          $ref: "#/components/schemas/VotingItemSuggestor"
+          $ref: '#/components/schemas/VotingItemSuggestor'
 
     RoomVotingState:
       type: object
       properties:
         room_id:
           type: string
-          example: "1"
+          example: '1'
         room_name:
           type: string
-          example: "Вечерняя прогулка"
+          example: 'Вечерняя прогулка'
         current_item:
-          $ref: "#/components/schemas/VotingItem"
+          $ref: '#/components/schemas/VotingItem'
           nullable: true
         total_items:
           type: integer
@@ -598,7 +598,7 @@ components:
       properties:
         item_id:
           type: string
-          example: "1"
+          example: '1'
         vote:
           type: boolean
           example: true
@@ -610,7 +610,7 @@ components:
           type: boolean
           example: true
         next_item:
-          $ref: "#/components/schemas/VotingItem"
+          $ref: '#/components/schemas/VotingItem'
           nullable: true
         is_finished:
           type: boolean
@@ -622,17 +622,17 @@ components:
           type: string
           nullable: true
           enum: [drawing, drawing_res, results]
-          example: "results"
+          example: 'results'
 
     MatchedItem:
       type: object
       properties:
         id:
           type: string
-          example: "1"
+          example: '1'
         title:
           type: string
-          example: "Мираж синема"
+          example: 'Мираж синема'
         description:
           type: string
           nullable: true
@@ -652,7 +652,7 @@ components:
         matched_items:
           type: array
           items:
-            $ref: "#/components/schemas/MatchedItem"
+            $ref: '#/components/schemas/MatchedItem'
         message:
           type: string
           nullable: true
@@ -669,14 +669,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AuthRequest"
+              $ref: '#/components/schemas/AuthRequest'
       responses:
-        "200":
+        '200':
           description: Register result
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthResponse"
+                $ref: '#/components/schemas/AuthResponse'
 
   /auth/login:
     post:
@@ -689,14 +689,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AuthRequest"
+              $ref: '#/components/schemas/AuthRequest'
       responses:
-        "200":
+        '200':
           description: Login result
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthResponse"
+                $ref: '#/components/schemas/AuthResponse'
 
   /collections/constructor:
     post:
@@ -709,18 +709,18 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Draft collection id
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DraftConstructorResponse"
-        "401":
+                $ref: '#/components/schemas/DraftConstructorResponse'
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
 
   /collections/constructor/{new_id}:
     post:
@@ -744,9 +744,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ConstructorMetaRequest"
+              $ref: '#/components/schemas/ConstructorMetaRequest'
       responses:
-        "200":
+        '200':
           description: Draft metadata saved or state loaded
           content:
             application/json:
@@ -757,23 +757,23 @@ paths:
                     type: boolean
                   new_id:
                     type: integer
-                    description: "Draft collection id"
+                    description: 'Draft collection id'
                   item_id:
                     type: integer
                     nullable: true
-                    description: "Next item id when loading constructor state"
-        "400":
+                    description: 'Next item id when loading constructor state'
+        '400':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
 
   /collections/constructor/item:
     post:
@@ -790,28 +790,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateItemRequest"
+              $ref: '#/components/schemas/CreateItemRequest'
       responses:
-        "200":
+        '200':
           description: Item created or collection finalized
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/CreateItemContinueResponse"
-                  - $ref: "#/components/schemas/CreateItemFinalizeResponse"
-        "400":
+                  - $ref: '#/components/schemas/CreateItemContinueResponse'
+                  - $ref: '#/components/schemas/CreateItemFinalizeResponse'
+        '400':
           description: Validation error while saving item
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
 
   /collections/{id}:
     get:
@@ -827,7 +827,7 @@ paths:
           schema:
             type: integer
       responses:
-        "200":
+        '200':
           description: Collection data
           content:
             application/json:
@@ -838,25 +838,25 @@ paths:
                     type: boolean
                     example: true
                   collection:
-                    $ref: "#/components/schemas/CollectionFull"
-        "401":
+                    $ref: '#/components/schemas/CollectionFull'
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
           description: Access denied
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: Collection not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
 
     put:
       summary: Update finalized collection metadata (private)
@@ -880,17 +880,17 @@ paths:
                 url_image:
                   type: string
                   nullable: true
-                  description: "Validated but not stored in DB yet"
+                  description: 'Validated but not stored in DB yet'
                 image:
                   type: string
                   nullable: true
-                  description: "Validated but not stored in DB yet"
+                  description: 'Validated but not stored in DB yet'
                 description:
                   type: string
                   nullable: true
-                  description: "Collection description; actually stored in DB"
+                  description: 'Collection description; actually stored in DB'
       responses:
-        "200":
+        '200':
           description: Updated collection
           content:
             application/json:
@@ -900,31 +900,31 @@ paths:
                   ok:
                     type: boolean
                   collection:
-                    $ref: "#/components/schemas/CollectionFull"
-        "400":
+                    $ref: '#/components/schemas/CollectionFull'
+        '400':
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
           description: Access denied
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: Collection not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
 
   /upload/collection-image:
     post:
@@ -945,18 +945,18 @@ paths:
                   type: string
                   format: binary
       responses:
-        "200":
+        '200':
           description: Upload result
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UploadImageResponse"
-        "400":
+                $ref: '#/components/schemas/UploadImageResponse'
+        '400':
           description: No image provided or invalid file
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
 
   /upload/item-image:
     post:
@@ -977,18 +977,18 @@ paths:
                   type: string
                   format: binary
       responses:
-        "200":
+        '200':
           description: Upload result
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UploadImageResponse"
-        "400":
+                $ref: '#/components/schemas/UploadImageResponse'
+        '400':
           description: No image provided or invalid file
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
 
   /drawing/topic:
     get:
@@ -1008,36 +1008,36 @@ paths:
           required: false
           description: Last topic shown to the user (or null on first visit).
       responses:
-        "200":
+        '200':
           description: Drawing topic response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DrawingTopicResponse"
-        "500":
+                $ref: '#/components/schemas/DrawingTopicResponse'
+        '500':
           description: Internal server error while getting topic
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
 
   /home:
     get:
       tags: [home]
       summary: Get ready collections for Home (public)
       responses:
-        "200":
+        '200':
           description: Collections list
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HomeCollectionsResponse"
-        "500":
+                $ref: '#/components/schemas/HomeCollectionsResponse'
+        '500':
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+                $ref: '#/components/schemas/OkFalseResponse'
 
     post:
       tags: [home]
@@ -1045,24 +1045,24 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: User collections list
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HomeCollectionsResponse"
-        "401":
+                $ref: '#/components/schemas/HomeCollectionsResponse'
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "500":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '500':
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+                $ref: '#/components/schemas/OkFalseResponse'
 
   /home/search:
     post:
@@ -1075,38 +1075,38 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SearchRoomRequest"
+              $ref: '#/components/schemas/SearchRoomRequest'
       responses:
-        "200":
+        '200':
           description: Room found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SearchRoomResponse"
-        "400":
+                $ref: '#/components/schemas/SearchRoomResponse'
+        '400':
           description: Invalid room id
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "401":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "404":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '404':
           description: Room not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "500":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '500':
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+                $ref: '#/components/schemas/OkFalseResponse'
 
   /rooms/create:
     post:
@@ -1141,7 +1141,7 @@ paths:
                       items:
                         type: integer
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
@@ -1159,24 +1159,24 @@ paths:
                         example: true
                       id_room:
                         type: integer
-        "400":
+        '400':
           description: Bad request / validation error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "401":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "403":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+                $ref: '#/components/schemas/OkFalseResponse'
 
   /rooms/connect/{id_room}:
     post:
@@ -1206,7 +1206,7 @@ paths:
                 collection_id:
                   type: integer
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
@@ -1239,30 +1239,30 @@ paths:
                       ok:
                         type: boolean
                         example: true
-        "400":
+        '400':
           description: Bad request / validation error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "401":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "403":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "404":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '404':
           description: Not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+                $ref: '#/components/schemas/OkFalseResponse'
 
   /rooms/{id_room}:
     post:
@@ -1291,7 +1291,7 @@ paths:
                   type: integer
                   enum: [0, 1, 2]
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
@@ -1318,30 +1318,30 @@ paths:
                         example: true
                       redirect:
                         type: string
-        "400":
+        '400':
           description: Bad request / validation error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "401":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "403":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "404":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '404':
           description: Not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+                $ref: '#/components/schemas/OkFalseResponse'
 
   /rooms/{id_room}/drawing:
     post:
@@ -1367,9 +1367,9 @@ paths:
               type: object
               properties:
                 points:
-                  $ref: "#/components/schemas/DrawingPoints"
+                  $ref: '#/components/schemas/DrawingPoints'
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
@@ -1384,36 +1384,36 @@ paths:
                         type: string
                         nullable: true
                       points:
-                        $ref: "#/components/schemas/DrawingPoints"
+                        $ref: '#/components/schemas/DrawingPoints'
                   - type: object
                     properties:
                       ok:
                         type: boolean
                         example: true
-        "400":
+        '400':
           description: Bad request / validation error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "401":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "403":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "404":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '404':
           description: Not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+                $ref: '#/components/schemas/OkFalseResponse'
 
   /history:
     get:
@@ -1445,24 +1445,24 @@ paths:
           required: false
           description: Filter by date in DD.MM.YYYY format
       responses:
-        "200":
+        '200':
           description: List of rooms
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HistoryResponse"
-        "401":
+                $ref: '#/components/schemas/HistoryResponse'
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "500":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '500':
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+                $ref: '#/components/schemas/OkFalseResponse'
 
   /history/{id}:
     get:
@@ -1484,36 +1484,36 @@ paths:
           description: Room ID
           example: 1
       responses:
-        "200":
+        '200':
           description: Room history details
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RoomHistoryResponse"
-        "400":
+                $ref: '#/components/schemas/RoomHistoryResponse'
+        '400':
           description: Invalid room id
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "401":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "404":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '404':
           description: Room not found or access denied
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "500":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '500':
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+                $ref: '#/components/schemas/OkFalseResponse'
 
   /rooms/{id}/voting:
     get:
@@ -1532,18 +1532,18 @@ paths:
             minimum: 1
           description: Room ID
       responses:
-        "200":
+        '200':
           description: Voting state
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RoomVotingState"
-        "404":
+                $ref: '#/components/schemas/RoomVotingState'
+        '404':
           description: Room not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+                $ref: '#/components/schemas/OkFalseResponse'
 
   /rooms/{id}/vote:
     post:
@@ -1564,14 +1564,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/VoteRequest"
+              $ref: '#/components/schemas/VoteRequest'
       responses:
-        "200":
+        '200':
           description: Vote submitted
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/VoteResponse"
+                $ref: '#/components/schemas/VoteResponse'
 
   /rooms/{id}/results:
     get:
@@ -1588,12 +1588,12 @@ paths:
             type: integer
             minimum: 1
       responses:
-        "200":
+        '200':
           description: Room results
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RoomResultsResponse"
+                $ref: '#/components/schemas/RoomResultsResponse'
     post:
       tags:
         - Results
@@ -1609,7 +1609,7 @@ paths:
             type: integer
             minimum: 1
       responses:
-        "200":
+        '200':
           description: Success
           content:
             application/json:
@@ -1631,24 +1631,24 @@ paths:
                           type: string
                         description:
                           type: string
-        "401":
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "403":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
-        "404":
+                $ref: '#/components/schemas/OkFalseResponse'
+        '404':
           description: Not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OkFalseResponse"
+                $ref: '#/components/schemas/OkFalseResponse'
 
   /rooms/{id}/leave:
     post:
@@ -1665,7 +1665,7 @@ paths:
             type: integer
             minimum: 1
       responses:
-        "200":
+        '200':
           description: Left successfully
           content:
             application/json:

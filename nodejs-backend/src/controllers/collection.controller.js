@@ -10,7 +10,7 @@ import {
   updateCollection,
   deleteCollection,
   deleteCollectionItem,
-} from "../services/collection.service.js";
+} from '../services/collection.service.js';
 
 // call service creates draft collection, return new_id
 export function getConstructor(req, res) {
@@ -18,7 +18,7 @@ export function getConstructor(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: "User is not authenticated",
+        message: 'User is not authenticated',
       });
     }
 
@@ -28,16 +28,16 @@ export function getConstructor(req, res) {
     if (!new_id) {
       return res.status(500).json({
         ok: false,
-        message: "Cannot create collection draft",
+        message: 'Cannot create collection draft',
       });
     }
 
     return res.json({ ok: true, new_id });
   } catch (err) {
-    console.error("Error in getConstructor:", err);
+    console.error('Error in getConstructor:', err);
     return res.status(500).json({
       ok: false,
-      message: "Internal server error while creating collection",
+      message: 'Internal server error while creating collection',
     });
   }
 }
@@ -50,7 +50,7 @@ export function loadConstructor(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: "User is not authenticated",
+        message: 'User is not authenticated',
       });
     }
 
@@ -58,13 +58,14 @@ export function loadConstructor(req, res) {
 
     const paramNewId = Number(req.params.new_id);
 
-    // Body: { url_image, image, description }
-    const { url_image, image, description } = req.body || {};
+    // Body: { url_image, image, title, description }
+    const { url_image, image, title, description } = req.body || {};
 
     // detect if this request is for "saving collection metadata"
     const hasMetaPayload =
       url_image !== undefined ||
       image !== undefined ||
+      title !== undefined ||
       description !== undefined;
 
     if (hasMetaPayload) {
@@ -74,15 +75,14 @@ export function loadConstructor(req, res) {
       const collectionId = updateConstructorMeta(userId, {
         urlImage: url_image,
         imagePath: image,
+        title,
         description,
       });
 
       // comparate with paramNewId
       // dont trust new_id, which sent from FE
       if (paramNewId && paramNewId !== collectionId) {
-        console.warn(
-          `Warning: URL new_id=${paramNewId} != draft collectionId=${collectionId}`,
-        );
+        console.warn(`Warning: URL new_id=${paramNewId} != draft collectionId=${collectionId}`);
       }
 
       // success: collection metadata saved
@@ -101,9 +101,7 @@ export function loadConstructor(req, res) {
     // comparate with paramNewId
     // dont trust new_id, which sent from FE
     if (paramNewId && paramNewId !== collectionId) {
-      console.warn(
-        `Warning: URL new_id=${paramNewId} != draft collectionId=${collectionId}`,
-      );
+      console.warn(`Warning: URL new_id=${paramNewId} != draft collectionId=${collectionId}`);
     }
 
     // success: return draft collection id and NEXT item id (for future creation)
@@ -113,7 +111,7 @@ export function loadConstructor(req, res) {
       item_id: nextItemId,
     });
   } catch (err) {
-    console.error("Error in loadConstructor:", err);
+    console.error('Error in loadConstructor:', err);
 
     // Send new_id again (if possible)
     let newId = null;
@@ -122,13 +120,13 @@ export function loadConstructor(req, res) {
       if (draft) newId = draft.id;
     }
 
-    const isValidation = err.code === "VALIDATION_ERROR";
+    const isValidation = err.code === 'VALIDATION_ERROR';
 
     // false
     // { "ok": false, "message": <message>, "new_id": <new_id> }
     return res.status(isValidation ? 400 : 500).json({
       ok: false,
-      message: err.message || "Internal server error while loading constructor",
+      message: err.message || 'Internal server error while loading constructor',
       new_id: newId,
     });
   }
@@ -142,6 +140,7 @@ export function loadConstructor(req, res) {
  *    item_id,      // optional, FE sends "expected" item id
  *    url_image,
  *    image,
+ *    title,
  *    description,
  *    next,         // create more items
  *    save_exit     // save and finish constructor
@@ -152,28 +151,28 @@ export async function createItem(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: "User is not authenticated",
+        message: 'User is not authenticated',
       });
     }
 
     const userId = req.user.id;
 
-    // Body: { item_id, url_image, image, description, next, save_exit }
-    const { item_id, url_image, image, description, next, save_exit } =
-      req.body;
+    // Body: { item_id, url_image, image, title, description, next, save_exit }
+    const { item_id, url_image, image, title, description, next, save_exit } = req.body;
 
     // reuse service helper to insert item into draft
     const { collectionId, itemId, saveExit } = addItemToDraft(userId, {
       itemIdFromClient: item_id,
       urlImage: url_image,
       imagePath: image,
+      title,
       description,
       next,
       saveExit: save_exit,
     });
 
     // for debug
-    console.log("createItem: result =", {
+    console.log('createItem: result =', {
       collectionId,
       itemId,
       saveExit,
@@ -190,17 +189,14 @@ export async function createItem(req, res) {
           collection_id: finalized.id,
         });
       } catch (finalizeErr) {
-        console.error("Error in finalizeDraft:", finalizeErr);
+        console.error('Error in finalizeDraft:', finalizeErr);
 
         const isValidation =
-          finalizeErr.code === "NO_DRAFT" ||
-          finalizeErr.code === "VALIDATION_ERROR";
+          finalizeErr.code === 'NO_DRAFT' || finalizeErr.code === 'VALIDATION_ERROR';
 
         return res.status(isValidation ? 400 : 500).json({
           ok: false,
-          message:
-            finalizeErr.message ||
-            "Internal server error while finalizing collection",
+          message: finalizeErr.message || 'Internal server error while finalizing collection',
         });
       }
     }
@@ -213,7 +209,7 @@ export async function createItem(req, res) {
       item_id: itemId,
     });
   } catch (err) {
-    console.error("Error in createItem:", err);
+    console.error('Error in createItem:', err);
 
     // try to send back new_id again if draft exists
     let newId = null;
@@ -222,12 +218,12 @@ export async function createItem(req, res) {
       if (draft) newId = draft.id;
     }
 
-    const isValidation = err.code === "VALIDATION_ERROR";
+    const isValidation = err.code === 'VALIDATION_ERROR';
 
     // { "ok": false, "message": <message>, "new_id": <new_id> }
     return res.status(isValidation ? 400 : 500).json({
       ok: false,
-      message: err.message || "Internal server error while creating item",
+      message: err.message || 'Internal server error while creating item',
       new_id: newId,
       // You can also echo item_id back if needed:
       item_id: req.body?.item_id,
@@ -253,21 +249,21 @@ export async function getCollection(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: "User is not authenticated",
+        message: 'User is not authenticated',
       });
     }
 
     const userId = req.user.id;
     const paramId = req.params.id;
 
-    console.log("getCollection: userId =", userId, "paramId =", paramId);
+    console.log('getCollection: userId =', userId, 'paramId =', paramId);
 
     const collection = await getCollectionById(paramId);
 
     if (!collection) {
       return res.status(404).json({
         ok: false,
-        message: "Collection not found",
+        message: 'Collection not found',
       });
     }
 
@@ -279,7 +275,7 @@ export async function getCollection(req, res) {
 
       return res.status(403).json({
         ok: false,
-        message: "Access denied",
+        message: 'Access denied',
       });
     }
 
@@ -289,11 +285,11 @@ export async function getCollection(req, res) {
       collection,
     });
   } catch (err) {
-    console.error("Error in getCollection:", err);
+    console.error('Error in getCollection:', err);
 
     return res.status(500).json({
       ok: false,
-      message: err.message || "Internal server error while getting collection",
+      message: err.message || 'Internal server error while getting collection',
     });
   }
 }
@@ -319,7 +315,7 @@ export async function updateCollectionController(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: "User is not authenticated",
+        message: 'User is not authenticated',
       });
     }
 
@@ -329,7 +325,7 @@ export async function updateCollectionController(req, res) {
     // Expect frontend to send url_image, image (imagePath), description
     const { url_image, image, description } = req.body || {};
 
-    console.log("updateCollectionController:", {
+    console.log('updateCollectionController:', {
       userId,
       paramId,
       url_image,
@@ -349,18 +345,18 @@ export async function updateCollectionController(req, res) {
       collection: updated,
     });
   } catch (err) {
-    console.error("Error in updateCollectionController:", err);
+    console.error('Error in updateCollectionController:', err);
 
     const code = err.code;
     let status = 500;
 
-    if (code === "VALIDATION_ERROR") status = 400;
-    else if (code === "NOT_FOUND") status = 404;
-    else if (code === "FORBIDDEN") status = 403;
+    if (code === 'VALIDATION_ERROR') status = 400;
+    else if (code === 'NOT_FOUND') status = 404;
+    else if (code === 'FORBIDDEN') status = 403;
 
     return res.status(status).json({
       ok: false,
-      message: err.message || "Internal server error while updating collection",
+      message: err.message || 'Internal server error while updating collection',
     });
   }
 }
@@ -374,7 +370,7 @@ export async function deleteCollectionController(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: "User is not authenticated",
+        message: 'User is not authenticated',
       });
     }
 
@@ -388,18 +384,18 @@ export async function deleteCollectionController(req, res) {
       id: deleted.id,
     });
   } catch (err) {
-    console.error("Error in deleteCollectionController:", err);
+    console.error('Error in deleteCollectionController:', err);
 
     const code = err.code;
     let status = 500;
 
-    if (code === "VALIDATION_ERROR") status = 400;
-    else if (code === "NOT_FOUND") status = 404;
-    else if (code === "FORBIDDEN") status = 403;
+    if (code === 'VALIDATION_ERROR') status = 400;
+    else if (code === 'NOT_FOUND') status = 404;
+    else if (code === 'FORBIDDEN') status = 403;
 
     return res.status(status).json({
       ok: false,
-      message: err.message || "Internal server error while deleting collection",
+      message: err.message || 'Internal server error while deleting collection',
     });
   }
 }
@@ -413,7 +409,7 @@ export async function deleteCollectionItemController(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: "User is not authenticated",
+        message: 'User is not authenticated',
       });
     }
 
@@ -428,18 +424,18 @@ export async function deleteCollectionItemController(req, res) {
       id: deleted.id,
     });
   } catch (err) {
-    console.error("Error in deleteCollectionItemController:", err);
+    console.error('Error in deleteCollectionItemController:', err);
 
     const code = err.code;
     let status = 500;
 
-    if (code === "VALIDATION_ERROR") status = 400;
-    else if (code === "NOT_FOUND") status = 404;
-    else if (code === "FORBIDDEN") status = 403;
+    if (code === 'VALIDATION_ERROR') status = 400;
+    else if (code === 'NOT_FOUND') status = 404;
+    else if (code === 'FORBIDDEN') status = 403;
 
     return res.status(status).json({
       ok: false,
-      message: err.message || "Internal server error while deleting item",
+      message: err.message || 'Internal server error while deleting item',
     });
   }
 }

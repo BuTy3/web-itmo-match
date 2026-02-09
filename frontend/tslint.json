@@ -1,0 +1,13 @@
+{
+  "defaultSeverity": "warning",
+  "extends": ["tslint:recommended"],
+  "linterOptions": {
+    "exclude": ["**/node_modules/**", "dist/**"]
+  },
+  "rules": {
+    "object-literal-sort-keys": false,
+    "ordered-imports": false,
+    "max-classes-per-file": false,
+    "no-console": false
+  }
+}

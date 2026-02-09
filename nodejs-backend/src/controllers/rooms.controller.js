@@ -10,15 +10,15 @@ import {
   getRoomDrawingsResults,
   saveRoomDrawing,
   verifyRoomPassword,
-} from "../services/rooms.service.js";
+} from '../services/rooms.service.js';
 
 const getStatusByError = (err) => {
   switch (err.code) {
-    case "VALIDATION_ERROR":
+    case 'VALIDATION_ERROR':
       return 400;
-    case "NOT_ALLOWED":
+    case 'NOT_ALLOWED':
       return 403;
-    case "NOT_FOUND":
+    case 'NOT_FOUND':
       return 404;
     default:
       return 500;
@@ -26,21 +26,20 @@ const getStatusByError = (err) => {
 };
 
 const isSingleCollectionRoom = (room) => {
-  if (room?.result && typeof room.result === "object") {
+  if (room?.result && typeof room.result === 'object') {
     return Number(room.result.type_collections) !== 2;
   }
-  return room?.type !== "COMBINED";
+  return room?.type !== 'COMBINED';
 };
 
 // [POST] /rooms/create
 export async function handleRoomCreate(req, res) {
   try {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ ok: false, message: "Unauthorized" });
+      return res.status(401).json({ ok: false, message: 'Unauthorized' });
     }
 
-    const { name, type_match, type_collections, password, collection_id } =
-      req.body || {};
+    const { name, type_match, type_collections, password, collection_id } = req.body || {};
 
     if (!name && !type_match && !type_collections && !collection_id) {
       return res.json({ ok: true });
@@ -60,11 +59,11 @@ export async function handleRoomCreate(req, res) {
       id_room: result.roomId,
     });
   } catch (err) {
-    console.error("Error in handleRoomCreate:", err);
+    console.error('Error in handleRoomCreate:', err);
     const status = getStatusByError(err);
     return res.status(status).json({
       ok: false,
-      message: err.message || "Internal server error",
+      message: err.message || 'Internal server error',
     });
   }
 }
@@ -73,7 +72,7 @@ export async function handleRoomCreate(req, res) {
 export async function handleRoomConnect(req, res) {
   try {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ ok: false, message: "Unauthorized" });
+      return res.status(401).json({ ok: false, message: 'Unauthorized' });
     }
 
     const { id_room } = req.params || {};
@@ -91,10 +90,8 @@ export async function handleRoomConnect(req, res) {
 
     if (!password && !collection_id) {
       if (isSingleCollectionRoom(room)) {
-        if (room.access_mode === "PRIVATE") {
-          return res
-            .status(403)
-            .json({ ok: false, message: "Password is required" });
+        if (room.access_mode === 'PRIVATE') {
+          return res.status(403).json({ ok: false, message: 'Password is required' });
         }
         await connectToRoom({
           userId: BigInt(req.user.id),
@@ -116,11 +113,11 @@ export async function handleRoomConnect(req, res) {
 
     return res.json({ ok: true });
   } catch (err) {
-    console.error("Error in handleRoomConnect:", err);
+    console.error('Error in handleRoomConnect:', err);
     const status = getStatusByError(err);
     return res.status(status).json({
       ok: false,
-      message: err.message || "Internal server error",
+      message: err.message || 'Internal server error',
     });
   }
 }
@@ -129,7 +126,7 @@ export async function handleRoomConnect(req, res) {
 export async function handleRoomState(req, res) {
   try {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ ok: false, message: "Unauthorized" });
+      return res.status(401).json({ ok: false, message: 'Unauthorized' });
     }
 
     const { id_room } = req.params || {};
@@ -140,7 +137,7 @@ export async function handleRoomState(req, res) {
         userId: BigInt(req.user.id),
         roomId: id_room,
         choose,
-        nick: req.user.login || "Никнейм",
+        nick: req.user.login || 'Никнейм',
       });
 
       return res.json(resp);
@@ -149,16 +146,16 @@ export async function handleRoomState(req, res) {
     const resp = await getRoomState({
       userId: BigInt(req.user.id),
       roomId: id_room,
-      nick: req.user.login || "Никнейм",
+      nick: req.user.login || 'Никнейм',
     });
 
     return res.json(resp);
   } catch (err) {
-    console.error("Error in handleRoomState:", err);
+    console.error('Error in handleRoomState:', err);
     const status = getStatusByError(err);
     return res.status(status).json({
       ok: false,
-      message: err.message || "Internal server error",
+      message: err.message || 'Internal server error',
     });
   }
 }
@@ -167,7 +164,7 @@ export async function handleRoomState(req, res) {
 export async function handleRoomDrawing(req, res) {
   try {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ ok: false, message: "Unauthorized" });
+      return res.status(401).json({ ok: false, message: 'Unauthorized' });
     }
 
     const { id_room } = req.params || {};
@@ -189,11 +186,11 @@ export async function handleRoomDrawing(req, res) {
     });
     return res.json(resp);
   } catch (err) {
-    console.error("Error in handleRoomDrawing:", err);
+    console.error('Error in handleRoomDrawing:', err);
     const status = getStatusByError(err);
     return res.status(status).json({
       ok: false,
-      message: err.message || "Internal server error",
+      message: err.message || 'Internal server error',
     });
   }
 }
@@ -202,7 +199,7 @@ export async function handleRoomDrawing(req, res) {
 export async function handleRoomDrawingsResults(req, res) {
   try {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ ok: false, message: "Unauthorized" });
+      return res.status(401).json({ ok: false, message: 'Unauthorized' });
     }
 
     const { id_room } = req.params || {};
@@ -212,11 +209,11 @@ export async function handleRoomDrawingsResults(req, res) {
     });
     return res.json(resp);
   } catch (err) {
-    console.error("Error in handleRoomDrawingsResults:", err);
+    console.error('Error in handleRoomDrawingsResults:', err);
     const status = getStatusByError(err);
     return res.status(status).json({
       ok: false,
-      message: err.message || "Internal server error",
+      message: err.message || 'Internal server error',
     });
   }
 }

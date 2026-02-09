@@ -1,7 +1,7 @@
 // services/rooms.service.js
-import bcrypt from "bcrypt";
-import { prisma } from "../db.js";
-import { getRandomTopic } from "./drawing.service.js";
+import bcrypt from 'bcrypt';
+import { prisma } from '../db.js';
+import { getRandomTopic } from './drawing.service.js';
 
 const roomSessions = new Map();
 
@@ -9,23 +9,23 @@ const buildCards = (items) => {
   if (!items.length) {
     return [
       {
-        name_card: "Название карточки",
-        description: "Описание...",
+        name_card: 'Название карточки',
+        description: 'Описание...',
         profile_picture_url: null,
       },
     ];
   }
 
   return items.map((item) => ({
-    name_card: item.title || "Название карточки",
-    description: item.description || "Описание...",
+    name_card: item.title || 'Название карточки',
+    description: item.description || 'Описание...',
     profile_picture_url: item.image_url || null,
     owner_nick: item.owner_nick || null,
   }));
 };
 
 const getRoomCollectionId = (room) => {
-  if (!room || !room.result || typeof room.result !== "object") {
+  if (!room || !room.result || typeof room.result !== 'object') {
     return null;
   }
   const value = room.result.collection_id;
@@ -34,20 +34,20 @@ const getRoomCollectionId = (room) => {
 };
 
 const getRoomTypeCollections = (room) => {
-  if (room?.result && typeof room.result === "object") {
+  if (room?.result && typeof room.result === 'object') {
     const value = Number(room.result.type_collections);
     if ([1, 2].includes(value)) {
       return value;
     }
   }
-  return room?.type === "COMBINED" ? 2 : 1;
+  return room?.type === 'COMBINED' ? 2 : 1;
 };
 
 const getCollectionById = async (collectionId) => {
   const idNum = Number(collectionId);
   if (!Number.isFinite(idNum) || idNum <= 0) {
-    const err = new Error("Invalid collection id");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('Invalid collection id');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
@@ -55,14 +55,14 @@ const getCollectionById = async (collectionId) => {
     where: { id: BigInt(idNum) },
     include: {
       item: {
-        orderBy: { created_at: "asc" },
+        orderBy: { created_at: 'asc' },
       },
     },
   });
 
   if (!collection) {
-    const err = new Error("Collection not found");
-    err.code = "NOT_FOUND";
+    const err = new Error('Collection not found');
+    err.code = 'NOT_FOUND';
     throw err;
   }
 
@@ -80,8 +80,8 @@ const getCollectionForUser = async (userId, collectionId) => {
   const normalized = normalizeCollectionId(collectionId);
   const idNum = Number(normalized);
   if (!Number.isFinite(idNum) || idNum <= 0) {
-    const err = new Error("Invalid collection id");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('Invalid collection id');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
@@ -96,14 +96,14 @@ const getCollectionForUser = async (userId, collectionId) => {
             },
           },
         },
-        orderBy: { created_at: "asc" },
+        orderBy: { created_at: 'asc' },
       },
     },
   });
 
   if (!collection) {
-    const err = new Error("Collection not found");
-    err.code = "NOT_FOUND";
+    const err = new Error('Collection not found');
+    err.code = 'NOT_FOUND';
     throw err;
   }
 
@@ -118,7 +118,7 @@ export async function getUserCollectionsForRoom(userId) {
       description: true,
       title: true,
     },
-    orderBy: { created_at: "desc" },
+    orderBy: { created_at: 'desc' },
   });
 
   return collections.map((collection) => ({
@@ -160,22 +160,18 @@ const buildParticipantState = (cards) => ({
 });
 
 const buildMatchedItem = (card) => ({
-  id: card.id || card.name_card || "",
-  title: card.name_card || "Результат",
-  description: card.description || "",
+  id: card.id || card.name_card || '',
+  title: card.name_card || 'Результат',
+  description: card.description || '',
   image_url: card.profile_picture_url ?? null,
 });
 
-const finalizeRoomResult = async (
-  roomId,
-  matchedItems,
-  existingResult = {},
-) => {
+const finalizeRoomResult = async (roomId, matchedItems, existingResult = {}) => {
   const hasMatch = matchedItems.length > 0;
   await prisma.room.update({
     where: { id: BigInt(roomId) },
     data: {
-      status: "CLOSED",
+      status: 'CLOSED',
       closed_at: new Date(),
       result: {
         ...(existingResult || {}),
@@ -195,20 +191,20 @@ export async function createRoom({
   collectionId,
 }) {
   if (!name || !name.trim()) {
-    const err = new Error("Room name is required");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('Room name is required');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
   if (![1, 2].includes(Number(typeMatch))) {
-    const err = new Error("Invalid match type");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('Invalid match type');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
   if (![1, 2].includes(Number(typeCollections))) {
-    const err = new Error("Invalid collections type");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('Invalid collections type');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
@@ -221,18 +217,20 @@ export async function createRoom({
   );
 
   const passwordHash = password ? await bcrypt.hash(password, 10) : null;
-  const matchMode = Number(typeMatch) === 1 ? "FIRST_MATCH" : "WATCH_ALL";
-  const accessMode = password ? "PRIVATE" : "PUBLIC";
+  const matchMode = Number(typeMatch) === 1 ? 'FIRST_MATCH' : 'WATCH_ALL';
+  const accessMode = password ? 'PRIVATE' : 'PUBLIC';
   const normalizedTypeCollections = Number(typeCollections) === 2 ? 2 : 1;
   const topic = getRandomTopic(null);
+  const roomType = normalizedTypeCollections === 2 ? 'COMBINED' : 'SINGLE';
 
   const room = await prisma.room.create({
     data: {
       creator_id: userId,
       name: name.trim(),
       topic: null,
+      type: roomType,
       match_mode: matchMode,
-      status: "OPEN",
+      status: 'OPEN',
       access_mode: accessMode,
       password_hash: passwordHash,
       result: {
@@ -257,17 +255,10 @@ export async function createRoom({
   });
 
   if (session) {
-    const participantCards =
-      session.typeCollections === 1 ? session.baseCards : cards;
-    session.participants.set(
-      String(userId),
-      buildParticipantState(participantCards),
-    );
+    const participantCards = session.typeCollections === 1 ? session.baseCards : cards;
+    session.participants.set(String(userId), buildParticipantState(participantCards));
     if (session.matchResult === null) {
-      session.requiredVotes = Math.max(
-        session.requiredVotes ?? 0,
-        session.participants.size,
-      );
+      session.requiredVotes = Math.max(session.requiredVotes ?? 0, session.participants.size);
     }
   }
 
@@ -279,8 +270,8 @@ export async function createRoom({
 export async function checkRoomAccess({ roomId, allowClosed = false }) {
   const idNum = Number(roomId);
   if (!Number.isFinite(idNum) || idNum <= 0) {
-    const err = new Error("Invalid room id");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('Invalid room id');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
@@ -289,14 +280,14 @@ export async function checkRoomAccess({ roomId, allowClosed = false }) {
   });
 
   if (!room) {
-    const err = new Error("Room not found");
-    err.code = "NOT_FOUND";
+    const err = new Error('Room not found');
+    err.code = 'NOT_FOUND';
     throw err;
   }
 
-  if (!allowClosed && room.status === "CLOSED") {
-    const err = new Error("Room is closed");
-    err.code = "NOT_ALLOWED";
+  if (!allowClosed && room.status === 'CLOSED') {
+    const err = new Error('Room is closed');
+    err.code = 'NOT_ALLOWED';
     throw err;
   }
 
@@ -304,32 +295,27 @@ export async function checkRoomAccess({ roomId, allowClosed = false }) {
 }
 
 export async function verifyRoomPassword(room, password) {
-  if (!room || room.access_mode !== "PRIVATE") {
+  if (!room || room.access_mode !== 'PRIVATE') {
     return true;
   }
 
   if (!password) {
-    const err = new Error("Password is required");
-    err.code = "NOT_ALLOWED";
+    const err = new Error('Password is required');
+    err.code = 'NOT_ALLOWED';
     throw err;
   }
 
-  const ok = await bcrypt.compare(password, room.password_hash || "");
+  const ok = await bcrypt.compare(password, room.password_hash || '');
   if (!ok) {
-    const err = new Error("Invalid password");
-    err.code = "NOT_ALLOWED";
+    const err = new Error('Invalid password');
+    err.code = 'NOT_ALLOWED';
     throw err;
   }
 
   return true;
 }
 
-export async function connectToRoom({
-  userId,
-  roomId,
-  password,
-  collectionId,
-}) {
+export async function connectToRoom({ userId, roomId, password, collectionId }) {
   const room = await checkRoomAccess({ roomId });
   const isCombined = getRoomTypeCollections(room) === 2;
 
@@ -351,8 +337,8 @@ export async function connectToRoom({
     } else {
       const roomCollectionId = getRoomCollectionId(room);
       if (!roomCollectionId) {
-        const err = new Error("Room session not found");
-        err.code = "NOT_FOUND";
+        const err = new Error('Room session not found');
+        err.code = 'NOT_FOUND';
         throw err;
       }
       const collection = await getCollectionById(roomCollectionId);
@@ -379,10 +365,10 @@ export async function connectToRoom({
     },
   });
 
-  if (room.status === "OPEN") {
+  if (room.status === 'OPEN') {
     await prisma.room.update({
       where: { id: room.id },
-      data: { status: "ACTIVE" },
+      data: { status: 'ACTIVE' },
     });
   }
 
@@ -396,16 +382,10 @@ export async function connectToRoom({
     if (session.typeCollections === 1) {
       const baseCards = session.baseCards ?? cards;
       session.baseCards = baseCards;
-      session.participants.set(
-        String(userId),
-        buildParticipantState(baseCards),
-      );
+      session.participants.set(String(userId), buildParticipantState(baseCards));
       session.ready = true;
       if (session.matchResult === null) {
-        session.requiredVotes = Math.max(
-          session.requiredVotes ?? 0,
-          session.participants.size,
-        );
+        session.requiredVotes = Math.max(session.requiredVotes ?? 0, session.participants.size);
       }
     } else {
       session.participants.set(String(userId), buildParticipantState(cards));
@@ -415,10 +395,7 @@ export async function connectToRoom({
       if (session.participants.size >= 2) {
         session.ready = true;
         if (session.matchResult === null) {
-          session.requiredVotes = Math.max(
-            session.requiredVotes ?? 0,
-            session.participants.size,
-          );
+          session.requiredVotes = Math.max(session.requiredVotes ?? 0, session.participants.size);
         }
         session.participants.forEach((participant) => {
           participant.cards = session.combinedCards;
@@ -435,29 +412,29 @@ export async function connectToRoom({
 
 export async function getRoomState({ userId, roomId, nick }) {
   const room = await checkRoomAccess({ roomId, allowClosed: true });
-  if (room.status === "CLOSED") {
-    return { ok: true, redirect: "results" };
+  if (room.status === 'CLOSED') {
+    return { ok: true, redirect: 'results' };
   }
   const session = getRoomSession(room.id);
 
   if (!session) {
     return {
       ok: false,
-      message: "ROOM_SESSION_MISSING",
+      message: 'ROOM_SESSION_MISSING',
     };
   }
 
   if (session.typeCollections === 2 && !session.ready) {
     return {
       ok: false,
-      message: "WAITING_FOR_PARTICIPANTS",
+      message: 'WAITING_FOR_PARTICIPANTS',
     };
   }
 
   const participant = session.participants.get(String(userId));
   if (!participant) {
-    const err = new Error("User not connected to room");
-    err.code = "NOT_ALLOWED";
+    const err = new Error('User not connected to room');
+    err.code = 'NOT_ALLOWED';
     throw err;
   }
 
@@ -474,7 +451,7 @@ export async function getRoomState({ userId, roomId, nick }) {
 }
 
 const getRoomResultPayload = (room) => {
-  if (!room || !room.result || typeof room.result !== "object") {
+  if (!room || !room.result || typeof room.result !== 'object') {
     return {};
   }
   return room.result;
@@ -490,8 +467,8 @@ const ensureRoomParticipant = async (roomId, userId) => {
     },
   });
   if (!participant) {
-    const err = new Error("User not connected to room");
-    err.code = "NOT_ALLOWED";
+    const err = new Error('User not connected to room');
+    err.code = 'NOT_ALLOWED';
     throw err;
   }
 };
@@ -513,8 +490,8 @@ export async function getRoomDrawing({ userId, roomId }) {
     },
   });
   if (!room) {
-    const err = new Error("Room not found");
-    err.code = "NOT_FOUND";
+    const err = new Error('Room not found');
+    err.code = 'NOT_FOUND';
     throw err;
   }
 
@@ -537,7 +514,7 @@ export async function getRoomDrawing({ userId, roomId }) {
     topic: resolvedTopic,
     participants: room.room_participant.map((participant) => ({
       id: String(participant.users.id),
-      nickname: participant.users.display_name || "Пользователь",
+      nickname: participant.users.display_name || 'Пользователь',
     })),
     points: drawing.points || [],
     snapshot: drawing.snapshot || null,
@@ -549,8 +526,8 @@ export async function saveRoomDrawing({ userId, roomId, points, snapshot }) {
     where: { id: BigInt(roomId) },
   });
   if (!room) {
-    const err = new Error("Room not found");
-    err.code = "NOT_FOUND";
+    const err = new Error('Room not found');
+    err.code = 'NOT_FOUND';
     throw err;
   }
 
@@ -598,8 +575,8 @@ export async function getRoomDrawingsResults({ userId, roomId }) {
   });
 
   if (!room) {
-    const err = new Error("Room not found");
-    err.code = "NOT_FOUND";
+    const err = new Error('Room not found');
+    err.code = 'NOT_FOUND';
     throw err;
   }
 
@@ -613,7 +590,7 @@ export async function getRoomDrawingsResults({ userId, roomId }) {
     const entry = drawings[String(user.id)] || {};
     return {
       user_id: String(user.id),
-      nickname: user.display_name || "Пользователь",
+      nickname: user.display_name || 'Пользователь',
       snapshot: entry.snapshot || null,
     };
   });
@@ -623,30 +600,30 @@ export async function getRoomDrawingsResults({ userId, roomId }) {
 
 export async function chooseRoomCard({ userId, roomId, choose, nick }) {
   if (![0, 1, 2].includes(Number(choose))) {
-    const err = new Error("Invalid choice");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('Invalid choice');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
   const room = await checkRoomAccess({ roomId, allowClosed: true });
-  if (room.status === "CLOSED") {
-    return { ok: true, redirect: "results" };
+  if (room.status === 'CLOSED') {
+    return { ok: true, redirect: 'results' };
   }
   const session = getRoomSession(room.id);
 
   if (!session) {
-    return { ok: false, message: "ROOM_SESSION_MISSING" };
+    return { ok: false, message: 'ROOM_SESSION_MISSING' };
   }
 
   const participant = session.participants.get(String(userId));
   if (!participant) {
-    const err = new Error("User not connected to room");
-    err.code = "NOT_ALLOWED";
+    const err = new Error('User not connected to room');
+    err.code = 'NOT_ALLOWED';
     throw err;
   }
 
   if (session.matchResult) {
-    return { ok: true, redirect: "results" };
+    return { ok: true, redirect: 'results' };
   }
 
   if (Number(choose) === 0) {
@@ -665,7 +642,7 @@ export async function chooseRoomCard({ userId, roomId, choose, nick }) {
   }
 
   if (session.typeCollections === 2 && !session.ready) {
-    return { ok: false, message: "WAITING_FOR_PARTICIPANTS" };
+    return { ok: false, message: 'WAITING_FOR_PARTICIPANTS' };
   }
 
   if (Number(choose) === 1) {
@@ -675,17 +652,13 @@ export async function chooseRoomCard({ userId, roomId, choose, nick }) {
     session.votes.set(currentIndex, votes);
     const requiredVotes = session.requiredVotes ?? session.participants.size;
 
-    if (session.matchMode === "FIRST_MATCH") {
+    if (session.matchMode === 'FIRST_MATCH') {
       if (votes.size === requiredVotes) {
         const matchCard = participant.cards[currentIndex];
         const matchedItems = matchCard ? [buildMatchedItem(matchCard)] : [];
         session.matchResult = matchedItems;
-        await finalizeRoomResult(
-          room.id,
-          matchedItems,
-          getRoomResultPayload(room),
-        );
-        return { ok: true, redirect: "results" };
+        await finalizeRoomResult(room.id, matchedItems, getRoomResultPayload(room));
+        return { ok: true, redirect: 'results' };
       }
     }
   }
@@ -698,23 +671,18 @@ export async function chooseRoomCard({ userId, roomId, choose, nick }) {
     if (allFinished) {
       const matchedItems = [];
       session.votes.forEach((votes, idx) => {
-        const requiredVotes =
-          session.requiredVotes ?? session.participants.size;
+        const requiredVotes = session.requiredVotes ?? session.participants.size;
         if (votes.size === requiredVotes) {
           const card = participant.cards[idx];
           if (card) matchedItems.push(buildMatchedItem(card));
         }
       });
-      await finalizeRoomResult(
-        room.id,
-        matchedItems,
-        getRoomResultPayload(room),
-      );
+      await finalizeRoomResult(room.id, matchedItems, getRoomResultPayload(room));
       session.matchResult = matchedItems;
     }
     return {
       ok: true,
-      redirect: "drawing",
+      redirect: 'drawing',
     };
   }
 

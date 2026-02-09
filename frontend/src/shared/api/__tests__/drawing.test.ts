@@ -25,8 +25,9 @@ describe('drawing API', () => {
 
     const resp = await getDrawingTopic('prev');
 
-    expect(apiClient.get).toHaveBeenCalledWith('/drawing/topic', { params: { last_topic: 'prev' } });
+    expect(apiClient.get).toHaveBeenCalledWith('/drawing/topic', {
+      params: { last_topic: 'prev' },
+    });
     expect(resp).toEqual({ ok: true, topic: 't2' });
   });
 });
-

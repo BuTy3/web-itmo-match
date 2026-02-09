@@ -37,10 +37,16 @@ test.describe('Drawing (frontend) e2e', () => {
     await expect(page.locator('.topic-card__text')).toHaveText('Topic 2');
 
     await page.getByRole('button', { name: 'Ластик' }).click();
-    await expect(page.getByRole('button', { name: 'Ластик' })).toHaveClass(/toolbar__icon-button--active/);
+    await expect(page.getByRole('button', { name: 'Ластик' })).toHaveClass(
+      /toolbar__icon-button--active/,
+    );
 
-    await expect(page.getByRole('button', { name: 'Цвет #1C1C1E' })).toHaveClass(/toolbar__color-button--active/);
+    await expect(page.getByRole('button', { name: 'Цвет #1C1C1E' })).toHaveClass(
+      /toolbar__color-button--active/,
+    );
     await page.getByRole('button', { name: 'Цвет #FFFFFF' }).click();
-    await expect(page.getByRole('button', { name: 'Цвет #FFFFFF' })).toHaveClass(/toolbar__color-button--active/);
+    await expect(page.getByRole('button', { name: 'Цвет #FFFFFF' })).toHaveClass(
+      /toolbar__color-button--active/,
+    );
   });
 });

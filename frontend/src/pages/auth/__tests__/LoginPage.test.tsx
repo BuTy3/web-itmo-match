@@ -51,9 +51,7 @@ describe('LoginPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Войти' }));
 
-    expect(
-      await screen.findByText('Заполните все поля'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Заполните все поля')).toBeInTheDocument();
   });
 
   it('logs in and stores auth data', async () => {

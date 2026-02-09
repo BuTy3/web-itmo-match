@@ -23,15 +23,7 @@ const pickCollectionImage = (collection: HomeCollection) => {
   return sampleImage;
 };
 
-const Card = ({
-  title,
-  subtitle,
-  image,
-}: {
-  title: string;
-  subtitle?: string;
-  image: string;
-}) => (
+const Card = ({ title, subtitle, image }: { title: string; subtitle?: string; image: string }) => (
   <Box
     sx={{
       borderRadius: 2,
@@ -69,8 +61,7 @@ export const HomePage = () => {
   const [collections, setCollections] = useState<HomeCollection[]>([]);
   const [collectionsError, setCollectionsError] = useState<string | null>(null);
   const [collectionFilters, setCollectionFilters] = useState({
-    description: '',
-    type: '',
+    name: '',
     items: 'all',
   });
   const [roomId, setRoomId] = useState('');
@@ -116,32 +107,23 @@ export const HomePage = () => {
     };
   }, []);
 
-  const collectionTypeOptions = useMemo(() => {
-    const unique = new Set(collections.map((collection) => collection.type).filter(Boolean));
-    return Array.from(unique) as string[];
-  }, [collections]);
-
   const filteredCollections = useMemo(() => {
     return collections.filter((collection) => {
       if (
-        collectionFilters.description &&
-        !(collection.description ?? '')
+        collectionFilters.name &&
+        !(collection.title ?? collection.description ?? '')
           .toLowerCase()
-          .includes(collectionFilters.description.toLowerCase())
+          .includes(collectionFilters.name.toLowerCase())
       ) {
         return false;
       }
-      if (collectionFilters.type && collection.type !== collectionFilters.type) return false;
       if (collectionFilters.items === 'with' && collection.items.length === 0) return false;
       if (collectionFilters.items === 'empty' && collection.items.length > 0) return false;
       return true;
     });
   }, [collections, collectionFilters]);
 
-  const previewCollections = useMemo(
-    () => filteredCollections.slice(0, 6),
-    [filteredCollections],
-  );
+  const previewCollections = useMemo(() => filteredCollections.slice(0, 6), [filteredCollections]);
 
   const connectToRoom = (source: 'button' | 'enter') => {
     const trimmed = roomId.trim();
@@ -178,11 +160,7 @@ export const HomePage = () => {
               connectToRoom('enter');
             }}
           />
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => connectToRoom('button')}
-          >
+          <Button variant="outlined" color="secondary" onClick={() => connectToRoom('button')}>
             Подключиться
           </Button>
           <Button
@@ -222,39 +200,19 @@ export const HomePage = () => {
         <div className="history-filters" style={{ marginBottom: 18 }}>
           <input
             className={`history-filter${
-              collectionFilters.description ? ' history-filter--active' : ''
+              collectionFilters.name ? ' history-filter--active' : ''
             }`}
             type="text"
-            placeholder="Описание"
-            aria-label="Фильтр по описанию"
-            value={collectionFilters.description}
+            placeholder="Название"
+            aria-label="Фильтр по названию"
+            value={collectionFilters.name}
             onChange={(event) =>
               setCollectionFilters((prev) => ({
                 ...prev,
-                description: event.target.value,
+                name: event.target.value,
               }))
             }
           />
-          <select
-            className={`history-filter history-filter--select${
-              collectionFilters.type ? ' history-filter--active' : ''
-            }`}
-            aria-label="Фильтр по типу"
-            value={collectionFilters.type}
-            onChange={(event) =>
-              setCollectionFilters((prev) => ({
-                ...prev,
-                type: event.target.value,
-              }))
-            }
-          >
-            <option value="">Тип</option>
-            {collectionTypeOptions.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
         </div>
 
         <Box
@@ -276,7 +234,7 @@ export const HomePage = () => {
               }}
             >
               <Card
-                title={buildTitle(collection.description, 'Коллекция')}
+                title={buildTitle(collection.title ?? collection.description, 'Коллекция')}
                 subtitle={collection.type ?? undefined}
                 image={pickCollectionImage(collection)}
               />

@@ -39,4 +39,3 @@ describe('historyRoom utils', () => {
     expect(extractResultCard('x')).toEqual({ name: '', description: '', imageUrl: null });
   });
 });
-

@@ -19,7 +19,7 @@ export function uploadCollectionImageHandler(req, res) {
     if (!req.file) {
       return res.status(400).json({
         ok: false,
-        message: "Image file is required",
+        message: 'Image file is required',
       });
     }
 
@@ -31,10 +31,10 @@ export function uploadCollectionImageHandler(req, res) {
       imagePath,
     });
   } catch (err) {
-    console.error("Error in uploadCollectionImageHandler:", err);
+    console.error('Error in uploadCollectionImageHandler:', err);
     return res.status(500).json({
       ok: false,
-      message: err.message || "Internal server error while uploading image",
+      message: err.message || 'Internal server error while uploading image',
     });
   }
 }
@@ -51,7 +51,7 @@ export function uploadItemImageHandler(req, res) {
     if (!req.file) {
       return res.status(400).json({
         ok: false,
-        message: "Image file is required",
+        message: 'Image file is required',
       });
     }
 
@@ -62,11 +62,10 @@ export function uploadItemImageHandler(req, res) {
       imagePath,
     });
   } catch (err) {
-    console.error("Error in uploadItemImageHandler:", err);
+    console.error('Error in uploadItemImageHandler:', err);
     return res.status(500).json({
       ok: false,
-      message:
-        err.message || "Internal server error while uploading item image",
+      message: err.message || 'Internal server error while uploading item image',
     });
   }
 }

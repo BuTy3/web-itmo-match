@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { chooseRoomCard, fetchRoomState } from '../../shared/api/rooms';
 import { METRIKA_GOALS, trackGoal } from '../../shared/lib/analytics/metrika';
@@ -26,7 +26,7 @@ export const RoomPage = () => {
   const [card, setCard] = useState<RoomCardState>(fallbackCard);
   const [waiting, setWaiting] = useState(false);
 
-  const showRequestError = (err: unknown) => {
+  const showRequestError = useCallback((err: unknown) => {
     const status =
       typeof err === 'object' && err !== null && 'response' in err
         ? (err as { response?: { status?: number } }).response?.status
@@ -38,9 +38,9 @@ export const RoomPage = () => {
     if (status === 500) message = 'Ошибка сервера. Попробуйте позже.';
 
     window.alert(message);
-  };
+  }, []);
 
-  const requestRoomState = async () => {
+  const requestRoomState = useCallback(async () => {
     if (!id_room) return;
     try {
       const resp = await fetchRoomState({ id_room });
@@ -62,9 +62,7 @@ export const RoomPage = () => {
       if (resp.redirect || resp.next) {
         const nextPath = resp.redirect ?? resp.next;
         if (nextPath) {
-          const normalized = nextPath.startsWith('/')
-            ? nextPath
-            : `/rooms/${id_room}/${nextPath}`;
+          const normalized = nextPath.startsWith('/') ? nextPath : `/rooms/${id_room}/${nextPath}`;
           navigate(normalized, { replace: true });
           return;
         }
@@ -83,7 +81,7 @@ export const RoomPage = () => {
       showRequestError(err);
       navigate('/home', { replace: true });
     }
-  };
+  }, [id_room, navigate, showRequestError]);
 
   useEffect(() => {
     if (!id_room) {
@@ -98,7 +96,7 @@ export const RoomPage = () => {
     void run();
 
     return undefined;
-  }, [id_room, navigate]);
+  }, [id_room, navigate, requestRoomState]);
 
   const handleChoose = async (choose: 0 | 1 | 2) => {
     if (!id_room) return;
@@ -140,9 +138,7 @@ export const RoomPage = () => {
 
       const nextPath = resp.redirect ?? resp.next;
       if (nextPath) {
-        const normalized = nextPath.startsWith('/')
-          ? nextPath
-          : `/rooms/${id_room}/${nextPath}`;
+        const normalized = nextPath.startsWith('/') ? nextPath : `/rooms/${id_room}/${nextPath}`;
         navigate(normalized);
         return;
       }
@@ -239,17 +235,12 @@ export const RoomPage = () => {
               </button>
             </div>
 
-            <button
-              className="rooms-exit-button"
-              onClick={() => handleChoose(0)}
-              type="button"
-            >
+            <button className="rooms-exit-button" onClick={() => handleChoose(0)} type="button">
               Выйти из комнаты
             </button>
           </>
         ) : null}
       </div>
-
     </div>
   );
 };

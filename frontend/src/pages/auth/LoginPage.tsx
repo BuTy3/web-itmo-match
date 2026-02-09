@@ -1,5 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Paper, Stack, TextField, Typography, Alert, Link as MuiLink } from '@mui/material';
+import {
+  Box,
+  Button,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+  Alert,
+  Link as MuiLink,
+} from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../../shared/api/auth';
@@ -174,7 +183,9 @@ export const LoginPage = () => {
                 variant="contained"
                 size="large"
                 fullWidth
-                onClick={() => trackGoal(METRIKA_GOALS.AuthRegisterAttempt, { source: 'login_page_link' })}
+                onClick={() =>
+                  trackGoal(METRIKA_GOALS.AuthRegisterAttempt, { source: 'login_page_link' })
+                }
                 sx={{ py: { xs: 1.25, md: 1.6 }, fontSize: { xs: 14, md: 16 } }}
               >
                 Регистрация

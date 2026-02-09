@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
 type DrawingPoint = {
   x: number;
@@ -7,7 +7,7 @@ type DrawingPoint = {
 };
 
 type Props = {
-  tool: "pen" | "eraser";
+  tool: 'pen' | 'eraser';
   color: string;
   brushSize: number;
   clearSignal: number;
@@ -31,13 +31,13 @@ export function DrawingCanvas({
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const isDownRef = useRef(false);
   const lastImageRef = useRef<string | null>(null);
-  const snapshotRef = useRef<Props["onSnapshot"]>(onSnapshot);
-  const pointsChangeRef = useRef<Props["onPointsChange"]>(onPointsChange);
+  const snapshotRef = useRef<Props['onSnapshot']>(onSnapshot);
+  const pointsChangeRef = useRef<Props['onPointsChange']>(onPointsChange);
   const pointsRef = useRef<DrawingPoint[]>([]);
 
-  const toolRef = useRef<Props["tool"]>(tool);
-  const colorRef = useRef<Props["color"]>(color);
-  const brushSizeRef = useRef<Props["brushSize"]>(brushSize);
+  const toolRef = useRef<Props['tool']>(tool);
+  const colorRef = useRef<Props['color']>(color);
+  const brushSizeRef = useRef<Props['brushSize']>(brushSize);
 
   useEffect(() => {
     toolRef.current = tool;
@@ -70,7 +70,7 @@ export function DrawingCanvas({
     ctx.restore();
 
     pointsRef.current = [];
-    snapshotRef.current?.("");
+    snapshotRef.current?.('');
     pointsChangeRef.current?.([]);
   }, [clearSignal]);
 
@@ -78,10 +78,10 @@ export function DrawingCanvas({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctxRef.current = ctx;
-    canvas.style.touchAction = "none";
+    canvas.style.touchAction = 'none';
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
@@ -96,16 +96,16 @@ export function DrawingCanvas({
         return;
       }
 
-      const snapshot = document.createElement("canvas");
+      const snapshot = document.createElement('canvas');
       snapshot.width = canvas.width;
       snapshot.height = canvas.height;
-      const snapshotCtx = snapshot.getContext("2d");
+      const snapshotCtx = snapshot.getContext('2d');
       snapshotCtx?.drawImage(canvas, 0, 0);
 
       canvas.width = nextWidth;
       canvas.height = nextHeight;
 
-      const newCtx = canvas.getContext("2d");
+      const newCtx = canvas.getContext('2d');
       if (!newCtx) return;
       ctxRef.current = newCtx;
 
@@ -152,16 +152,16 @@ export function DrawingCanvas({
 
       const { x, y } = getPos(e);
 
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       ctx.lineWidth = brushSizeRef.current;
 
-      if (toolRef.current === "eraser") {
-        ctx.globalCompositeOperation = "destination-out";
-        ctx.strokeStyle = "rgba(0,0,0,1)";
-        pointsRef.current.push({ x, y, color: "erase" });
+      if (toolRef.current === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+        pointsRef.current.push({ x, y, color: 'erase' });
       } else {
-        ctx.globalCompositeOperation = "source-over";
+        ctx.globalCompositeOperation = 'source-over';
         ctx.strokeStyle = colorRef.current;
         pointsRef.current.push({ x, y, color: colorRef.current });
       }
@@ -174,25 +174,25 @@ export function DrawingCanvas({
       const ctx = ctxRef.current;
       isDownRef.current = false;
       if (ctx) {
-        ctx.globalCompositeOperation = "source-over";
+        ctx.globalCompositeOperation = 'source-over';
       }
       ctx?.closePath();
 
       if (canvasRef.current) {
-        snapshotRef.current?.(canvasRef.current.toDataURL("image/png"));
+        snapshotRef.current?.(canvasRef.current.toDataURL('image/png'));
       }
       pointsChangeRef.current?.([...pointsRef.current]);
     };
 
-    canvas.addEventListener("pointerdown", onDown);
-    canvas.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
+    canvas.addEventListener('pointerdown', onDown);
+    canvas.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
 
     return () => {
       ro.disconnect();
-      canvas.removeEventListener("pointerdown", onDown);
-      canvas.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
+      canvas.removeEventListener('pointerdown', onDown);
+      canvas.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
     };
   }, []);
 
@@ -222,23 +222,23 @@ export function DrawingCanvas({
         hasPath = true;
       }
 
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       ctx.lineWidth = brushSizeRef.current;
 
-      if (point.color === "erase") {
-        ctx.globalCompositeOperation = "destination-out";
-        ctx.strokeStyle = "rgba(0,0,0,1)";
+      if (point.color === 'erase') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
       } else {
-        ctx.globalCompositeOperation = "source-over";
-        ctx.strokeStyle = point.color || "#1c1c1e";
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = point.color || '#1c1c1e';
       }
 
       ctx.lineTo(point.x, point.y);
       ctx.stroke();
     }
 
-    ctx.globalCompositeOperation = "source-over";
+    ctx.globalCompositeOperation = 'source-over';
     ctx.closePath();
     pointsRef.current = [...initialPoints];
   }, [initialPoints]);
@@ -252,7 +252,7 @@ export function DrawingCanvas({
     const image = new Image();
     image.onload = () => {
       const dpr = window.devicePixelRatio || 1;
-      ctx.globalCompositeOperation = "source-over";
+      ctx.globalCompositeOperation = 'source-over';
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
@@ -263,13 +263,8 @@ export function DrawingCanvas({
   }, [initialImage]);
 
   return (
-    <div
-      className="drawing-canvas-wrapper"
-    >
-      <canvas
-        ref={canvasRef}
-        className="drawing-canvas"
-      />
+    <div className="drawing-canvas-wrapper">
+      <canvas ref={canvasRef} className="drawing-canvas" />
     </div>
   );
 }

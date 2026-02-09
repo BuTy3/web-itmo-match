@@ -24,9 +24,7 @@ const COLOR_GROUPS: Array<{
 
 export const ThemeMenu = ({ sx }: { sx?: SxProps<Theme> }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const selectedColors = useSelector(
-    (state: RootState) => state.ui.themeColors,
-  );
+  const selectedColors = useSelector((state: RootState) => state.ui.themeColors);
   const theme = useTheme();
 
   const handleSelect = (key: ThemeColorKey, color: string) => {
@@ -55,9 +53,7 @@ export const ThemeMenu = ({ sx }: { sx?: SxProps<Theme> }) => {
     >
       {COLOR_GROUPS.map((group) => (
         <Box key={group.key}>
-          <Typography sx={{ fontSize: 16, fontWeight: 600, mb: 1 }}>
-            {group.label}
-          </Typography>
+          <Typography sx={{ fontSize: 16, fontWeight: 600, mb: 1 }}>{group.label}</Typography>
           <Box
             sx={{
               display: 'flex',

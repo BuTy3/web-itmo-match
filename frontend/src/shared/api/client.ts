@@ -17,9 +17,7 @@ apiClient.interceptors.request.use(
 
     if (token) {
       const headers =
-        config.headers instanceof AxiosHeaders
-          ? config.headers
-          : new AxiosHeaders(config.headers);
+        config.headers instanceof AxiosHeaders ? config.headers : new AxiosHeaders(config.headers);
 
       headers.set('Authorization', `Bearer ${token}`);
       config.headers = headers;

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { DrawingCanvas } from '../drawing/components/DrawingCanvas';
@@ -26,8 +26,7 @@ export const RoomDrawingPage = () => {
   const { id_room } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-  const nickname =
-    useSelector((state: RootState) => state.auth.user?.login) ?? 'Никнейм';
+  const nickname = useSelector((state: RootState) => state.auth.user?.login) ?? 'Никнейм';
 
   const [tool, setTool] = useState<Tool>('pen');
   const [color, setColor] = useState('#1c1c1e');
@@ -43,12 +42,10 @@ export const RoomDrawingPage = () => {
   const roomId = id_room ?? 'unknown';
   const currentUserId = useMemo(() => nickname || 'me', [nickname]);
   const participants =
-    useSelector((state: RootState) => state.rooms.participantsByRoom[roomId]) ??
-    [];
+    useSelector((state: RootState) => state.rooms.participantsByRoom[roomId]) ?? [];
   const drawing =
-    useSelector(
-      (state: RootState) => state.rooms.drawingsByRoom[roomId]?.[currentUserId],
-    )?.dataUrl ?? '';
+    useSelector((state: RootState) => state.rooms.drawingsByRoom[roomId]?.[currentUserId])
+      ?.dataUrl ?? '';
 
   useEffect(() => {
     if (!id_room) {
@@ -132,44 +129,43 @@ export const RoomDrawingPage = () => {
     }
   }, [currentUserId, dispatch, nickname, participants.length, roomId]);
 
-  const submitProcessedPoints = async (
-    requestId: number,
-    nextPoints: DrawingPoint[],
-  ) => {
-    if (!id_room) return;
-    setPoints(nextPoints);
-    try {
-      const resp = await submitRoomDrawing({
-        id_room,
-        points: nextPoints,
-        snapshot: snapshotRef.current,
-      });
-      if (requestId !== latestPointsRequestIdRef.current) return;
+  const submitProcessedPoints = useCallback(
+    async (requestId: number, nextPoints: DrawingPoint[]) => {
+      if (!id_room) return;
+      setPoints(nextPoints);
+      try {
+        const resp = await submitRoomDrawing({
+          id_room,
+          points: nextPoints,
+          snapshot: snapshotRef.current,
+        });
+        if (requestId !== latestPointsRequestIdRef.current) return;
 
-      if (!resp.ok) {
-        console.warn('Failed to save drawing', resp);
+        if (!resp.ok) {
+          console.warn('Failed to save drawing', resp);
+        }
+        if (resp.ok && resp.redirect) {
+          const nextPath = resp.redirect.startsWith('/')
+            ? resp.redirect
+            : `/rooms/${id_room}/${resp.redirect}`;
+          navigate(nextPath, { replace: true });
+        }
+      } catch (err) {
+        if (requestId !== latestPointsRequestIdRef.current) return;
+        console.error('Failed to save drawing', err);
       }
-      if (resp.ok && resp.redirect) {
-        const nextPath = resp.redirect.startsWith('/')
-          ? resp.redirect
-          : `/rooms/${id_room}/${resp.redirect}`;
-        navigate(nextPath, { replace: true });
-      }
-    } catch (err) {
-      if (requestId !== latestPointsRequestIdRef.current) return;
-      console.error('Failed to save drawing', err);
-    }
-  };
+    },
+    [id_room, navigate],
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof Worker === 'undefined') {
       return;
     }
 
-    const worker = new Worker(
-      new URL('./workers/drawingPoints.worker.ts', import.meta.url),
-      { type: 'module' },
-    );
+    const worker = new Worker(new URL('./workers/drawingPoints.worker.ts', import.meta.url), {
+      type: 'module',
+    });
     drawingWorkerRef.current = worker;
 
     worker.onmessage = (event: MessageEvent<DrawingWorkerResponse>) => {
@@ -182,7 +178,7 @@ export const RoomDrawingPage = () => {
       drawingWorkerRef.current?.terminate();
       drawingWorkerRef.current = null;
     };
-  }, [id_room, navigate]);
+  }, [submitProcessedPoints]);
 
   const handleSnapshot = (dataUrl: string) => {
     snapshotRef.current = dataUrl || null;
@@ -272,9 +268,7 @@ export const RoomDrawingPage = () => {
           {participants.map((participant) => (
             <div key={participant.id} className="room-participant">
               <div className="room-participant__avatar" />
-              <div className="room-participant__name">
-                {participant.nickname}
-              </div>
+              <div className="room-participant__name">{participant.nickname}</div>
             </div>
           ))}
         </div>

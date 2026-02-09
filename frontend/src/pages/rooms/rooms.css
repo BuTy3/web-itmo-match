@@ -35,8 +35,8 @@
   display: grid;
   grid-template-columns: minmax(220px, 280px) minmax(260px, 320px) minmax(220px, 280px);
   grid-template-areas:
-    "name collection password"
-    "modes collection access";
+    'name collection password'
+    'modes collection access';
   gap: 24px 40px;
   align-items: start;
 }
@@ -59,6 +59,11 @@
   padding: 0 12px;
   font-size: 14px;
   background: #ffffff;
+  color: #1f1f1f;
+}
+
+.room-form__input::placeholder {
+  color: rgba(31, 31, 31, 0.55);
 }
 
 .room-form__input:focus {
@@ -225,7 +230,7 @@
 .room-drawing-layout {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(88px, 120px) minmax(220px, 1fr);
-  grid-template-areas: "canvas toolbar participants";
+  grid-template-areas: 'canvas toolbar participants';
   gap: 24px;
   align-items: start;
 }
@@ -474,16 +479,16 @@
   .room-form {
     grid-template-columns: 1fr 1fr;
     grid-template-areas:
-      "name password"
-      "collection collection"
-      "modes access";
+      'name password'
+      'collection collection'
+      'modes access';
   }
 
   .room-drawing-layout {
     grid-template-columns: minmax(0, 1fr) 120px;
     grid-template-areas:
-      "canvas toolbar"
-      "participants participants";
+      'canvas toolbar'
+      'participants participants';
   }
 
   .room-participants {
@@ -496,11 +501,11 @@
   .room-form {
     grid-template-columns: 1fr;
     grid-template-areas:
-      "name"
-      "collection"
-      "password"
-      "modes"
-      "access";
+      'name'
+      'collection'
+      'password'
+      'modes'
+      'access';
   }
 
   .room-connect-grid {
@@ -510,8 +515,8 @@
   .room-drawing-layout {
     grid-template-columns: 1fr;
     grid-template-areas:
-      "canvas"
-      "toolbar"
-      "participants";
+      'canvas'
+      'toolbar'
+      'participants';
   }
 }

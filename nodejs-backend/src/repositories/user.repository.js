@@ -1,5 +1,5 @@
 // User repository backed by PostgreSQL via Prisma.
-import { prisma } from "../db.js";
+import { prisma } from '../db.js';
 
 /**
  * Find user by "login" (in our API),

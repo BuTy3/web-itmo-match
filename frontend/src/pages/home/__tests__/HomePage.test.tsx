@@ -90,9 +90,7 @@ describe('HomePage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Найти комнату' }));
 
-    expect(
-      await screen.findByText('Введите корректный id комнаты'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Введите корректный id комнаты')).toBeInTheDocument();
   });
 
   it('redirects to room connect on success', async () => {

@@ -1,5 +1,5 @@
 // History service (Prisma queries + DTO mapping)
-import { prisma } from "../db.js";
+import { prisma } from '../db.js';
 
 /**
  * Map room to HistoryRoom DTO
@@ -14,36 +14,30 @@ import { prisma } from "../db.js";
  */
 function mapHistoryRoomDto(room) {
   const createdAt = new Date(room.created_at);
-  const day = String(createdAt.getDate()).padStart(2, "0");
-  const month = String(createdAt.getMonth() + 1).padStart(2, "0");
+  const day = String(createdAt.getDate()).padStart(2, '0');
+  const month = String(createdAt.getMonth() + 1).padStart(2, '0');
   const year = createdAt.getFullYear();
   const dateStr = `${day}.${month}.${year}`;
 
-  const toStringOrEmpty = (value) => (typeof value === "string" ? value : "");
-  const result =
-    room.result && typeof room.result === "object" ? room.result : null;
-  const matchedItems = Array.isArray(result?.matched_items)
-    ? result.matched_items
-    : null;
-  const firstMatch =
-    matchedItems?.find((item) => item && typeof item === "object") ?? null;
+  const toStringOrEmpty = (value) => (typeof value === 'string' ? value : '');
+  const result = room.result && typeof room.result === 'object' ? room.result : null;
+  const matchedItems = Array.isArray(result?.matched_items) ? result.matched_items : null;
+  const firstMatch = matchedItems?.find((item) => item && typeof item === 'object') ?? null;
   const resultSource = firstMatch ?? result ?? {};
 
   const url_image =
-    toStringOrEmpty(resultSource.image_url) ||
-    toStringOrEmpty(resultSource.url_image) ||
-    null;
+    toStringOrEmpty(resultSource.image_url) || toStringOrEmpty(resultSource.url_image) || null;
   const description = toStringOrEmpty(resultSource.description);
 
   // Use topic as type, fallback to match_mode
-  const type = room.topic || room.match_mode || "DEFAULT";
+  const type = room.topic || room.match_mode || 'DEFAULT';
 
   return {
     id: String(room.id),
     name: room.name,
     url_image: url_image,
     type: type,
-    description: description || room.topic || "",
+    description: description || room.topic || '',
     date: dateStr,
   };
 }
@@ -57,24 +51,16 @@ function mapHistoryRoomDto(room) {
  * @param {string} filters.date - Filter by date (DD.MM.YYYY format)
  */
 export async function fetchHistoryRooms(userId, filters = {}) {
-  console.log(
-    "fetchHistoryRooms - userId (BigInt):",
-    userId.toString(),
-    "type:",
-    typeof userId,
-  );
+  console.log('fetchHistoryRooms - userId (BigInt):', userId.toString(), 'type:', typeof userId);
 
   // Debug: Check all rooms created by this user
   const allUserRooms = await prisma.room.findMany({
     where: { creator_id: userId },
     select: { id: true, name: true, status: true, creator_id: true },
   });
+  console.log('fetchHistoryRooms - all rooms created by user:', allUserRooms.length);
   console.log(
-    "fetchHistoryRooms - all rooms created by user:",
-    allUserRooms.length,
-  );
-  console.log(
-    "fetchHistoryRooms - user rooms details:",
+    'fetchHistoryRooms - user rooms details:',
     allUserRooms.map((r) => ({
       id: r.id.toString(),
       name: r.name,
@@ -87,14 +73,11 @@ export async function fetchHistoryRooms(userId, filters = {}) {
     AND: [
       {
         // Only show rooms where the user participated or created.
-        OR: [
-          { creator_id: userId },
-          { room_participant: { some: { user_id: userId } } },
-        ],
+        OR: [{ creator_id: userId }, { room_participant: { some: { user_id: userId } } }],
       },
       {
         // Only show closed rooms in history
-        status: "CLOSED",
+        status: 'CLOSED',
       },
     ],
   };
@@ -104,7 +87,7 @@ export async function fetchHistoryRooms(userId, filters = {}) {
     where.AND.push({
       name: {
         contains: filters.name.trim(),
-        mode: "insensitive",
+        mode: 'insensitive',
       },
     });
   }
@@ -113,7 +96,7 @@ export async function fetchHistoryRooms(userId, filters = {}) {
   if (filters.type && filters.type.trim()) {
     const typeValue = filters.type.trim();
     // Check if the filter value is a valid match_mode enum value
-    const validMatchModes = ["FIRST_MATCH", "WATCH_ALL"];
+    const validMatchModes = ['FIRST_MATCH', 'WATCH_ALL'];
     const isMatchMode = validMatchModes.includes(typeValue.toUpperCase());
 
     if (isMatchMode) {
@@ -126,7 +109,7 @@ export async function fetchHistoryRooms(userId, filters = {}) {
       where.AND.push({
         topic: {
           equals: typeValue,
-          mode: "insensitive",
+          mode: 'insensitive',
         },
       });
     }
@@ -135,13 +118,9 @@ export async function fetchHistoryRooms(userId, filters = {}) {
   // Apply date filter
   if (filters.date && filters.date.trim()) {
     // Parse DD.MM.YYYY format
-    const [day, month, year] = filters.date.trim().split(".");
+    const [day, month, year] = filters.date.trim().split('.');
     if (day && month && year) {
-      const filterDate = new Date(
-        parseInt(year),
-        parseInt(month) - 1,
-        parseInt(day),
-      );
+      const filterDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       const nextDay = new Date(filterDate);
       nextDay.setDate(nextDay.getDate() + 1);
 
@@ -157,23 +136,17 @@ export async function fetchHistoryRooms(userId, filters = {}) {
   // Debug: Check if there are any closed rooms created by user
   const userCreatedClosedRooms = await prisma.room.count({
     where: {
-      OR: [
-        { creator_id: userId },
-        { room_participant: { some: { user_id: userId } } },
-      ],
-      status: "CLOSED",
+      OR: [{ creator_id: userId }, { room_participant: { some: { user_id: userId } } }],
+      status: 'CLOSED',
     },
   });
-  console.log(
-    "fetchHistoryRooms - closed rooms created by user:",
-    userCreatedClosedRooms,
-  );
+  console.log('fetchHistoryRooms - closed rooms created by user:', userCreatedClosedRooms);
 
   console.log(
-    "fetchHistoryRooms - where clause:",
+    'fetchHistoryRooms - where clause:',
     JSON.stringify(
       where,
-      (key, value) => (typeof value === "bigint" ? value.toString() : value),
+      (key, value) => (typeof value === 'bigint' ? value.toString() : value),
       2,
     ),
   );
@@ -181,20 +154,20 @@ export async function fetchHistoryRooms(userId, filters = {}) {
   const rooms = await prisma.room.findMany({
     where,
     orderBy: {
-      created_at: "desc",
+      created_at: 'desc',
     },
   });
 
-  console.log("fetchHistoryRooms - found rooms:", rooms.length);
+  console.log('fetchHistoryRooms - found rooms:', rooms.length);
   if (rooms.length > 0) {
     console.log(
-      "fetchHistoryRooms - first room creator_id:",
+      'fetchHistoryRooms - first room creator_id:',
       rooms[0].creator_id.toString(),
-      "requested userId:",
+      'requested userId:',
       userId.toString(),
     );
     console.log(
-      "fetchHistoryRooms - rooms creator_ids:",
+      'fetchHistoryRooms - rooms creator_ids:',
       rooms.map((r) => r.creator_id.toString()),
     );
   }
@@ -212,11 +185,16 @@ export async function fetchRoomHistory(roomId, userId) {
   const room = await prisma.room.findFirst({
     where: {
       id: roomId,
-      room_participant: {
-        some: {
-          user_id: userId,
+      OR: [
+        { creator_id: userId },
+        {
+          room_participant: {
+            some: {
+              user_id: userId,
+            },
+          },
         },
-      },
+      ],
     },
     include: {
       users: {
@@ -237,7 +215,7 @@ export async function fetchRoomHistory(roomId, userId) {
           },
         },
         orderBy: {
-          joined_at: "asc",
+          joined_at: 'asc',
         },
       },
     },
@@ -248,15 +226,35 @@ export async function fetchRoomHistory(roomId, userId) {
   }
 
   const createdAt = new Date(room.created_at);
-  const day = String(createdAt.getDate()).padStart(2, "0");
-  const month = String(createdAt.getMonth() + 1).padStart(2, "0");
+  const day = String(createdAt.getDate()).padStart(2, '0');
+  const month = String(createdAt.getMonth() + 1).padStart(2, '0');
   const year = createdAt.getFullYear();
   const dateStr = `${day}.${month}.${year}`;
+
+  const participants = room.room_participant.map((rp) => ({
+    user_id: String(rp.user_id),
+    display_name: rp.users.display_name,
+    avatar_url: rp.users.avatar_url,
+    joined_at: rp.joined_at.toISOString(),
+    finished_at: rp.finished_at ? rp.finished_at.toISOString() : null,
+  }));
+
+  const creatorParticipant = {
+    user_id: String(room.users.id),
+    display_name: room.users.display_name,
+    avatar_url: room.users.avatar_url,
+    joined_at: room.created_at.toISOString(),
+    finished_at: room.closed_at ? room.closed_at.toISOString() : null,
+  };
+
+  if (!participants.some((p) => p.user_id === creatorParticipant.user_id)) {
+    participants.unshift(creatorParticipant);
+  }
 
   return {
     id: String(room.id),
     name: room.name,
-    topic: room.topic ?? "",
+    topic: room.topic ?? '',
     match_mode: room.match_mode,
     status: room.status,
     access_mode: room.access_mode,
@@ -269,12 +267,6 @@ export async function fetchRoomHistory(roomId, userId) {
       display_name: room.users.display_name,
       avatar_url: room.users.avatar_url,
     },
-    participants: room.room_participant.map((rp) => ({
-      user_id: String(rp.user_id),
-      display_name: rp.users.display_name,
-      avatar_url: rp.users.avatar_url,
-      joined_at: rp.joined_at.toISOString(),
-      finished_at: rp.finished_at ? rp.finished_at.toISOString() : null,
-    })),
+    participants,
   };
 }

@@ -24,26 +24,16 @@ export const RoomVotePage = () => {
             <img src="/itmo-logo-1.png" alt="Карточка" />
           </div>
           <div className="room-vote-card__content">
-            <div className="room-vote-card__title">
-              Мираж синема на Большом
-            </div>
+            <div className="room-vote-card__title">Мираж синема на Большом</div>
             <div>Описание...</div>
           </div>
         </div>
 
         <div className="room-vote-actions">
-          <button
-            type="button"
-            className="room-vote-actions__no"
-            onClick={handleVote}
-          >
+          <button type="button" className="room-vote-actions__no" onClick={handleVote}>
             Нет
           </button>
-          <button
-            type="button"
-            className="room-vote-actions__yes"
-            onClick={handleVote}
-          >
+          <button type="button" className="room-vote-actions__yes" onClick={handleVote}>
             Да
           </button>
         </div>

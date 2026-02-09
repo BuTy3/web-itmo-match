@@ -1,6 +1,6 @@
 // collection routes
-import { Router } from "express";
-import { authApiRequired } from "../middlewares/auth.middleware.js";
+import { Router } from 'express';
+import { authApiRequired } from '../middlewares/auth.middleware.js';
 import {
   getConstructor,
   loadConstructor,
@@ -9,45 +9,41 @@ import {
   updateCollectionController,
   deleteCollectionController,
   deleteCollectionItemController,
-} from "../controllers/collection.controller.js";
+} from '../controllers/collection.controller.js';
 
 const collectionRouter = Router();
 
 // [POST] collections/constructor
 // authentication
 // get draft collection (or create a new draft if it's not existed)
-collectionRouter.post("/constructor", authApiRequired, getConstructor);
+collectionRouter.post('/constructor', authApiRequired, getConstructor);
 
 // [POST] collections/constructor/item
 // authentication
 // create new item inside draft collection
-collectionRouter.post("/constructor/item", authApiRequired, createItem);
+collectionRouter.post('/constructor/item', authApiRequired, createItem);
 
 // [POST] collections/constructor/:new_id
 // new_id - draft collection's id
 // authentication
 // load draft collection's state (if request's body is empty)
 // if req.body {url_image, image, description} -> save metadata collection
-collectionRouter.post("/constructor/:new_id", authApiRequired, loadConstructor);
+collectionRouter.post('/constructor/:new_id', authApiRequired, loadConstructor);
 
 // [GET] /collections/:id
 // Private: only owner can access collection data
-collectionRouter.get("/:id", authApiRequired, getCollection);
+collectionRouter.get('/:id', authApiRequired, getCollection);
 
 // [PUT] /collections/:id
 // Private: only owner can update collection metadata
-collectionRouter.put("/:id", authApiRequired, updateCollectionController);
+collectionRouter.put('/:id', authApiRequired, updateCollectionController);
 
 // [DELETE] /collections/:id
 // Private: only owner can delete collection
-collectionRouter.delete("/:id", authApiRequired, deleteCollectionController);
+collectionRouter.delete('/:id', authApiRequired, deleteCollectionController);
 
 // [DELETE] /collections/:id/items/:item_id
 // Private: only owner can delete item from collection
-collectionRouter.delete(
-  "/:id/items/:item_id",
-  authApiRequired,
-  deleteCollectionItemController,
-);
+collectionRouter.delete('/:id/items/:item_id', authApiRequired, deleteCollectionItemController);
 
 export default collectionRouter;

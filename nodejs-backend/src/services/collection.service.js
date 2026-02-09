@@ -1,9 +1,9 @@
 // services/collection.service.js
 // This layer contains all in-memory "draft" logic for collections and items.
 
-import { Collection } from "../models/collection.model.js";
-import { Item } from "../models/item.model.js";
-import { prisma } from "../db.js";
+import { Collection } from '../models/collection.model.js';
+import { Item } from '../models/item.model.js';
+import { prisma } from '../db.js';
 
 // Auto-increment id
 let nextCollectionId = 1;
@@ -83,28 +83,35 @@ export function getConstructorState(userId) {
  *  [POST] /collections/constructor/:new_id
  *  when body contains { url_image, image, description }
  */
-export function updateConstructorMeta(
-  userId,
-  { urlImage, imagePath, description },
-) {
+export function updateConstructorMeta(userId, { urlImage, imagePath, title, description }) {
   const draft = getOrCreateDraft(userId);
+
+  if (title !== undefined) {
+    const trimmedTitle = typeof title === 'string' ? title.trim() : '';
+    if (trimmedTitle.length > 100) {
+      const err = new Error('Collection title is too long');
+      err.code = 'VALIDATION_ERROR';
+      throw err;
+    }
+    draft.title = trimmedTitle || null;
+  }
 
   // simple validation for collection description
   if (!description || !description.trim()) {
-    const err = new Error("Collection description is required");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('Collection description is required');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
   if (description.length > 1000) {
-    const err = new Error("Collection description is too long");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('Collection description is too long');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
   if (urlImage && !isValidUrl(urlImage)) {
-    const err = new Error("url_image is not a valid URL");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('url_image is not a valid URL');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
@@ -130,23 +137,22 @@ export async function finalizeDraft(userId) {
 
   const draft = draftCollections.get(userKey);
   if (!draft) {
-    const err = new Error("Draft collection not found for user");
-    err.code = "NO_DRAFT";
+    const err = new Error('Draft collection not found for user');
+    err.code = 'NO_DRAFT';
     throw err;
   }
 
   // Very basic validation: description must exist (same style as updateConstructorMeta)
   if (!draft.description || !draft.description.trim()) {
-    const err = new Error("Collection description is required before finalize");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('Collection description is required before finalize');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
-  // Build collection title from description (DB requires non-null title)
   const title =
-    draft.description && draft.description.trim().length > 0
-      ? draft.description.trim().slice(0, 100)
-      : "Untitled collection";
+    draft.title && draft.title.trim().length > 0
+      ? draft.title.trim().slice(0, 100)
+      : 'Untitled collection';
 
   // owner_id in DB is BigInt, so we cast userId to BigInt
   const ownerIdBigInt = BigInt(userId);
@@ -168,8 +174,8 @@ export async function finalizeDraft(userId) {
     const itemsData = itemsArray.map((item) => ({
       collection_id: createdCollection.id,
       title:
-        item.description && item.description.trim().length > 0
-          ? item.description.trim().slice(0, 100)
+        item.title && item.title.trim().length > 0
+          ? item.title.trim().slice(0, 100)
           : `Item ${item.id}`,
       description: item.description || null,
       image_url: item.imagePath || item.urlImage || null,
@@ -185,9 +191,9 @@ export async function finalizeDraft(userId) {
   draftCollections.delete(userKey);
 
   console.log(
-    "finalizeDraft: saved to DB. collectionId =",
+    'finalizeDraft: saved to DB. collectionId =',
     createdCollection.id,
-    "for userId =",
+    'for userId =',
     userId,
   );
 
@@ -208,26 +214,37 @@ export async function finalizeDraft(userId) {
  */
 export function addItemToDraft(
   userId,
-  { itemIdFromClient, urlImage, imagePath, description, next, saveExit },
+  { itemIdFromClient, urlImage, imagePath, title, description, next, saveExit },
 ) {
   const draft = getOrCreateDraft(userId);
 
+  let trimmedTitle = null;
+  if (title !== undefined) {
+    trimmedTitle = typeof title === 'string' ? title.trim() : '';
+    if (trimmedTitle.length > 100) {
+      const err = new Error('Title is too long');
+      err.code = 'VALIDATION_ERROR';
+      throw err;
+    }
+    trimmedTitle = trimmedTitle || null;
+  }
+
   // simple validation
   if (!description || !description.trim()) {
-    const err = new Error("Description is required");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('Description is required');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
   if (description.length > 1000) {
-    const err = new Error("Description is too long");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('Description is too long');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
   if (urlImage && !isValidUrl(urlImage)) {
-    const err = new Error("url_image is not a valid URL");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('url_image is not a valid URL');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
@@ -249,7 +266,7 @@ export function addItemToDraft(
   // if this item_id is already used -> error
   if (draft.items.has(requestedId)) {
     const err = new Error(`item_id ${requestedId} is already used`);
-    err.code = "VALIDATION_ERROR";
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
@@ -261,6 +278,7 @@ export function addItemToDraft(
     collectionId: draft.id,
     urlImage: urlImage || null,
     imagePath: imagePath || null,
+    title: trimmedTitle,
     description: description.trim(),
   });
 
@@ -318,6 +336,7 @@ export async function getCollectionById(collectionId) {
     collectionId: Number(it.collection_id),
     urlImage: it.image_url || null,
     imagePath: null, // we do not store separate local path in DB for now
+    title: it.title || null,
     description: it.description || null,
   }));
 
@@ -327,6 +346,7 @@ export async function getCollectionById(collectionId) {
     // Collection model in DB has no image fields, so we keep them null in DTO
     urlImage: null,
     imagePath: null,
+    title: dbCollection.title || null,
     description: dbCollection.description || null,
     createdAt: dbCollection.created_at,
     // There is no updated_at in DB schema, so we reuse created_at
@@ -360,8 +380,8 @@ export async function updateCollection(
 ) {
   const idNum = Number(collectionId);
   if (!Number.isFinite(idNum) || idNum <= 0) {
-    const err = new Error("Invalid collection id");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('Invalid collection id');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
@@ -373,15 +393,15 @@ export async function updateCollection(
   });
 
   if (!dbCollection) {
-    const err = new Error("Collection not found");
-    err.code = "NOT_FOUND";
+    const err = new Error('Collection not found');
+    err.code = 'NOT_FOUND';
     throw err;
   }
 
   // Only owner can update
   if (Number(dbCollection.owner_id) !== userId) {
-    const err = new Error("Access denied");
-    err.code = "FORBIDDEN";
+    const err = new Error('Access denied');
+    err.code = 'FORBIDDEN';
     throw err;
   }
 
@@ -390,31 +410,30 @@ export async function updateCollection(
   // Validation & updating description (and derived title)
   if (description !== undefined) {
     if (!description || !description.trim()) {
-      const err = new Error("Collection description is required");
-      err.code = "VALIDATION_ERROR";
+      const err = new Error('Collection description is required');
+      err.code = 'VALIDATION_ERROR';
       throw err;
     }
 
     if (description.length > 1000) {
-      const err = new Error("Collection description is too long");
-      err.code = "VALIDATION_ERROR";
+      const err = new Error('Collection description is too long');
+      err.code = 'VALIDATION_ERROR';
       throw err;
     }
 
     const trimmed = description.trim();
     dataToUpdate.description = trimmed;
     // Title comes from description (first 100 chars)
-    dataToUpdate.title =
-      trimmed.length > 0 ? trimmed.slice(0, 100) : "Untitled collection";
+    dataToUpdate.title = trimmed.length > 0 ? trimmed.slice(0, 100) : 'Untitled collection';
   }
 
   // For now we do NOT store urlImage / imagePath on collection level in DB,
   // because schema does not have image columns.
   // You can still validate urlImage here if you want, but it will not be saved.
-  if (urlImage !== undefined && urlImage !== null && urlImage !== "") {
+  if (urlImage !== undefined && urlImage !== null && urlImage !== '') {
     if (!isValidUrl(urlImage)) {
-      const err = new Error("url_image is not a valid URL");
-      err.code = "VALIDATION_ERROR";
+      const err = new Error('url_image is not a valid URL');
+      err.code = 'VALIDATION_ERROR';
       throw err;
     }
     // No DB field to store it yet -> ignored.
@@ -448,8 +467,8 @@ export async function updateCollection(
 export async function deleteCollection(userId, collectionId) {
   const idNum = Number(collectionId);
   if (!Number.isFinite(idNum) || idNum <= 0) {
-    const err = new Error("Invalid collection id");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('Invalid collection id');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
@@ -460,14 +479,14 @@ export async function deleteCollection(userId, collectionId) {
   });
 
   if (!dbCollection) {
-    const err = new Error("Collection not found");
-    err.code = "NOT_FOUND";
+    const err = new Error('Collection not found');
+    err.code = 'NOT_FOUND';
     throw err;
   }
 
   if (Number(dbCollection.owner_id) !== userId) {
-    const err = new Error("Access denied");
-    err.code = "FORBIDDEN";
+    const err = new Error('Access denied');
+    err.code = 'FORBIDDEN';
     throw err;
   }
 
@@ -490,14 +509,14 @@ export async function deleteCollectionItem(userId, collectionId, itemId) {
   const itemNum = Number(itemId);
 
   if (!Number.isFinite(collectionNum) || collectionNum <= 0) {
-    const err = new Error("Invalid collection id");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('Invalid collection id');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
   if (!Number.isFinite(itemNum) || itemNum <= 0) {
-    const err = new Error("Invalid item id");
-    err.code = "VALIDATION_ERROR";
+    const err = new Error('Invalid item id');
+    err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
@@ -509,14 +528,14 @@ export async function deleteCollectionItem(userId, collectionId, itemId) {
   });
 
   if (!dbCollection) {
-    const err = new Error("Collection not found");
-    err.code = "NOT_FOUND";
+    const err = new Error('Collection not found');
+    err.code = 'NOT_FOUND';
     throw err;
   }
 
   if (Number(dbCollection.owner_id) !== userId) {
-    const err = new Error("Access denied");
-    err.code = "FORBIDDEN";
+    const err = new Error('Access denied');
+    err.code = 'FORBIDDEN';
     throw err;
   }
 
@@ -525,8 +544,8 @@ export async function deleteCollectionItem(userId, collectionId, itemId) {
   });
 
   if (!dbItem) {
-    const err = new Error("Item not found");
-    err.code = "NOT_FOUND";
+    const err = new Error('Item not found');
+    err.code = 'NOT_FOUND';
     throw err;
   }
 
