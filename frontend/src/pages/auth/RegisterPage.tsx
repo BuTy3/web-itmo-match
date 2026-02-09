@@ -15,6 +15,7 @@ import { register } from '../../shared/api/auth';
 import type { AppDispatch } from '../../app/store';
 import { loginSuccess } from '../../features/auth/model/authSlice';
 import { ThemeToggleButton } from '../../shared/ui/header/ThemeToggleButton';
+import { METRIKA_GOALS, trackGoal } from '../../shared/lib/analytics/metrika';
 
 export const RegisterPage = () => {
   const [login, setLogin] = useState('');
@@ -37,19 +38,25 @@ export const RegisterPage = () => {
     setSuccess(null);
 
     if (!login || !password) {
+      trackGoal(METRIKA_GOALS.AuthRegisterFailure, { reason: 'empty_fields' });
       setError('Заполните все поля');
       return;
     }
 
     if (password !== passwordRepeat) {
+      trackGoal(METRIKA_GOALS.AuthRegisterFailure, { reason: 'password_mismatch' });
       setError('Пароли не совпадают');
       return;
     }
 
     try {
+      trackGoal(METRIKA_GOALS.AuthRegisterAttempt, {
+        has_login: Boolean(login.trim()),
+      });
       setLoading(true);
       const resp = await register({ login, password });
       if (resp.ok && resp.token) {
+        trackGoal(METRIKA_GOALS.AuthRegisterSuccess);
         dispatch(loginSuccess({ user: { login }, accessToken: resp.token }));
         setSuccess('Пользователь создан');
         localStorage.setItem('nickname', login);
@@ -59,9 +66,13 @@ export const RegisterPage = () => {
         setPassword('');
         setPasswordRepeat('');
       } else {
+        trackGoal(METRIKA_GOALS.AuthRegisterFailure, {
+          reason: resp.message ?? 'register_rejected',
+        });
         setError(resp.message || 'Не удалось зарегистрироваться');
       }
     } catch (error) {
+      trackGoal(METRIKA_GOALS.AuthRegisterFailure, { reason: 'request_failed' });
       console.error('Register request failed', error);
       setError('Ошибка запроса. Проверьте соединение с сервером.');
     } finally {

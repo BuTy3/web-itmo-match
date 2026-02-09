@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getRoomResults, leaveRoom } from '../../shared/api/rooms';
+import { METRIKA_GOALS, trackGoal } from '../../shared/lib/analytics/metrika';
 import './rooms.css';
 
 export const RoomResultsPage = () => {
@@ -32,6 +33,20 @@ export const RoomResultsPage = () => {
         if (fallback.ok) {
           setMatchedItems(fallback.matched_items);
           setHasMatch(fallback.has_match || fallback.matched_items.length > 0);
+          const resolvedMatch = fallback.has_match || fallback.matched_items.length > 0;
+          trackGoal(METRIKA_GOALS.RoomResultsOpen, {
+            room_id: id_room,
+            has_match: resolvedMatch,
+            items_count: fallback.matched_items.length,
+          });
+          trackGoal(
+            resolvedMatch
+              ? METRIKA_GOALS.RoomResultsMatch
+              : METRIKA_GOALS.RoomResultsNoMatch,
+            {
+              room_id: id_room,
+            },
+          );
           setError(null);
         } else {
           setError(fallback.message || 'Не удалось загрузить результаты');
@@ -104,7 +119,10 @@ export const RoomResultsPage = () => {
           <button
             type="button"
             className="room-button room-button--ghost"
-            onClick={() => navigate(`/rooms/${roomId}/drawing_res`)}
+            onClick={() => {
+              trackGoal(METRIKA_GOALS.RoomDrawingsOpen, { room_id: roomId });
+              navigate(`/rooms/${roomId}/drawing_res`);
+            }}
             disabled={loading}
           >
             Рисунки пользователей
@@ -116,6 +134,10 @@ export const RoomResultsPage = () => {
               if (id_room) {
                 await leaveRoom(id_room);
               }
+              trackGoal(METRIKA_GOALS.RoomLeave, {
+                room_id: roomId,
+                stage: 'results',
+              });
               localStorage.removeItem('activeRoomId');
               localStorage.removeItem('activeRoomPath');
               navigate('/');

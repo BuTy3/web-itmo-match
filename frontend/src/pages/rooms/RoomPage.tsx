@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { chooseRoomCard, fetchRoomState } from '../../shared/api/rooms';
+import { METRIKA_GOALS, trackGoal } from '../../shared/lib/analytics/metrika';
 import './rooms.css';
 
 type RoomCardState = {
@@ -75,6 +76,7 @@ export const RoomPage = () => {
         name_card: resp.name_card,
         description: resp.description,
       });
+      trackGoal(METRIKA_GOALS.RoomVoteOpen, { room_id: id_room });
       localStorage.setItem('activeRoomId', id_room);
       localStorage.setItem('activeRoomPath', `/rooms/${id_room}`);
     } catch (err) {
@@ -100,6 +102,18 @@ export const RoomPage = () => {
 
   const handleChoose = async (choose: 0 | 1 | 2) => {
     if (!id_room) return;
+    if (choose === 1) {
+      trackGoal(METRIKA_GOALS.RoomVoteYes, { room_id: id_room });
+    }
+    if (choose === 2) {
+      trackGoal(METRIKA_GOALS.RoomVoteNo, { room_id: id_room });
+    }
+    if (choose === 0) {
+      trackGoal(METRIKA_GOALS.RoomLeave, {
+        room_id: id_room,
+        stage: 'voting',
+      });
+    }
     try {
       const resp = await chooseRoomCard({ id_room, choose });
       if (!resp.ok) {

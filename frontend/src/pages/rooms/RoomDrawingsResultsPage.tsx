@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import type { RootState } from '../../app/store';
 import type { RoomParticipant } from '../../features/rooms/model/roomsSlice';
 import { getRoomDrawingsResults } from '../../shared/api/rooms';
+import { METRIKA_GOALS, trackGoal } from '../../shared/lib/analytics/metrika';
 import './rooms.css';
 
 // TODO: заменить на реальные данные участников из API комнаты.
@@ -51,6 +52,10 @@ export const RoomDrawingsResultsPage = () => {
         const resp = await getRoomDrawingsResults(id_room);
         if (!mounted) return;
         if (resp.ok) {
+          trackGoal(METRIKA_GOALS.RoomDrawingsOpen, {
+            room_id: id_room,
+            drawings_count: resp.drawings.length,
+          });
           setRemoteDrawings(
             resp.drawings.map((drawing, index) => ({
               id: drawing.user_id || String(index),
@@ -117,6 +122,10 @@ export const RoomDrawingsResultsPage = () => {
           type="button"
           className="room-button"
           onClick={() => {
+            trackGoal(METRIKA_GOALS.RoomLeave, {
+              room_id: roomId,
+              stage: 'drawings_results',
+            });
             localStorage.removeItem('activeRoomId');
             localStorage.removeItem('activeRoomPath');
             navigate('/');

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { AppLayout } from './AppLayout';
 import { LoginPage } from '../pages/auth/LoginPage';
@@ -13,7 +14,7 @@ import { RoomPage } from '../pages/rooms/RoomPage';
 import { RoomDrawingPage } from '../pages/rooms/RoomDrawingPage';
 import { RoomResultsPage } from '../pages/rooms/RoomResultsPage';
 import { RoomDrawingsResultsPage } from '../pages/rooms/RoomDrawingsResultsPage';
-
+import { trackPageView } from '../shared/lib/analytics/metrika';
 
 const router = createBrowserRouter([
   {
@@ -89,5 +90,23 @@ const router = createBrowserRouter([
 ]);
 
 export const AppRouter = () => {
+  useEffect(() => {
+    trackPageView(window.location.pathname, {
+      title: document.title,
+      search: window.location.search,
+      hash: window.location.hash,
+    });
+
+    const unsubscribe = router.subscribe((state) => {
+      trackPageView(state.location.pathname, {
+        title: document.title,
+        search: state.location.search,
+        hash: state.location.hash,
+      });
+    });
+
+    return unsubscribe;
+  }, []);
+
   return <RouterProvider router={router} />;
 };

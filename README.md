@@ -96,3 +96,25 @@
 - **PWA** — *через сервис воркер (можно ещё добавить пуш, но ориентируемся на прогресс)*  
 
 CI ok: Mon Oct  6 01:34:01 MSK 2025
+
+## Yandex Metrika Setup
+
+Во фронте подключен счётчик через `ym` (SPA tracking + goals).
+
+1. Добавь id счётчика в `frontend/.env.local`:
+   `VITE_YANDEX_METRIKA_ID=<your_counter_id>`
+2. Перезапусти фронт.
+3. Проверь цели в Метрике (ниже), их можно использовать для воронок и сегментов.
+
+Ключевые цели:
+- `session_start`
+- `page_view`
+- `auth_login_attempt`, `auth_login_success`, `auth_login_failure`
+- `auth_register_attempt`, `auth_register_success`, `auth_register_failure`
+- `home_connect_click`, `home_create_room_click`, `home_history_click`, `home_collection_open`
+- `room_create_attempt`, `room_create_success`, `room_create_failure`
+- `room_connect_attempt`, `room_connect_success`, `room_connect_failure`
+- `room_vote_open`, `room_vote_yes`, `room_vote_no`
+- `room_drawing_open`, `room_show_results_click`
+- `room_results_open`, `room_results_match`, `room_results_no_match`, `room_drawings_open`
+- `room_leave`, `logout`

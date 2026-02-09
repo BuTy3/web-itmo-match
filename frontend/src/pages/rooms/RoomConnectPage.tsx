@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getUserCollections } from '../../shared/api/home';
 import { checkConnectRoomAccess, connectRoom, type RoomCollection } from '../../shared/api/rooms';
+import { METRIKA_GOALS, trackGoal } from '../../shared/lib/analytics/metrika';
 import './rooms.css';
 
 const buildCollectionLabel = (collection: RoomCollection) =>
@@ -99,12 +100,18 @@ export const RoomConnectPage = () => {
   const handleConnect = async () => {
     if (!id_room) return;
     if (collectionRequired && !selectedCollectionId) {
+      trackGoal(METRIKA_GOALS.RoomConnectFailure, { reason: 'no_collection' });
       window.alert('Выберите коллекцию.');
       return;
     }
 
     try {
       const trimmedPassword = password.trim();
+      trackGoal(METRIKA_GOALS.RoomConnectAttempt, {
+        room_id: id_room,
+        has_password: Boolean(trimmedPassword),
+        collection_required: collectionRequired,
+      });
       const payloadBase = {
         id_room,
         ...(trimmedPassword ? { password: trimmedPassword } : {}),
@@ -117,14 +124,21 @@ export const RoomConnectPage = () => {
         : await connectRoom(payloadBase);
 
       if (!resp.ok) {
+        trackGoal(METRIKA_GOALS.RoomConnectFailure, {
+          reason: resp.message ?? 'connect_failed',
+        });
         window.alert(resp.message || 'Не удалось подключиться');
         return;
       }
 
+      trackGoal(METRIKA_GOALS.RoomConnectSuccess, {
+        room_id: id_room,
+      });
       localStorage.setItem('activeRoomId', String(id_room));
       localStorage.setItem('activeRoomPath', `/rooms/${id_room}`);
       navigate(`/rooms/${id_room}`);
     } catch (err) {
+      trackGoal(METRIKA_GOALS.RoomConnectFailure, { reason: 'request_failed' });
       console.error('Failed to connect to room', err);
       window.alert('Не удалось подключиться');
     }
@@ -187,7 +201,13 @@ export const RoomConnectPage = () => {
           <button
             type="button"
             className="room-button room-button--ghost"
-            onClick={() => navigate('/')}
+            onClick={() => {
+              trackGoal(METRIKA_GOALS.RoomLeave, {
+                room_id: id_room ?? '',
+                stage: 'connect',
+              });
+              navigate('/');
+            }}
           >
             Отключиться
           </button>

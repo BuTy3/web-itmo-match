@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { logout } from '../../../features/auth/model/authSlice';
 import type { AppDispatch } from '../../../app/store';
 import { ThemeToggleButton } from './ThemeToggleButton';
+import { METRIKA_GOALS, trackGoal } from '../../lib/analytics/metrika';
 
 export const RightHeaderPanel = ({ username }: { username: string }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -12,6 +13,7 @@ export const RightHeaderPanel = ({ username }: { username: string }) => {
   const theme = useTheme();
 
   const handleLogout = () => {
+    trackGoal(METRIKA_GOALS.Logout);
     localStorage.removeItem('accessToken');
     localStorage.removeItem('nickname');
     dispatch(logout());

@@ -11,6 +11,7 @@ import {
   submitRoomDrawing,
   type DrawingPoint,
 } from '../../shared/api/rooms';
+import { METRIKA_GOALS, trackGoal } from '../../shared/lib/analytics/metrika';
 import './rooms.css';
 import '../drawing/drawing.css';
 
@@ -69,6 +70,10 @@ export const RoomDrawingPage = () => {
           return;
         }
         setTopic(resp.topic ?? null);
+        trackGoal(METRIKA_GOALS.RoomDrawingOpen, {
+          room_id: id_room,
+          has_topic: Boolean(resp.topic),
+        });
         if (resp.participants?.length) {
           dispatch(
             setParticipants({
@@ -157,6 +162,7 @@ export const RoomDrawingPage = () => {
 
   const handleShowResults = async () => {
     if (!id_room) return;
+    trackGoal(METRIKA_GOALS.RoomShowResultsClick, { room_id: id_room });
     try {
       const resp = await getRoomResults(id_room);
       if (!resp.ok) {
@@ -233,6 +239,10 @@ export const RoomDrawingPage = () => {
           type="button"
           className="room-button"
           onClick={() => {
+            trackGoal(METRIKA_GOALS.RoomLeave, {
+              room_id: roomId,
+              stage: 'drawing',
+            });
             localStorage.removeItem('activeRoomId');
             localStorage.removeItem('activeRoomPath');
             navigate('/');
