@@ -33,6 +33,16 @@ const getRoomCollectionId = (room) => {
   return Number.isFinite(idNum) && idNum > 0 ? idNum : null;
 };
 
+const getRoomTypeCollections = (room) => {
+  if (room?.result && typeof room.result === "object") {
+    const value = Number(room.result.type_collections);
+    if ([1, 2].includes(value)) {
+      return value;
+    }
+  }
+  return room?.type === "COMBINED" ? 2 : 1;
+};
+
 const getCollectionById = async (collectionId) => {
   const idNum = Number(collectionId);
   if (!Number.isFinite(idNum) || idNum <= 0) {
@@ -213,7 +223,7 @@ export async function createRoom({
   const passwordHash = password ? await bcrypt.hash(password, 10) : null;
   const matchMode = Number(typeMatch) === 1 ? "FIRST_MATCH" : "WATCH_ALL";
   const accessMode = password ? "PRIVATE" : "PUBLIC";
-  const roomType = Number(typeCollections) === 1 ? "SINGLE" : "COMBINED";
+  const normalizedTypeCollections = Number(typeCollections) === 2 ? 2 : 1;
   const topic = getRandomTopic(null);
 
   const room = await prisma.room.create({
@@ -221,13 +231,13 @@ export async function createRoom({
       creator_id: userId,
       name: name.trim(),
       topic: null,
-      type: roomType,
       match_mode: matchMode,
       status: "OPEN",
       access_mode: accessMode,
       password_hash: passwordHash,
       result: {
         collection_id: Number(collection.id),
+        type_collections: normalizedTypeCollections,
       },
     },
   });
@@ -321,7 +331,7 @@ export async function connectToRoom({
   collectionId,
 }) {
   const room = await checkRoomAccess({ roomId });
-  const isCombined = room.type === "COMBINED";
+  const isCombined = getRoomTypeCollections(room) === 2;
 
   await verifyRoomPassword(room, password);
 
