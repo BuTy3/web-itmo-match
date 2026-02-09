@@ -40,7 +40,6 @@ const getRoomTypeCollections = (room) => {
       return value;
     }
   }
-  // Fallback: определяем по room.type (SINGLE/COMBINED)
   return room?.type === 'COMBINED' ? 2 : 1;
 };
 
