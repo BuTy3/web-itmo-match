@@ -34,6 +34,7 @@ model room {
   creator_id       BigInt
   name             String
   topic            String?
+  type             type_enum          @default(SINGLE)
   match_mode       match_enum
   status           status_enum
   password_hash    String?
@@ -75,6 +76,8 @@ enum status_enum {
 }
 
 enum type_enum {
+  SINGLE
+  COMBINED
   WALK_AROUND_CITY
   DATE
   DINNER
