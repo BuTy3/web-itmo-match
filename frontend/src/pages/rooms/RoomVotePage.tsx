@@ -7,7 +7,7 @@ export const RoomVotePage = () => {
 
   const handleVote = () => {
     if (!id_room) return;
-    navigate(`/rooms/${id_room}/drowing`);
+    navigate(`/rooms/${id_room}/drawing`);
   };
 
   const handleExit = () => {

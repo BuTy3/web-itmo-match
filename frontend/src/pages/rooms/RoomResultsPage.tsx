@@ -104,7 +104,7 @@ export const RoomResultsPage = () => {
           <button
             type="button"
             className="room-button room-button--ghost"
-            onClick={() => navigate(`/rooms/${roomId}/drowing_res`)}
+            onClick={() => navigate(`/rooms/${roomId}/drawing_res`)}
             disabled={loading}
           >
             Рисунки пользователей

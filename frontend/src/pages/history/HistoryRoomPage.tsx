@@ -61,7 +61,6 @@ export const HistoryRoomPage = () => {
   }, [roomId, token]);
 
   const resultCards = useMemo(() => extractResultCards(room?.result), [room?.result]);
-  const displayCards = resultCards.length > 0 ? resultCards : [{ name: '', description: '', imageUrl: null }];
 
   const participants = useMemo(() => {
     const names = room?.participants?.map((p) => p.display_name).filter(Boolean) ?? [];
@@ -74,13 +73,24 @@ export const HistoryRoomPage = () => {
 
       <div className="history-room-subtitle">
         В комнате <span className="history-room-subtitle__name">{room?.name ?? '...'}</span>{' '}
-        участники выбрали {resultCards.length > 1 ? 'эти карточки' : 'эту карточку'} 🤔
+        {resultCards.length === 0
+          ? 'совпадений не было'
+          : `участники выбрали ${resultCards.length > 1 ? 'эти карточки' : 'эту карточку'} 🤔`}
       </div>
 
       <div className="history-room-layout">
-        {displayCards.length > 1 ? (
+        {resultCards.length === 0 ? (
+          <div className="history-room-card" aria-busy={loading}>
+            <div className="history-room-card__text">
+              <div className="history-room-card__title">Совпадений не было</div>
+              <div className="history-room-card__description">
+                Участники комнаты не выбрали общую карточку.
+              </div>
+            </div>
+          </div>
+        ) : resultCards.length > 1 ? (
           <div className="history-room-cards" aria-busy={loading}>
-            {displayCards.map((card, index) => (
+            {resultCards.map((card, index) => (
               <div key={`${card.name}-${index}`} className="history-room-card history-room-card--compact">
                 <div className="history-room-card__image">
                   <img
@@ -102,15 +112,15 @@ export const HistoryRoomPage = () => {
             <div className="history-room-card__image">
               <img
                 className="history-room-card__img"
-                src={displayCards[0].imageUrl || FALLBACK_IMAGE}
-                alt={displayCards[0].name || 'Карточка'}
+                src={resultCards[0].imageUrl || FALLBACK_IMAGE}
+                alt={resultCards[0].name || 'Карточка'}
               />
             </div>
 
             <div className="history-room-card__text">
-              <div className="history-room-card__title">{displayCards[0].name || 'Название...'}</div>
+              <div className="history-room-card__title">{resultCards[0].name || 'Название...'}</div>
               <div className="history-room-card__description">
-                {displayCards[0].description || 'Описание...'}
+                {resultCards[0].description || 'Описание...'}
               </div>
             </div>
           </div>

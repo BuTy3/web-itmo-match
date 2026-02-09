@@ -156,7 +156,11 @@ const buildMatchedItem = (card) => ({
   image_url: card.profile_picture_url ?? null,
 });
 
-const finalizeRoomResult = async (roomId, matchedItems, existingResult = {}) => {
+const finalizeRoomResult = async (
+  roomId,
+  matchedItems,
+  existingResult = {},
+) => {
   const hasMatch = matchedItems.length > 0;
   await prisma.room.update({
     where: { id: BigInt(roomId) },
@@ -245,7 +249,10 @@ export async function createRoom({
   if (session) {
     const participantCards =
       session.typeCollections === 1 ? session.baseCards : cards;
-    session.participants.set(String(userId), buildParticipantState(participantCards));
+    session.participants.set(
+      String(userId),
+      buildParticipantState(participantCards),
+    );
     if (session.matchResult === null) {
       session.requiredVotes = Math.max(
         session.requiredVotes ?? 0,
@@ -379,7 +386,10 @@ export async function connectToRoom({
     if (session.typeCollections === 1) {
       const baseCards = session.baseCards ?? cards;
       session.baseCards = baseCards;
-      session.participants.set(String(userId), buildParticipantState(baseCards));
+      session.participants.set(
+        String(userId),
+        buildParticipantState(baseCards),
+      );
       session.ready = true;
       if (session.matchResult === null) {
         session.requiredVotes = Math.max(
@@ -660,7 +670,11 @@ export async function chooseRoomCard({ userId, roomId, choose, nick }) {
         const matchCard = participant.cards[currentIndex];
         const matchedItems = matchCard ? [buildMatchedItem(matchCard)] : [];
         session.matchResult = matchedItems;
-        await finalizeRoomResult(room.id, matchedItems, getRoomResultPayload(room));
+        await finalizeRoomResult(
+          room.id,
+          matchedItems,
+          getRoomResultPayload(room),
+        );
         return { ok: true, redirect: "results" };
       }
     }
@@ -674,18 +688,23 @@ export async function chooseRoomCard({ userId, roomId, choose, nick }) {
     if (allFinished) {
       const matchedItems = [];
       session.votes.forEach((votes, idx) => {
-        const requiredVotes = session.requiredVotes ?? session.participants.size;
+        const requiredVotes =
+          session.requiredVotes ?? session.participants.size;
         if (votes.size === requiredVotes) {
           const card = participant.cards[idx];
           if (card) matchedItems.push(buildMatchedItem(card));
         }
       });
-      await finalizeRoomResult(room.id, matchedItems, getRoomResultPayload(room));
+      await finalizeRoomResult(
+        room.id,
+        matchedItems,
+        getRoomResultPayload(room),
+      );
       session.matchResult = matchedItems;
     }
     return {
       ok: true,
-      redirect: "drowing",
+      redirect: "drawing",
     };
   }
 

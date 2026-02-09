@@ -65,7 +65,7 @@ const router = createBrowserRouter([
         element: <RoomPage />,
       },
       {
-        path: 'rooms/:id_room/drowing',
+        path: 'rooms/:id_room/drawing',
         element: <RoomDrawingPage />,
       },
       {
@@ -73,7 +73,7 @@ const router = createBrowserRouter([
         element: <RoomResultsPage />,
       },
       {
-        path: 'rooms/:id_room/drowing_res',
+        path: 'rooms/:id_room/drawing_res',
         element: <RoomDrawingsResultsPage />,
       },
     ],

@@ -232,7 +232,7 @@ export async function submitVote(roomId, oderId, itemId, vote) {
   if (allFinished) {
     redirect_to = "results";
   } else if (userFinished) {
-    redirect_to = "drowing";
+    redirect_to = "drawing";
   }
 
   return {

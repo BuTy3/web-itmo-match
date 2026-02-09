@@ -24,6 +24,10 @@ roomsRouter.post("/:id_room", authApiRequired, handleRoomState);
 roomsRouter.post("/:id_room/drawing", authApiRequired, handleRoomDrawing);
 
 // [GET] /rooms/:id_room/drawings
-roomsRouter.get("/:id_room/drawings", authApiRequired, handleRoomDrawingsResults);
+roomsRouter.get(
+  "/:id_room/drawings",
+  authApiRequired,
+  handleRoomDrawingsResults,
+);
 
 export default roomsRouter;

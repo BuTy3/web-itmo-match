@@ -19,8 +19,7 @@ function mapHistoryRoomDto(room) {
   const year = createdAt.getFullYear();
   const dateStr = `${day}.${month}.${year}`;
 
-  const toStringOrEmpty = (value) =>
-    typeof value === "string" ? value : "";
+  const toStringOrEmpty = (value) => (typeof value === "string" ? value : "");
   const result =
     room.result && typeof room.result === "object" ? room.result : null;
   const matchedItems = Array.isArray(result?.matched_items)

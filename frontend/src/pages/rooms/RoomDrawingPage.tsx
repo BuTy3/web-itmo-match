@@ -49,7 +49,7 @@ export const RoomDrawingPage = () => {
     }
 
     localStorage.setItem('activeRoomId', id_room);
-    localStorage.setItem('activeRoomPath', `/rooms/${id_room}/drowing`);
+    localStorage.setItem('activeRoomPath', `/rooms/${id_room}/drawing`);
 
     let mounted = true;
 

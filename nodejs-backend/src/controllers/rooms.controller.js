@@ -85,7 +85,9 @@ export async function handleRoomConnect(req, res) {
     if (!password && !collection_id) {
       if (room.type === "SINGLE") {
         if (room.access_mode === "PRIVATE") {
-          return res.status(403).json({ ok: false, message: "Password is required" });
+          return res
+            .status(403)
+            .json({ ok: false, message: "Password is required" });
         }
         await connectToRoom({
           userId: BigInt(req.user.id),
