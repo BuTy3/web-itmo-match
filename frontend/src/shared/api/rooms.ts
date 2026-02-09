@@ -77,8 +77,16 @@ export const checkCreateRoomAccess = async (
 export const createRoom = async (
   payload: RoomCreatePayload,
 ): Promise<RoomCreateResponse> => {
-  const { data } = await apiClient.post<RoomCreateResponse>('/rooms/create', payload);
-  return data;
+  try {
+    const { data } = await apiClient.post<RoomCreateResponse>('/rooms/create', payload);
+    return data;
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { message?: string } } };
+    return {
+      ok: false,
+      message: err.response?.data?.message || 'Не удалось создать комнату',
+    };
+  }
 };
 
 export const checkConnectRoomAccess = async (
