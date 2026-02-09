@@ -29,7 +29,7 @@ const isSingleCollectionRoom = (room) => {
   if (room?.result && typeof room.result === 'object') {
     return Number(room.result.type_collections) !== 2;
   }
-  return true;
+  return room?.type !== 'COMBINED';
 };
 
 // [POST] /rooms/create
