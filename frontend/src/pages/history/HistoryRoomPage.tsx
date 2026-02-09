@@ -91,7 +91,10 @@ export const HistoryRoomPage = () => {
         ) : resultCards.length > 1 ? (
           <div className="history-room-cards" aria-busy={loading}>
             {resultCards.map((card, index) => (
-              <div key={`${card.name}-${index}`} className="history-room-card history-room-card--compact">
+              <div
+                key={`${card.name}-${index}`}
+                className="history-room-card history-room-card--compact"
+              >
                 <div className="history-room-card__image">
                   <img
                     className="history-room-card__img"
@@ -102,7 +105,9 @@ export const HistoryRoomPage = () => {
 
                 <div className="history-room-card__text">
                   <div className="history-room-card__title">{card.name || 'Название...'}</div>
-                  <div className="history-room-card__description">{card.description || 'Описание...'}</div>
+                  <div className="history-room-card__description">
+                    {card.description || 'Описание...'}
+                  </div>
                 </div>
               </div>
             ))}

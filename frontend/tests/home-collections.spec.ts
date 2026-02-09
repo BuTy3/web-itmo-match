@@ -63,5 +63,4 @@ test.describe('Home', () => {
 
     await expect(page).toHaveURL(/\/rooms\/connect\/12$/);
   });
-
 });

@@ -8,6 +8,7 @@ export class Item {
     collectionId,
     urlImage = null,
     imagePath = null,
+    title = null,
     description = null,
   }) {
     // Required identifiers
@@ -17,6 +18,7 @@ export class Item {
     // Item metadata
     this.urlImage = urlImage; // optional external image URL
     this.imagePath = imagePath; // optional local server image path
+    this.title = title;
     this.description = description;
   }
 }

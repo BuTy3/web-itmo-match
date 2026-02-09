@@ -35,22 +35,15 @@ type Collection = {
   items: CollectionItem[];
 };
 
-type ViewMode =
-  | 'list'
-  | 'collectionForm'
-  | 'itemForm'
-  | 'collectionDetail'
-  | 'itemView';
+type ViewMode = 'list' | 'collectionForm' | 'itemForm' | 'collectionDetail' | 'itemView';
 
 type FiltersState = {
   name: string;
-  type: string;
 };
 
 type CollectionProjection = {
   id: number;
   title: string;
-  type: string;
 };
 
 type WorkerRequest = {
@@ -62,13 +55,11 @@ type WorkerRequest = {
 type WorkerResponse = {
   requestId: number;
   nameOptions: string[];
-  typeOptions: string[];
   filteredIds: number[];
 };
 
 type FilterResult = {
   nameOptions: string[];
-  typeOptions: string[];
   filteredIds: number[];
 };
 
@@ -84,7 +75,10 @@ const buildTitle = (value: string | null | undefined, fallback: string) => {
   return trimmed ? trimmed.slice(0, 32) : fallback;
 };
 
-const pickCollectionImage = (value: string | null | undefined, items: { url_image?: string | null; urlImage?: string | null }[]) => {
+const pickCollectionImage = (
+  value: string | null | undefined,
+  items: { url_image?: string | null; urlImage?: string | null }[],
+) => {
   if (value && value.trim()) return value;
   const firstItemImage = items[0]?.url_image ?? items[0]?.urlImage ?? null;
   if (firstItemImage && firstItemImage.trim()) return firstItemImage;
@@ -93,14 +87,14 @@ const pickCollectionImage = (value: string | null | undefined, items: { url_imag
 
 const mapListCollection = (collection: CollectionListItem): Collection => ({
   id: collection.id,
-  title: buildTitle(collection.description, 'Коллекция'),
+  title: buildTitle(collection.title ?? collection.description, 'Коллекция'),
   type: collection.type ?? '',
   description: collection.description ?? '',
   image: pickCollectionImage(collection.url_image, collection.items),
   items: collection.items.map((item) => ({
     id: item.item_id,
     index: item.item_id,
-    title: buildTitle(item.description, `Элемент ${item.item_id}`),
+    title: buildTitle(item.title ?? item.description, `Элемент ${item.item_id}`),
     description: item.description ?? '',
     image: item.url_image ?? sampleImage,
   })),
@@ -108,14 +102,14 @@ const mapListCollection = (collection: CollectionListItem): Collection => ({
 
 const mapDetailsCollection = (collection: CollectionDetails): Collection => ({
   id: collection.id,
-  title: buildTitle(collection.description, 'Коллекция'),
+  title: buildTitle(collection.title ?? collection.description, 'Коллекция'),
   type: 'DEFAULT',
   description: collection.description ?? '',
   image: pickCollectionImage(collection.urlImage, collection.items),
   items: collection.items.map((item) => ({
     id: item.id,
     index: item.id,
-    title: buildTitle(item.description, `Элемент ${item.id}`),
+    title: buildTitle(item.title ?? item.description, `Элемент ${item.id}`),
     description: item.description ?? '',
     image: item.urlImage ?? sampleImage,
   })),
@@ -129,19 +123,14 @@ const runFilterCalculation = (
     new Set(collections.map((collection) => collection.title).filter(Boolean)),
   ).sort((a, b) => a.localeCompare(b));
 
-  const typeOptions = Array.from(
-    new Set(collections.map((collection) => collection.type).filter(Boolean)),
-  ).sort((a, b) => a.localeCompare(b));
-
   const filteredIds = collections
     .filter((collection) => {
       if (filters.name && collection.title !== filters.name) return false;
-      if (filters.type && collection.type !== filters.type) return false;
       return true;
     })
     .map((collection) => collection.id);
 
-  return { nameOptions, typeOptions, filteredIds };
+  return { nameOptions, filteredIds };
 };
 
 const Card = ({
@@ -217,10 +206,9 @@ const CollectionsPage = () => {
 
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
-  const [filters, setFilters] = useState<FiltersState>({ name: '', type: '' });
+  const [filters, setFilters] = useState<FiltersState>({ name: '' });
   const [filterResult, setFilterResult] = useState<FilterResult>({
     nameOptions: [],
-    typeOptions: [],
     filteredIds: [],
   });
   const workerRef = useRef<Worker | null>(null);
@@ -246,31 +234,37 @@ const CollectionsPage = () => {
       collections.map((collection) => ({
         id: collection.id,
         title: collection.title,
-        type: collection.type,
       })),
     [collections],
   );
 
+  const canUseWorker = typeof window !== 'undefined' && typeof Worker !== 'undefined';
   const collectionsById = useMemo(() => {
     return new Map(collections.map((collection) => [collection.id, collection]));
   }, [collections]);
 
+  const fallbackFilterResult = useMemo(
+    () => runFilterCalculation(collectionProjection, filters),
+    [collectionProjection, filters],
+  );
+
+  const effectiveFilterResult = canUseWorker ? filterResult : fallbackFilterResult;
+
   const filteredCollections = useMemo(() => {
-    if (!filterResult.filteredIds.length) return [];
-    return filterResult.filteredIds
+    if (!effectiveFilterResult.filteredIds.length) return [];
+    return effectiveFilterResult.filteredIds
       .map((id) => collectionsById.get(id))
       .filter((collection): collection is Collection => Boolean(collection));
-  }, [collectionsById, filterResult.filteredIds]);
+  }, [collectionsById, effectiveFilterResult.filteredIds]);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || typeof Worker === 'undefined') {
+    if (!canUseWorker) {
       return;
     }
 
-    const worker = new Worker(
-      new URL('./workers/collectionsFilter.worker.ts', import.meta.url),
-      { type: 'module' },
-    );
+    const worker = new Worker(new URL('./workers/collectionsFilter.worker.ts', import.meta.url), {
+      type: 'module',
+    });
     workerRef.current = worker;
 
     worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
@@ -279,7 +273,6 @@ const CollectionsPage = () => {
 
       setFilterResult({
         nameOptions: payload.nameOptions,
-        typeOptions: payload.typeOptions,
         filteredIds: payload.filteredIds,
       });
     };
@@ -288,10 +281,11 @@ const CollectionsPage = () => {
       workerRef.current?.terminate();
       workerRef.current = null;
     };
-  }, []);
+  }, [canUseWorker]);
 
   useEffect(() => {
     if (viewMode !== 'list') return;
+    if (!canUseWorker) return;
 
     const nextRequestId = workerRequestIdRef.current + 1;
     workerRequestIdRef.current = nextRequestId;
@@ -303,17 +297,12 @@ const CollectionsPage = () => {
     };
 
     const worker = workerRef.current;
-    if (!worker) {
-      setFilterResult(runFilterCalculation(collectionProjection, filters));
-      return;
-    }
+    if (!worker) return;
 
     worker.postMessage(requestPayload);
-  }, [collectionProjection, filters, viewMode]);
+  }, [canUseWorker, collectionProjection, filters, viewMode]);
 
-  const nameOptions = filterResult.nameOptions;
-  const typeOptions = filterResult.typeOptions;
-
+  const nameOptions = effectiveFilterResult.nameOptions;
   const pageSurface = theme.palette.background.paper;
   const panelBorder = `1px solid ${alpha(theme.palette.text.primary, 0.18)}`;
 
@@ -420,11 +409,12 @@ const CollectionsPage = () => {
   const goNextFromCollection = async () => {
     if (!collectionId || !accessToken) return;
 
-    const description =
-      collectionForm.description.trim() || collectionForm.title.trim() || defaultDescription;
+    const title = collectionForm.title.trim() || 'Коллекция';
+    const description = collectionForm.description.trim() || defaultDescription;
 
     try {
       const saved = await saveConstructorMeta(collectionId, {
+        title,
         description,
         url_image: collectionForm.image.trim() || null,
       });
@@ -443,9 +433,11 @@ const CollectionsPage = () => {
   const saveItem = async (finish: boolean) => {
     if (!collectionId || !accessToken) return;
 
-    const description = itemForm.description.trim() || itemForm.title.trim() || 'Описание...';
+    const title = itemForm.title.trim() || `Элемент ${itemId ?? 1}`;
+    const description = itemForm.description.trim() || 'Описание...';
     const payload = {
       item_id: itemId,
+      title,
       description,
       url_image: itemForm.image.trim() || null,
       next: !finish,
@@ -498,21 +490,7 @@ const CollectionsPage = () => {
           ))}
         </select>
 
-        <select
-          className={`collections-filter collections-filter--select${
-            filters.type ? ' collections-filter--active' : ''
-          }`}
-          value={filters.type}
-          onChange={(event) => setFilters((prev) => ({ ...prev, type: event.target.value }))}
-          aria-label="Фильтр по типу"
-        >
-          <option value="">Тип</option>
-          {typeOptions.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
+        
       </div>
 
       <Box
@@ -580,7 +558,9 @@ const CollectionsPage = () => {
             onChange={(e) => setCollectionForm((p) => ({ ...p, description: e.target.value }))}
           />
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'center', mt: 1 }}>
+          <Box
+            sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'center', mt: 1 }}
+          >
             <Button variant="contained" onClick={() => void goNextFromCollection()}>
               Перейти далее
             </Button>
@@ -637,7 +617,9 @@ const CollectionsPage = () => {
             onChange={(e) => setItemForm((p) => ({ ...p, description: e.target.value }))}
           />
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'center', mt: 1 }}>
+          <Box
+            sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'center', mt: 1 }}
+          >
             <Button variant="outlined" onClick={() => void saveItem(false)}>
               Создать ещё
             </Button>
@@ -685,7 +667,14 @@ const CollectionsPage = () => {
       <Box sx={{ p: 3 }}>
         <Typography sx={{ fontSize: 28, fontWeight: 700, mb: 2 }}>Коллекции</Typography>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 4, alignItems: 'flex-start' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: 4,
+            alignItems: 'flex-start',
+          }}
+        >
           <Box sx={{ flex: 1 }}>
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', mb: 2 }}>
               <Typography sx={{ fontSize: 20, fontWeight: 600 }}>
@@ -694,7 +683,11 @@ const CollectionsPage = () => {
               <Button variant="outlined" onClick={handleBackToList}>
                 К коллекциям
               </Button>
-              <Button variant="outlined" color="error" onClick={() => void handleDeleteCollection()}>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={() => void handleDeleteCollection()}
+              >
                 Удалить
               </Button>
             </Box>
@@ -742,13 +735,21 @@ const CollectionsPage = () => {
       <Box sx={{ p: 3 }}>
         <Typography sx={{ fontSize: 28, fontWeight: 700, mb: 2 }}>Коллекции</Typography>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 4, alignItems: 'flex-start' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: 4,
+            alignItems: 'flex-start',
+          }}
+        >
           <Box sx={{ flex: 1 }}>
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', mb: 2 }}>
-              <Typography sx={{ fontSize: 20, fontWeight: 600 }}>
-                {currentItem.title}
-              </Typography>
-              <Button variant="outlined" onClick={() => handleOpenCollection(selectedCollection.id)}>
+              <Typography sx={{ fontSize: 20, fontWeight: 600 }}>{currentItem.title}</Typography>
+              <Button
+                variant="outlined"
+                onClick={() => handleOpenCollection(selectedCollection.id)}
+              >
                 К коллекции
               </Button>
               <Button variant="outlined" color="error" onClick={() => void handleDeleteItem()}>

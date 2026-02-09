@@ -40,9 +40,7 @@ export const RoomResultsPage = () => {
             items_count: fallback.matched_items.length,
           });
           trackGoal(
-            resolvedMatch
-              ? METRIKA_GOALS.RoomResultsMatch
-              : METRIKA_GOALS.RoomResultsNoMatch,
+            resolvedMatch ? METRIKA_GOALS.RoomResultsMatch : METRIKA_GOALS.RoomResultsNoMatch,
             {
               room_id: id_room,
             },
@@ -83,9 +81,7 @@ export const RoomResultsPage = () => {
         ) : resolvedHasMatch ? (
           <>
             <h2 className="room-results__headline">Match!</h2>
-            <p className="room-results__text">
-              Все проголосовали именно за эту карточку
-            </p>
+            <p className="room-results__text">Все проголосовали именно за эту карточку</p>
             <div className="room-results-grid">
               {matchedItems.map((item, index) => (
                 <div key={`${item.title ?? 'match'}-${index}`} className="room-results-card">
@@ -96,9 +92,7 @@ export const RoomResultsPage = () => {
                     />
                   </div>
                   <div className="room-results-card__info">
-                    <div className="room-results-card__title">
-                      {item.title || 'Результат'}
-                    </div>
+                    <div className="room-results-card__title">{item.title || 'Результат'}</div>
                     <div>{item.description || 'Описание...'}</div>
                   </div>
                 </div>
@@ -109,8 +103,7 @@ export const RoomResultsPage = () => {
           <>
             <h2 className="room-results__headline">Совпадений не было :(</h2>
             <p className="room-results__text">
-              Но не стоит расстраиваться, можете попробовать запустить выбор с
-              другой коллекцией
+              Но не стоит расстраиваться, можете попробовать запустить выбор с другой коллекцией
             </p>
           </>
         )}

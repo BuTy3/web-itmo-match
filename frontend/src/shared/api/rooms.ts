@@ -14,17 +14,15 @@ export type RoomCreatePayload = {
 };
 
 export type RoomCreateResponse =
-    | { ok: true; id_room?: number | string; room_id?: number | string; id?: number | string }
-    | { ok: false; message: string };
+  | { ok: true; id_room?: number | string; room_id?: number | string; id?: number | string }
+  | { ok: false; message: string };
 
 export type RoomConnectPayload = {
   password?: string;
   collection_id?: number | string;
 };
 
-export type RoomConnectResponse =
-  | { ok: true }
-  | { ok: false; message: string };
+export type RoomConnectResponse = { ok: true } | { ok: false; message: string };
 
 export type RoomStateResponse =
   | {
@@ -74,9 +72,7 @@ export const checkCreateRoomAccess = async (
   return data;
 };
 
-export const createRoom = async (
-  payload: RoomCreatePayload,
-): Promise<RoomCreateResponse> => {
+export const createRoom = async (payload: RoomCreatePayload): Promise<RoomCreateResponse> => {
   try {
     const { data } = await apiClient.post<RoomCreateResponse>('/rooms/create', payload);
     return data;
@@ -89,9 +85,10 @@ export const createRoom = async (
   }
 };
 
-export const checkConnectRoomAccess = async (
-  payload: { id_room: string | number; password?: string },
-): Promise<RoomAccessResponse> => {
+export const checkConnectRoomAccess = async (payload: {
+  id_room: string | number;
+  password?: string;
+}): Promise<RoomAccessResponse> => {
   const { id_room, password } = payload;
   try {
     const { data } = await apiClient.post<RoomAccessResponse>(`/rooms/connect/${id_room}`, {
@@ -112,16 +109,13 @@ export const connectRoom = async (
   payload: { id_room: string | number } & RoomConnectPayload,
 ): Promise<RoomConnectResponse> => {
   const { id_room, ...body } = payload;
-  const { data } = await apiClient.post<RoomConnectResponse>(
-    `/rooms/connect/${id_room}`,
-    body,
-  );
+  const { data } = await apiClient.post<RoomConnectResponse>(`/rooms/connect/${id_room}`, body);
   return data;
 };
 
-export const fetchRoomState = async (
-  payload: { id_room: string | number },
-): Promise<RoomStateResponse> => {
+export const fetchRoomState = async (payload: {
+  id_room: string | number;
+}): Promise<RoomStateResponse> => {
   const { id_room } = payload;
   const { data } = await apiClient.post<RoomStateResponse>(`/rooms/${id_room}`);
   return data;
@@ -183,17 +177,19 @@ export type RoomResultsCardsResponse =
   | { ok: true; cards: RoomResultCard[] }
   | { ok: false; message: string };
 
-export const fetchRoomDrawing = async (
-  payload: { id_room: string | number },
-): Promise<RoomDrawingResponse> => {
+export const fetchRoomDrawing = async (payload: {
+  id_room: string | number;
+}): Promise<RoomDrawingResponse> => {
   const { id_room } = payload;
   const { data } = await apiClient.post<RoomDrawingResponse>(`/rooms/${id_room}/drawing`);
   return data;
 };
 
-export const submitRoomDrawing = async (
-  payload: { id_room: string | number; points?: DrawingPoint[]; snapshot?: string | null },
-): Promise<RoomDrawingSubmitResponse> => {
+export const submitRoomDrawing = async (payload: {
+  id_room: string | number;
+  points?: DrawingPoint[];
+  snapshot?: string | null;
+}): Promise<RoomDrawingSubmitResponse> => {
   const { id_room, ...body } = payload;
   const { data } = await apiClient.post<RoomDrawingSubmitResponse>(
     `/rooms/${id_room}/drawing`,
@@ -202,9 +198,7 @@ export const submitRoomDrawing = async (
   return data;
 };
 
-export const getRoomCardsResults = async (
-  roomId: string,
-): Promise<RoomResultsCardsResponse> => {
+export const getRoomCardsResults = async (roomId: string): Promise<RoomResultsCardsResponse> => {
   try {
     const response = await apiClient.get<RoomResults>(`/rooms/${roomId}/results`);
     if (response.data.ok) {
@@ -234,9 +228,7 @@ export const getRoomDrawingsResults = async (
   roomId: string,
 ): Promise<RoomDrawingsResultsResponse> => {
   try {
-    const response = await apiClient.get<RoomDrawingsResultsResponse>(
-      `/rooms/${roomId}/drawings`,
-    );
+    const response = await apiClient.get<RoomDrawingsResultsResponse>(`/rooms/${roomId}/drawings`);
     return response.data;
   } catch (error: unknown) {
     const err = error as { response?: { data?: { message?: string } } };
@@ -252,9 +244,7 @@ export const getRoomVotingState = async (
   roomId: string,
 ): Promise<{ ok: boolean; data?: RoomVotingState; message?: string }> => {
   try {
-    const response = await apiClient.get<RoomVotingState>(
-      `/rooms/${roomId}/voting`,
-    );
+    const response = await apiClient.get<RoomVotingState>(`/rooms/${roomId}/voting`);
     return { ok: true, data: response.data };
   } catch (error: unknown) {
     const err = error as { response?: { data?: { message?: string } } };
@@ -272,10 +262,10 @@ export const submitVote = async (
   vote: boolean,
 ): Promise<VoteResponse> => {
   try {
-    const response = await apiClient.post<VoteResponse>(
-      `/rooms/${roomId}/vote`,
-      { item_id: itemId, vote },
-    );
+    const response = await apiClient.post<VoteResponse>(`/rooms/${roomId}/vote`, {
+      item_id: itemId,
+      vote,
+    });
     return response.data;
   } catch (error: unknown) {
     const err = error as { response?: { data?: { message?: string } } };
@@ -289,13 +279,9 @@ export const submitVote = async (
 };
 
 // Get room results
-export const getRoomResults = async (
-  roomId: string,
-): Promise<RoomResults> => {
+export const getRoomResults = async (roomId: string): Promise<RoomResults> => {
   try {
-    const response = await apiClient.get<RoomResults>(
-      `/rooms/${roomId}/results`,
-    );
+    const response = await apiClient.get<RoomResults>(`/rooms/${roomId}/results`);
     return response.data;
   } catch (error: unknown) {
     const err = error as { response?: { data?: { message?: string } } };
@@ -309,9 +295,7 @@ export const getRoomResults = async (
 };
 
 // Leave room
-export const leaveRoom = async (
-  roomId: string,
-): Promise<{ ok: boolean; message?: string }> => {
+export const leaveRoom = async (roomId: string): Promise<{ ok: boolean; message?: string }> => {
   try {
     await apiClient.post(`/rooms/${roomId}/leave`);
     return { ok: true };

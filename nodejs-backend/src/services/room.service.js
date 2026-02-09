@@ -1,5 +1,5 @@
 // Room service (voting logic)
-import { prisma } from "../db.js";
+import { prisma } from '../db.js';
 
 // In-memory storage for votes (in production, use a database table)
 // Structure: { [roomId]: { [oderId]: { [itemId]: boolean } } }
@@ -45,10 +45,10 @@ export async function getRoomWithItems(roomId) {
     where: { owner_id: room.creator_id },
     include: {
       item: {
-        orderBy: { id: "asc" },
+        orderBy: { id: 'asc' },
       },
     },
-    orderBy: { created_at: "desc" },
+    orderBy: { created_at: 'desc' },
   });
 
   return {
@@ -76,7 +76,7 @@ function initializeRoomVotes(roomId) {
 export async function getVotingState(roomId, oderId) {
   const roomData = await getRoomWithItems(roomId);
   if (!roomData || !roomData.room) {
-    return { error: "Room not found" };
+    return { error: 'Room not found' };
   }
 
   const { room, items } = roomData;
@@ -87,11 +87,11 @@ export async function getVotingState(roomId, oderId) {
   );
 
   if (!isParticipant) {
-    return { error: "User is not a participant in this room" };
+    return { error: 'User is not a participant in this room' };
   }
 
   // Check room status
-  if (room.status === "CLOSED") {
+  if (room.status === 'CLOSED') {
     return {
       room_id: room.id.toString(),
       room_name: room.name,
@@ -159,7 +159,7 @@ export async function getVotingState(roomId, oderId) {
 export async function submitVote(roomId, oderId, itemId, vote) {
   const roomData = await getRoomWithItems(roomId);
   if (!roomData || !roomData.room) {
-    return { ok: false, message: "Room not found" };
+    return { ok: false, message: 'Room not found' };
   }
 
   const { room, items } = roomData;
@@ -170,11 +170,11 @@ export async function submitVote(roomId, oderId, itemId, vote) {
   );
 
   if (!isParticipant) {
-    return { ok: false, message: "User is not a participant in this room" };
+    return { ok: false, message: 'User is not a participant in this room' };
   }
 
-  if (room.status === "CLOSED") {
-    return { ok: false, message: "Room is already closed" };
+  if (room.status === 'CLOSED') {
+    return { ok: false, message: 'Room is already closed' };
   }
 
   initializeRoomVotes(roomId);
@@ -230,9 +230,9 @@ export async function submitVote(roomId, oderId, itemId, vote) {
   // Determine redirect
   let redirect_to = null;
   if (allFinished) {
-    redirect_to = "results";
+    redirect_to = 'results';
   } else if (userFinished) {
-    redirect_to = "drawing";
+    redirect_to = 'drawing';
   }
 
   return {
@@ -282,7 +282,7 @@ async function calculateAndSaveResults(roomId, roomData) {
   await prisma.room.update({
     where: { id: roomId },
     data: {
-      status: "CLOSED",
+      status: 'CLOSED',
       closed_at: new Date(),
       result: {
         has_match: matchedItems.length > 0,
@@ -323,7 +323,7 @@ export async function getRoomResults(roomId, oderId) {
   });
 
   if (!room) {
-    return { ok: false, message: "Room not found" };
+    return { ok: false, message: 'Room not found' };
   }
 
   // Check if user is participant
@@ -332,17 +332,17 @@ export async function getRoomResults(roomId, oderId) {
   );
 
   if (!isParticipant) {
-    return { ok: false, message: "Access denied" };
+    return { ok: false, message: 'Access denied' };
   }
 
   // If room not closed yet, check in-memory results
-  if (room.status !== "CLOSED") {
+  if (room.status !== 'CLOSED') {
     // Room still in progress
     return {
       ok: true,
       has_match: false,
       matched_items: [],
-      message: "Voting still in progress",
+      message: 'Voting still in progress',
     };
   }
 
@@ -368,16 +368,30 @@ export async function leaveRoom(roomId, oderId) {
   });
 
   if (!room) {
-    return { ok: false, message: "Room not found" };
+    return { ok: false, message: 'Room not found' };
   }
 
   // Check if user is participant
-  const participant = room.room_participant.find(
-    (p) => p.user_id.toString() === oderId.toString(),
-  );
+  const participant = room.room_participant.find((p) => p.user_id.toString() === oderId.toString());
 
   if (!participant) {
-    return { ok: false, message: "User is not in this room" };
+    return { ok: false, message: 'User is not in this room' };
+  }
+
+  if (room.status === 'CLOSED') {
+    await prisma.room_participant.update({
+      where: {
+        room_id_user_id: {
+          room_id: roomId,
+          user_id: BigInt(oderId),
+        },
+      },
+      data: {
+        finished_at: participant.finished_at ?? new Date(),
+      },
+    });
+
+    return { ok: true };
   }
 
   // Remove participant
@@ -413,11 +427,11 @@ export async function joinRoom(roomId, oderId) {
   });
 
   if (!room) {
-    return { ok: false, message: "Room not found" };
+    return { ok: false, message: 'Room not found' };
   }
 
-  if (room.status === "CLOSED") {
-    return { ok: false, message: "Room is closed" };
+  if (room.status === 'CLOSED') {
+    return { ok: false, message: 'Room is closed' };
   }
 
   // Check if already participant
@@ -442,10 +456,10 @@ export async function joinRoom(roomId, oderId) {
   }
 
   // Activate room if it was OPEN
-  if (room.status === "OPEN") {
+  if (room.status === 'OPEN') {
     await prisma.room.update({
       where: { id: roomId },
-      data: { status: "ACTIVE" },
+      data: { status: 'ACTIVE' },
     });
   }
 

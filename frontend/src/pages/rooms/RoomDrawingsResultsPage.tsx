@@ -17,8 +17,7 @@ const buildFallbackParticipants = (nickname: string): RoomParticipant[] => [
 export const RoomDrawingsResultsPage = () => {
   const { id_room } = useParams();
   const navigate = useNavigate();
-  const nickname =
-    useSelector((state: RootState) => state.auth.user?.login) ?? 'Никнейм';
+  const nickname = useSelector((state: RootState) => state.auth.user?.login) ?? 'Никнейм';
   const [remoteDrawings, setRemoteDrawings] = useState<
     { id: string; name: string; imageUrl?: string | null }[]
   >([]);
@@ -28,8 +27,7 @@ export const RoomDrawingsResultsPage = () => {
   const participantsFromStore = useSelector(
     (state: RootState) => state.rooms.participantsByRoom[roomId],
   );
-  const drawings =
-    useSelector((state: RootState) => state.rooms.drawingsByRoom[roomId]) ?? {};
+  const drawings = useSelector((state: RootState) => state.rooms.drawingsByRoom[roomId]) ?? {};
 
   const resolvedParticipants = useMemo(() => {
     const participants = participantsFromStore ?? [];
@@ -108,9 +106,7 @@ export const RoomDrawingsResultsPage = () => {
                     <span>Нет рисунка</span>
                   )}
                 </div>
-                <div className="room-drawings-card__name">
-                  {participant.name}
-                </div>
+                <div className="room-drawings-card__name">{participant.name}</div>
               </div>
             );
           })}

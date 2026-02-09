@@ -5,9 +5,7 @@ export type HomeCollectionsResponse =
   | { ok: true; collections: HomeCollection[] }
   | { ok: false; message: string };
 
-export type SearchRoomResponse =
-  | { ok: true; id_room: number }
-  | { ok: false; message: string };
+export type SearchRoomResponse = { ok: true; id_room: number } | { ok: false; message: string };
 
 export const getReadyCollections = async (): Promise<HomeCollectionsResponse> => {
   const { data } = await apiClient.get<HomeCollectionsResponse>('/home');

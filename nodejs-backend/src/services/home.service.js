@@ -1,5 +1,5 @@
 // Home service (Prisma queries + DTO mapping)
-import { prisma } from "../db.js";
+import { prisma } from '../db.js';
 
 /**
  * Build collections DTO for Home screen.
@@ -23,6 +23,7 @@ function mapCollectionDto(c) {
     description: c.description ?? null,
     items: (c.item || []).map((it) => ({
       item_id: Number(it.id),
+      title: it.title ?? null,
       url_image: it.image_url ?? null,
       description: it.description ?? null,
     })),
@@ -33,11 +34,11 @@ function mapCollectionDto(c) {
 export async function fetchReadyCollections() {
   // return latest collections (can change ordering/limit rules later)
   const rows = await prisma.collection.findMany({
-    orderBy: { created_at: "desc" },
+    orderBy: { created_at: 'desc' },
     take: 20,
     include: {
       item: {
-        orderBy: { created_at: "asc" },
+        orderBy: { created_at: 'asc' },
         take: 20,
       },
     },
@@ -50,10 +51,10 @@ export async function fetchReadyCollections() {
 export async function fetchUserCollections(userId) {
   const rows = await prisma.collection.findMany({
     where: { owner_id: userId },
-    orderBy: { created_at: "desc" },
+    orderBy: { created_at: 'desc' },
     include: {
       item: {
-        orderBy: { created_at: "asc" },
+        orderBy: { created_at: 'asc' },
         take: 50,
       },
     },

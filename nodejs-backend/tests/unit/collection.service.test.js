@@ -1,18 +1,18 @@
-import { jest } from "@jest/globals";
+import { jest } from '@jest/globals';
 import {
   addItemToDraft,
   finalizeDraft,
   getOrCreateDraft,
   updateConstructorMeta,
-} from "../../src/services/collection.service.js";
-import { prisma } from "../../src/db.js";
+} from '../../src/services/collection.service.js';
+import { prisma } from '../../src/db.js';
 
-describe("collection.service draft lifecycle", () => {
+describe('collection.service draft lifecycle', () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
-  it("returns same draft for the same user and new draft for another", () => {
+  it('returns same draft for the same user and new draft for another', () => {
     const draftA1 = getOrCreateDraft(101);
     const draftA2 = getOrCreateDraft(101);
     const draftB = getOrCreateDraft(102);
@@ -21,45 +21,45 @@ describe("collection.service draft lifecycle", () => {
     expect(draftA1.id).not.toBe(draftB.id);
   });
 
-  it("validates metadata before saving constructor info", () => {
+  it('validates metadata before saving constructor info', () => {
     expect(() =>
       updateConstructorMeta(201, {
         urlImage: null,
         imagePath: null,
-        description: "   ",
+        description: '   ',
       }),
-    ).toThrow("Collection description is required");
+    ).toThrow('Collection description is required');
 
     expect(() =>
       updateConstructorMeta(202, {
-        urlImage: "not-a-url",
+        urlImage: 'not-a-url',
         imagePath: null,
-        description: "desc",
+        description: 'desc',
       }),
-    ).toThrow("url_image is not a valid URL");
+    ).toThrow('url_image is not a valid URL');
   });
 
-  it("adds items with auto-increment and rejects duplicates", () => {
+  it('adds items with auto-increment and rejects duplicates', () => {
     const userId = 301;
     // Ensure draft exists
     updateConstructorMeta(userId, {
       urlImage: null,
       imagePath: null,
-      description: "Draft description",
+      description: 'Draft description',
     });
 
     const first = addItemToDraft(userId, {
       itemIdFromClient: undefined,
       urlImage: null,
       imagePath: null,
-      description: "First item",
+      description: 'First item',
     });
 
     const second = addItemToDraft(userId, {
       itemIdFromClient: 3,
       urlImage: null,
       imagePath: null,
-      description: "Second item",
+      description: 'Second item',
     });
 
     expect(first.itemId).toBe(1);
@@ -70,31 +70,29 @@ describe("collection.service draft lifecycle", () => {
         itemIdFromClient: 3,
         urlImage: null,
         imagePath: null,
-        description: "Dup id",
+        description: 'Dup id',
       }),
-    ).toThrow("item_id 3 is already used");
+    ).toThrow('item_id 3 is already used');
   });
 
-  it("finalizes draft, persists collection and items, then clears draft", async () => {
+  it('finalizes draft, persists collection and items, then clears draft', async () => {
     const userId = 401;
     updateConstructorMeta(userId, {
       urlImage: null,
       imagePath: null,
-      description: "Ready to save",
+      description: 'Ready to save',
     });
     addItemToDraft(userId, {
       itemIdFromClient: undefined,
-      urlImage: "https://img",
+      urlImage: 'https://img',
       imagePath: null,
-      description: "Persisted item",
+      description: 'Persisted item',
     });
 
     const collectionCreateSpy = jest
-      .spyOn(prisma.collection, "create")
+      .spyOn(prisma.collection, 'create')
       .mockResolvedValue({ id: BigInt(10) });
-    const itemCreateManySpy = jest
-      .spyOn(prisma.item, "createMany")
-      .mockResolvedValue({});
+    const itemCreateManySpy = jest.spyOn(prisma.item, 'createMany').mockResolvedValue({});
 
     const result = await finalizeDraft(userId);
 
@@ -103,7 +101,7 @@ describe("collection.service draft lifecycle", () => {
       expect.objectContaining({
         data: expect.objectContaining({
           owner_id: BigInt(userId),
-          description: "Ready to save",
+          description: 'Ready to save',
         }),
       }),
     );
@@ -112,7 +110,7 @@ describe("collection.service draft lifecycle", () => {
         data: expect.arrayContaining([
           expect.objectContaining({
             collection_id: BigInt(10),
-            description: "Persisted item",
+            description: 'Persisted item',
           }),
         ]),
       }),

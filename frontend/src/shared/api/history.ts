@@ -7,9 +7,7 @@ export type HistoryFilters = {
   date?: string;
 };
 
-export type HistoryResponse =
-  | { ok: true; rooms: HistoryRoom[] }
-  | { ok: false; message: string };
+export type HistoryResponse = { ok: true; rooms: HistoryRoom[] } | { ok: false; message: string };
 
 export type RoomHistoryResponse =
   | { ok: true; room: HistoryRoomDetails }
@@ -20,7 +18,7 @@ const mockRooms: HistoryRoom[] = [
     id: 'room-1',
     name: 'Тест',
     url_image:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/ITMO_University%27s_main_building%2C_August_2016.jpg/960px-ITMO_University%27s_main_building%2C_August_2016.jpg",
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/ITMO_University%27s_main_building%2C_August_2016.jpg/960px-ITMO_University%27s_main_building%2C_August_2016.jpg',
     type: 'тест',
     description: '',
     date: '18.12.2025',

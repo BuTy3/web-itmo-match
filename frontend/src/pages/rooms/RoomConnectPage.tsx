@@ -211,12 +211,7 @@ export const RoomConnectPage = () => {
           >
             Отключиться
           </button>
-          <button
-            type="button"
-            className="room-button"
-            onClick={handleConnect}
-            disabled={loading}
-          >
+          <button type="button" className="room-button" onClick={handleConnect} disabled={loading}>
             Подключиться
           </button>
         </div>

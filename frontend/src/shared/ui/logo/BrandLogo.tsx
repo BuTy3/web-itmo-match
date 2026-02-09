@@ -1,8 +1,8 @@
 import { Box } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 
-const LOGO_SIZE = 90;          // внешний квадрат
-const TILE_RADIUS = 2;         // скругление углов квадратиков — можешь подбирать 4–8
+const LOGO_SIZE = 90; // внешний квадрат
+const TILE_RADIUS = 2; // скругление углов квадратиков — можешь подбирать 4–8
 
 export function BrandLogo() {
   const theme = useTheme();

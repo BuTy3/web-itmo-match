@@ -1,4 +1,4 @@
-type Tool = "pen" | "eraser";
+type Tool = 'pen' | 'eraser';
 
 type Props = {
   tool: Tool;
@@ -10,27 +10,17 @@ type Props = {
   onClear: () => void;
 };
 
-const COLORS = [
-  "#FF3B30",
-  "#1C1C1E", 
-  "#007AFF",
-  "#FFFFFF", 
-  "#FFCC00",
-  "#34C759", 
-];
+const COLORS = ['#FF3B30', '#1C1C1E', '#007AFF', '#FFFFFF', '#FFCC00', '#34C759'];
 
 export function ToolBar({ tool, setTool, color, setColor, onClear }: Props) {
-
   return (
-    <div
-      className="toolbar"
-    >
+    <div className="toolbar">
       <button
         type="button"
         aria-label="Карандаш"
-        onClick={() => setTool("pen")}
+        onClick={() => setTool('pen')}
         /* style={{ ...iconBtnBase, ...(tool === "pen" ? selectedStyle : null) }} */
-        className={`toolbar__icon-button${tool === "pen" ? " toolbar__icon-button--active" : ""}`}
+        className={`toolbar__icon-button${tool === 'pen' ? ' toolbar__icon-button--active' : ''}`}
       >
         <img src="/pencil.svg" alt="" width={26} height={26} />
       </button>
@@ -38,9 +28,9 @@ export function ToolBar({ tool, setTool, color, setColor, onClear }: Props) {
       <button
         type="button"
         aria-label="Ластик"
-        onClick={() => setTool("eraser")}
+        onClick={() => setTool('eraser')}
         /* style={{ ...iconBtnBase, ...(tool === "eraser" ? selectedStyle : null) }} */
-        className={`toolbar__icon-button${tool === "eraser" ? " toolbar__icon-button--active" : ""}`}
+        className={`toolbar__icon-button${tool === 'eraser' ? ' toolbar__icon-button--active' : ''}`}
       >
         <img src="/eraser-svgrepo-com.svg" alt="" width={26} height={26} />
       </button>
@@ -54,13 +44,9 @@ export function ToolBar({ tool, setTool, color, setColor, onClear }: Props) {
         <img src="/delete-2-svgrepo-com.svg" alt="" width={26} height={26} />
       </button>
 
-      <div
-        className="toolbar__spacer"
-      />
+      <div className="toolbar__spacer" />
 
-      <div
-        className="toolbar__palette"
-      >
+      <div className="toolbar__palette">
         {COLORS.map((c) => {
           const isSelected = c.toLowerCase() === color.toLowerCase();
           return (
@@ -69,7 +55,7 @@ export function ToolBar({ tool, setTool, color, setColor, onClear }: Props) {
               type="button"
               aria-label={`Цвет ${c}`}
               onClick={() => setColor(c)}
-              className={`toolbar__color-button${isSelected ? " toolbar__color-button--active" : ""}`}
+              className={`toolbar__color-button${isSelected ? ' toolbar__color-button--active' : ''}`}
               data-color={c}
             />
           );

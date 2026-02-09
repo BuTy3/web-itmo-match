@@ -61,9 +61,7 @@ describe('RegisterPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Зарегистрироваться' }));
 
-    expect(
-      await screen.findByText('Пароли не совпадают'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Пароли не совпадают')).toBeInTheDocument();
   });
 
   it('registers and stores auth data', async () => {

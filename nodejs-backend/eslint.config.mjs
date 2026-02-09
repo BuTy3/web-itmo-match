@@ -1,5 +1,5 @@
-import js from "@eslint/js";
-import globals from "globals";
+import js from '@eslint/js';
+import globals from 'globals';
 
 /**
  * ESLint 9 config (flat config)
@@ -9,24 +9,24 @@ export default [
   js.configs.recommended,
 
   {
-    files: ["src/**/*.{js,jsx,ts,tsx}"],
+    files: ['src/**/*.{js,jsx,ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2022,
-      sourceType: "module",
+      sourceType: 'module',
       globals: {
         ...globals.node,
       },
     },
     rules: {
       // permit to use console in backend
-      "no-console": "off",
+      'no-console': 'off',
 
       // variant /arg begin with _ will be not warned "unused"
-      "no-unused-vars": [
-        "warn",
+      'no-unused-vars': [
+        'warn',
         {
-          argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
         },
       ],
     },

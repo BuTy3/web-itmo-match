@@ -18,9 +18,7 @@ test.describe('Auth pages', () => {
 
     await expect(page).toHaveURL(/\/$/);
 
-    const storedToken = await page.evaluate(() =>
-      localStorage.getItem('accessToken'),
-    );
+    const storedToken = await page.evaluate(() => localStorage.getItem('accessToken'));
     expect(storedToken).toBe('e2e-token-login');
   });
 
@@ -42,9 +40,7 @@ test.describe('Auth pages', () => {
 
     await expect(page).toHaveURL(/\/$/);
 
-    const storedToken = await page.evaluate(() =>
-      localStorage.getItem('accessToken'),
-    );
+    const storedToken = await page.evaluate(() => localStorage.getItem('accessToken'));
     expect(storedToken).toBe('e2e-token-register');
   });
 });

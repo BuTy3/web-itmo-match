@@ -1,4 +1,3 @@
-
 import { useMemo, type ReactNode } from 'react';
 import { useSelector } from 'react-redux';
 import { ThemeProvider, CssBaseline } from '@mui/material';
@@ -12,10 +11,7 @@ type AppThemeProviderProps = {
 
 const AppThemeProvider = ({ children }: AppThemeProviderProps) => {
   const { themeMode, themeColors } = useSelector((state: RootState) => state.ui);
-  const theme = useMemo(
-    () => createAppTheme(themeMode, themeColors),
-    [themeMode, themeColors],
-  );
+  const theme = useMemo(() => createAppTheme(themeMode, themeColors), [themeMode, themeColors]);
 
   return (
     <ThemeProvider theme={theme}>

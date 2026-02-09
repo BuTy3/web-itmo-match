@@ -1,13 +1,13 @@
 // Auth api
-import { Router } from "express";
-import bcrypt from "bcrypt";
-import { findUserByLogin, saveUser } from "../repositories/user.repository.js";
-import { createToken } from "../security/jwt.js";
+import { Router } from 'express';
+import bcrypt from 'bcrypt';
+import { findUserByLogin, saveUser } from '../repositories/user.repository.js';
+import { createToken } from '../security/jwt.js';
 
 const router = Router();
 
 // [POST] /auth/register
-router.post("/register", async (req, res) => {
+router.post('/register', async (req, res) => {
   try {
     const { token: _token, login, password } = req.body;
 
@@ -15,14 +15,14 @@ router.post("/register", async (req, res) => {
     if (!login || !password) {
       return res.json({
         ok: false,
-        message: "Введите логин и пароль",
+        message: 'Введите логин и пароль',
       });
     }
 
     if (password.length < 8) {
       return res.json({
         ok: false,
-        message: "Пароль должен быть не менее 8 символов",
+        message: 'Пароль должен быть не менее 8 символов',
       });
     }
 
@@ -31,7 +31,7 @@ router.post("/register", async (req, res) => {
     if (existing) {
       return res.json({
         ok: false,
-        message: "Ошибка регистрации, некорректные данные",
+        message: 'Ошибка регистрации, некорректные данные',
       });
     }
 
@@ -59,23 +59,23 @@ router.post("/register", async (req, res) => {
       token: jwtToken,
     });
   } catch (err) {
-    console.error("Error in /auth/register:", err);
+    console.error('Error in /auth/register:', err);
     return res.status(500).json({
       ok: false,
-      message: "Ошибка сервера при регистрации",
+      message: 'Ошибка сервера при регистрации',
     });
   }
 });
 
 // [POST] /auth/login
-router.post("/login", async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { token: _token, login, password } = req.body;
 
     if (!login || !password) {
       return res.json({
         ok: false,
-        message: "Введите логин и пароль",
+        message: 'Введите логин и пароль',
       });
     }
 
@@ -84,7 +84,7 @@ router.post("/login", async (req, res) => {
     if (!dbUser) {
       return res.json({
         ok: false,
-        message: "Неверный логин или пароль",
+        message: 'Неверный логин или пароль',
       });
     }
 
@@ -93,7 +93,7 @@ router.post("/login", async (req, res) => {
     if (!ok) {
       return res.json({
         ok: false,
-        message: "Неверный логин или пароль",
+        message: 'Неверный логин или пароль',
       });
     }
 
@@ -102,7 +102,7 @@ router.post("/login", async (req, res) => {
       id: Number(dbUser.id),
       login: login, // same as dbUser.email
       // For now we keep a static ukey, not stored in DB
-      ukey: "default-ukey",
+      ukey: 'default-ukey',
     };
 
     const jwtToken = createToken(userForToken);
@@ -112,10 +112,10 @@ router.post("/login", async (req, res) => {
       token: jwtToken,
     });
   } catch (err) {
-    console.error("Error in /auth/login:", err);
+    console.error('Error in /auth/login:', err);
     return res.status(500).json({
       ok: false,
-      message: "Ошибка сервера при входе",
+      message: 'Ошибка сервера при входе',
     });
   }
 });

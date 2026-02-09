@@ -1,8 +1,5 @@
 // History controller
-import {
-  fetchHistoryRooms,
-  fetchRoomHistory,
-} from "../services/history.service.js";
+import { fetchHistoryRooms, fetchRoomHistory } from '../services/history.service.js';
 
 // [GET] /history (auth)
 // Get list of rooms with optional filters
@@ -11,7 +8,7 @@ export async function getHistory(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: "Unauthorized",
+        message: 'Unauthorized',
       });
     }
 
@@ -30,11 +27,11 @@ export async function getHistory(req, res) {
       rooms,
     });
   } catch (err) {
-    console.error("Error in getHistory:", err);
+    console.error('Error in getHistory:', err);
 
     return res.status(500).json({
       ok: false,
-      message: err.message || "Internal server error",
+      message: err.message || 'Internal server error',
     });
   }
 }
@@ -46,7 +43,7 @@ export async function getRoomHistory(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: "Unauthorized",
+        message: 'Unauthorized',
       });
     }
 
@@ -56,7 +53,7 @@ export async function getRoomHistory(req, res) {
     if (!Number.isFinite(idNum) || idNum <= 0) {
       return res.status(400).json({
         ok: false,
-        message: "Invalid room id",
+        message: 'Invalid room id',
       });
     }
 
@@ -68,7 +65,7 @@ export async function getRoomHistory(req, res) {
     if (!room) {
       return res.status(404).json({
         ok: false,
-        message: "Room not found or access denied",
+        message: 'Room not found or access denied',
       });
     }
 
@@ -77,11 +74,11 @@ export async function getRoomHistory(req, res) {
       room,
     });
   } catch (err) {
-    console.error("Error in getRoomHistory:", err);
+    console.error('Error in getRoomHistory:', err);
 
     return res.status(500).json({
       ok: false,
-      message: err.message || "Internal server error",
+      message: err.message || 'Internal server error',
     });
   }
 }

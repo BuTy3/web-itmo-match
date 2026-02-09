@@ -6,6 +6,7 @@ export class Collection {
   constructor({
     id,
     ownerId,
+    title = null,
     description = null,
     urlImage = null,
     imagePath = null,
@@ -19,6 +20,7 @@ export class Collection {
     this.ownerId = ownerId;
 
     // Collection metadata
+    this.title = title;
     this.description = description;
     this.urlImage = urlImage; // external image URL (if any)
     this.imagePath = imagePath; // local server image path (if any)

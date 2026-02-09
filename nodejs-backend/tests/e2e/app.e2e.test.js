@@ -1,7 +1,7 @@
-import { jest } from "@jest/globals";
-import app from "../../src/app.js";
-import { prisma } from "../../src/db.js";
-import { createToken } from "../../src/security/jwt.js";
+import { jest } from '@jest/globals';
+import app from '../../src/app.js';
+import { prisma } from '../../src/db.js';
+import { createToken } from '../../src/security/jwt.js';
 
 const startServer = () =>
   new Promise((resolve) => {
@@ -16,17 +16,17 @@ const stopServer = (server) =>
     server.close(() => resolve());
   });
 
-const buildAuthHeader = (user = { id: 1, login: "tester", ukey: "ukey" }) => {
+const buildAuthHeader = (user = { id: 1, login: 'tester', ukey: 'ukey' }) => {
   const token = createToken(user);
   return `Bearer ${token}`;
 };
 
-describe("E2E app routes", () => {
+describe('E2E app routes', () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
-  it("GET /drawing/topic returns topic", async () => {
+  it('GET /drawing/topic returns topic', async () => {
     const { server, baseUrl } = await startServer();
     try {
       const res = await fetch(`${baseUrl}/drawing/topic`);
@@ -34,19 +34,19 @@ describe("E2E app routes", () => {
 
       expect(res.status).toBe(200);
       expect(body.ok).toBe(true);
-      expect(typeof body.topic).toBe("string");
+      expect(typeof body.topic).toBe('string');
     } finally {
       await stopServer(server);
     }
   });
 
-  it("GET /home returns mapped collections", async () => {
-    jest.spyOn(prisma.collection, "findMany").mockResolvedValue([
+  it('GET /home returns mapped collections', async () => {
+    jest.spyOn(prisma.collection, 'findMany').mockResolvedValue([
       {
         id: BigInt(1),
-        image_url: "https://img",
-        type: "DEFAULT",
-        description: "desc",
+        image_url: 'https://img',
+        type: 'DEFAULT',
+        description: 'desc',
         item: [],
       },
     ]);
@@ -60,20 +60,20 @@ describe("E2E app routes", () => {
       expect(body.ok).toBe(true);
       expect(body.collections[0]).toMatchObject({
         id: 1,
-        url_image: "https://img",
+        url_image: 'https://img',
       });
     } finally {
       await stopServer(server);
     }
   });
 
-  it("POST /home requires auth and returns user collections", async () => {
-    jest.spyOn(prisma.collection, "findMany").mockResolvedValue([
+  it('POST /home requires auth and returns user collections', async () => {
+    jest.spyOn(prisma.collection, 'findMany').mockResolvedValue([
       {
         id: BigInt(2),
         owner_id: BigInt(1),
         image_url: null,
-        type: "DEFAULT",
+        type: 'DEFAULT',
         description: null,
         item: [],
       },
@@ -82,10 +82,10 @@ describe("E2E app routes", () => {
     const { server, baseUrl } = await startServer();
     try {
       const res = await fetch(`${baseUrl}/home`, {
-        method: "POST",
+        method: 'POST',
         headers: {
           Authorization: buildAuthHeader(),
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({}),
       });
@@ -100,15 +100,15 @@ describe("E2E app routes", () => {
     }
   });
 
-  it("POST /home/search returns 404 when room missing", async () => {
-    jest.spyOn(prisma.room, "findUnique").mockResolvedValue(null);
+  it('POST /home/search returns 404 when room missing', async () => {
+    jest.spyOn(prisma.room, 'findUnique').mockResolvedValue(null);
     const { server, baseUrl } = await startServer();
     try {
       const res = await fetch(`${baseUrl}/home/search`, {
-        method: "POST",
+        method: 'POST',
         headers: {
           Authorization: buildAuthHeader(),
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ id: 99 }),
       });
@@ -116,25 +116,25 @@ describe("E2E app routes", () => {
       expect(res.status).toBe(404);
       const body = await res.json();
       expect(body.ok).toBe(false);
-      expect(body.message).toBe("Room not found");
+      expect(body.message).toBe('Room not found');
     } finally {
       await stopServer(server);
     }
   });
 
-  it("POST /home/search returns room id when found", async () => {
-    jest.spyOn(prisma.room, "findUnique").mockResolvedValue({
+  it('POST /home/search returns room id when found', async () => {
+    jest.spyOn(prisma.room, 'findUnique').mockResolvedValue({
       id: BigInt(42),
-      status: "CLOSED",
+      status: 'CLOSED',
     });
 
     const { server, baseUrl } = await startServer();
     try {
       const res = await fetch(`${baseUrl}/home/search`, {
-        method: "POST",
+        method: 'POST',
         headers: {
           Authorization: buildAuthHeader(),
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ id: 42 }),
       });

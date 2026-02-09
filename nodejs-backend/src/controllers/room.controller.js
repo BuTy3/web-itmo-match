@@ -5,7 +5,7 @@ import {
   getRoomResults,
   leaveRoom,
   joinRoom,
-} from "../services/room.service.js";
+} from '../services/room.service.js';
 
 /**
  * [GET] /rooms/:id/voting
@@ -16,7 +16,7 @@ export async function getVoting(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: "Unauthorized",
+        message: 'Unauthorized',
       });
     }
 
@@ -26,7 +26,7 @@ export async function getVoting(req, res) {
     if (!Number.isFinite(idNum) || idNum <= 0) {
       return res.status(400).json({
         ok: false,
-        message: "Invalid room id",
+        message: 'Invalid room id',
       });
     }
 
@@ -50,10 +50,10 @@ export async function getVoting(req, res) {
 
     return res.json(state);
   } catch (err) {
-    console.error("Error in getVoting:", err);
+    console.error('Error in getVoting:', err);
     return res.status(500).json({
       ok: false,
-      message: err.message || "Internal server error",
+      message: err.message || 'Internal server error',
     });
   }
 }
@@ -68,7 +68,7 @@ export async function postVote(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: "Unauthorized",
+        message: 'Unauthorized',
       });
     }
 
@@ -78,7 +78,7 @@ export async function postVote(req, res) {
     if (!Number.isFinite(idNum) || idNum <= 0) {
       return res.status(400).json({
         ok: false,
-        message: "Invalid room id",
+        message: 'Invalid room id',
       });
     }
 
@@ -87,14 +87,14 @@ export async function postVote(req, res) {
     if (!item_id) {
       return res.status(400).json({
         ok: false,
-        message: "item_id is required",
+        message: 'item_id is required',
       });
     }
 
-    if (typeof vote !== "boolean") {
+    if (typeof vote !== 'boolean') {
       return res.status(400).json({
         ok: false,
-        message: "vote must be a boolean",
+        message: 'vote must be a boolean',
       });
     }
 
@@ -109,10 +109,10 @@ export async function postVote(req, res) {
 
     return res.json(result);
   } catch (err) {
-    console.error("Error in postVote:", err);
+    console.error('Error in postVote:', err);
     return res.status(500).json({
       ok: false,
-      message: err.message || "Internal server error",
+      message: err.message || 'Internal server error',
     });
   }
 }
@@ -126,7 +126,7 @@ export async function getResults(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: "Unauthorized",
+        message: 'Unauthorized',
       });
     }
 
@@ -136,7 +136,7 @@ export async function getResults(req, res) {
     if (!Number.isFinite(idNum) || idNum <= 0) {
       return res.status(400).json({
         ok: false,
-        message: "Invalid room id",
+        message: 'Invalid room id',
       });
     }
 
@@ -151,10 +151,10 @@ export async function getResults(req, res) {
 
     return res.json(result);
   } catch (err) {
-    console.error("Error in getResults:", err);
+    console.error('Error in getResults:', err);
     return res.status(500).json({
       ok: false,
-      message: err.message || "Internal server error",
+      message: err.message || 'Internal server error',
     });
   }
 }
@@ -168,7 +168,7 @@ export async function postLeave(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: "Unauthorized",
+        message: 'Unauthorized',
       });
     }
 
@@ -178,7 +178,7 @@ export async function postLeave(req, res) {
     if (!Number.isFinite(idNum) || idNum <= 0) {
       return res.status(400).json({
         ok: false,
-        message: "Invalid room id",
+        message: 'Invalid room id',
       });
     }
 
@@ -193,10 +193,10 @@ export async function postLeave(req, res) {
 
     return res.json(result);
   } catch (err) {
-    console.error("Error in postLeave:", err);
+    console.error('Error in postLeave:', err);
     return res.status(500).json({
       ok: false,
-      message: err.message || "Internal server error",
+      message: err.message || 'Internal server error',
     });
   }
 }

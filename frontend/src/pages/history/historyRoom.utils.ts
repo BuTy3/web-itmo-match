@@ -20,6 +20,15 @@ const toCard = (value: Record<string, unknown>): ResultCard => {
   };
 };
 
+const hasMeaningfulCardData = (value: Record<string, unknown>) => {
+  const name = coerceString(value.name) || coerceString(value.title);
+  const description = coerceString(value.description);
+  const imageUrl =
+    coerceString(value.image_url) || coerceString(value.url_image) || coerceString(value.imageUrl);
+
+  return Boolean(name || description || imageUrl);
+};
+
 export const extractResultCards = (result: unknown): ResultCard[] => {
   if (!result || typeof result !== 'object') {
     return [];
@@ -40,6 +49,14 @@ export const extractResultCards = (result: unknown): ResultCard[] => {
     return answers
       .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'))
       .map((item) => toCard(item));
+  }
+
+  if (record.has_match === false && !hasMeaningfulCardData(record)) {
+    return [];
+  }
+
+  if (!hasMeaningfulCardData(record)) {
+    return [];
   }
 
   return [toCard(record)];

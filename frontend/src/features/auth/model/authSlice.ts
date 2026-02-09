@@ -24,10 +24,7 @@ const parseJwtPayload = (token: string): { exp?: number } | null => {
   if (parts.length < 2) return null;
   try {
     const normalized = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-    const padded = normalized.padEnd(
-      normalized.length + ((4 - (normalized.length % 4)) % 4),
-      '=',
-    );
+    const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '=');
     const decoded = atob(padded);
     return JSON.parse(decoded) as { exp?: number };
   } catch {

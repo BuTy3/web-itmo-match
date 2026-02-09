@@ -22,7 +22,6 @@ const initialState: UiState = {
   },
 };
 
-
 const uiSlice = createSlice({
   name: 'ui',
   initialState,
@@ -33,10 +32,7 @@ const uiSlice = createSlice({
     setThemeMode(state, action: PayloadAction<ThemeMode>) {
       state.themeMode = action.payload;
     },
-    setThemeColor(
-      state,
-      action: PayloadAction<{ key: ThemeColorKey; color: string }>,
-    ) {
+    setThemeColor(state, action: PayloadAction<{ key: ThemeColorKey; color: string }>) {
       state.themeColors[action.payload.key] = action.payload.color;
     },
   },

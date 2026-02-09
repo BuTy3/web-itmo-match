@@ -3,7 +3,7 @@ import {
   fetchReadyCollections,
   fetchUserCollections,
   findRoomById,
-} from "../services/home.service.js";
+} from '../services/home.service.js';
 
 // [GET] /home
 export async function getHomeCollections(req, res) {
@@ -15,11 +15,11 @@ export async function getHomeCollections(req, res) {
       collections,
     });
   } catch (err) {
-    console.error("Error in getHomeCollections:", err);
+    console.error('Error in getHomeCollections:', err);
 
     return res.status(500).json({
       ok: false,
-      message: err.message || "Internal server error",
+      message: err.message || 'Internal server error',
     });
   }
 }
@@ -30,7 +30,7 @@ export async function getMyCollections(req, res) {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         ok: false,
-        message: "Unauthorized",
+        message: 'Unauthorized',
       });
     }
 
@@ -42,11 +42,11 @@ export async function getMyCollections(req, res) {
       collections,
     });
   } catch (err) {
-    console.error("Error in getMyCollections:", err);
+    console.error('Error in getMyCollections:', err);
 
     return res.status(500).json({
       ok: false,
-      message: err.message || "Internal server error",
+      message: err.message || 'Internal server error',
     });
   }
 }
@@ -61,7 +61,7 @@ export async function searchRoom(req, res) {
     if (!Number.isFinite(idNum) || idNum <= 0) {
       return res.status(400).json({
         ok: false,
-        message: "Invalid room id",
+        message: 'Invalid room id',
       });
     }
 
@@ -70,7 +70,7 @@ export async function searchRoom(req, res) {
     if (!room) {
       return res.status(404).json({
         ok: false,
-        message: "Room not found",
+        message: 'Room not found',
       });
     }
 
@@ -80,11 +80,11 @@ export async function searchRoom(req, res) {
       id_room: Number(room.id),
     });
   } catch (err) {
-    console.error("Error in searchRoom:", err);
+    console.error('Error in searchRoom:', err);
 
     return res.status(500).json({
       ok: false,
-      message: err.message || "Internal server error",
+      message: err.message || 'Internal server error',
     });
   }
 }

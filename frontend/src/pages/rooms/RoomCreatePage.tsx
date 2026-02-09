@@ -7,10 +7,7 @@ import { METRIKA_GOALS, trackGoal } from '../../shared/lib/analytics/metrika';
 import './rooms.css';
 
 const buildCollectionLabel = (collection: HomeCollection) =>
-  collection.title ||
-  collection.description ||
-  collection.type ||
-  `Коллекция ${collection.id}`;
+  collection.title || collection.description || collection.type || `Коллекция ${collection.id}`;
 
 export const RoomCreatePage = () => {
   const navigate = useNavigate();
@@ -21,9 +18,7 @@ export const RoomCreatePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedCollectionId, setSelectedCollectionId] = useState<number | string>('');
   const [matchMode, setMatchMode] = useState<'first' | 'all'>('first');
-  const [collectionMode, setCollectionMode] = useState<'single' | 'multiple'>(
-    'single',
-  );
+  const [collectionMode, setCollectionMode] = useState<'single' | 'multiple'>('single');
 
   useEffect(() => {
     let mounted = true;
@@ -89,9 +84,7 @@ export const RoomCreatePage = () => {
         type_collections: collectionMode === 'single' ? 1 : 2,
         password: password.trim() || undefined,
         collection_id:
-          collectionMode === 'multiple'
-            ? [normalizedCollectionId]
-            : normalizedCollectionId,
+          collectionMode === 'multiple' ? [normalizedCollectionId] : normalizedCollectionId,
       } as const;
 
       const resp = await createRoom(payload);
@@ -103,8 +96,7 @@ export const RoomCreatePage = () => {
         return;
       }
 
-      const id =
-        resp.id_room ?? resp.room_id ?? resp.id;
+      const id = resp.id_room ?? resp.room_id ?? resp.id;
       if (!id) {
         trackGoal(METRIKA_GOALS.RoomCreateFailure, { reason: 'missing_room_id' });
         window.alert('Не удалось получить id комнаты');
@@ -227,12 +219,7 @@ export const RoomCreatePage = () => {
         </div>
 
         <div className="room-form__footer">
-          <button
-            type="button"
-            className="room-button"
-            onClick={handleCreate}
-            disabled={loading}
-          >
+          <button type="button" className="room-button" onClick={handleCreate} disabled={loading}>
             Создать
           </button>
         </div>

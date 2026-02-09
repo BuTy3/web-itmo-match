@@ -19,9 +19,7 @@ const roundTo = (value: number, fractionDigits = 2) => {
   return Math.round(value * power) / power;
 };
 
-export const normalizeDrawingPoints = (
-  points: WorkerDrawingPoint[],
-): WorkerDrawingPoint[] => {
+export const normalizeDrawingPoints = (points: WorkerDrawingPoint[]): WorkerDrawingPoint[] => {
   const normalized: WorkerDrawingPoint[] = [];
 
   for (const point of points) {

@@ -2,14 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Header } from '../shared/ui/header/Header';
-import {
-  Box,
-  Drawer,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-} from '@mui/material';
+import { Box, Drawer, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 
 import HomeIcon from '@mui/icons-material/Home';
@@ -21,10 +14,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 import { BrandLogo } from '../shared/ui/logo/BrandLogo';
-import {
-  SIDEBAR_WIDTH_COLLAPSED,
-  SIDEBAR_WIDTH_EXPANDED,
-} from '../shared/ui/theme/theme';
+import { SIDEBAR_WIDTH_COLLAPSED, SIDEBAR_WIDTH_EXPANDED } from '../shared/ui/theme/theme';
 import type { RootState } from './store';
 import { fetchRoomState } from '../shared/api/rooms';
 
@@ -49,9 +39,7 @@ export const AppLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
-  const username = useSelector(
-    (state: RootState) => state.auth.user?.login ?? 'Никнейм',
-  );
+  const username = useSelector((state: RootState) => state.auth.user?.login ?? 'Никнейм');
 
   useEffect(() => {
     if (!accessToken) {
@@ -122,9 +110,7 @@ export const AppLayout: React.FC = () => {
     };
   }, [accessToken, location.pathname, navigate]);
 
-  const drawerWidth = sidebarOpen
-    ? SIDEBAR_WIDTH_EXPANDED
-    : SIDEBAR_WIDTH_COLLAPSED;
+  const drawerWidth = sidebarOpen ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_COLLAPSED;
 
   const pageTitleMap: Record<string, string> = {
     '/home': 'Главная',
@@ -234,8 +220,7 @@ export const AppLayout: React.FC = () => {
             <List sx={{ width: '100%', mt: '105px' }}>
               {navItems.map((item, index) => {
                 const active =
-                  location.pathname === item.path ||
-                  location.pathname.startsWith(`${item.path}/`);
+                  location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
 
                 return (
                   <ListItemButton
@@ -245,10 +230,7 @@ export const AppLayout: React.FC = () => {
                       width: sidebarOpen ? 173 : 58,
                       height: sidebarOpen ? 41 : 42,
                       ml: '15px',
-                      mb:
-                        index === navItems.length - 1
-                          ? 0
-                          : `${MENU_ITEM_GAP}px`,
+                      mb: index === navItems.length - 1 ? 0 : `${MENU_ITEM_GAP}px`,
                       px: 0,
                       justifyContent: sidebarOpen ? 'flex-start' : 'center',
                       bgcolor: active ? activeNavBg : 'transparent',
@@ -286,9 +268,7 @@ export const AppLayout: React.FC = () => {
                         primary={item.label}
                         primaryTypographyProps={{
                           fontSize: 18,
-                          color: active
-                            ? accentColor
-                            : theme.palette.text.primary,
+                          color: active ? accentColor : theme.palette.text.primary,
                           fontWeight: active ? 600 : 400,
                         }}
                       />
@@ -332,11 +312,7 @@ export const AppLayout: React.FC = () => {
         </Drawer>
 
         <Box sx={{ flexGrow: 1, position: 'relative' }}>
-          <Header
-            title={pageTitle}
-            username={username}
-            sidebarWidth={drawerWidth}
-          />
+          <Header title={pageTitle} username={username} sidebarWidth={drawerWidth} />
 
           <Box sx={{ mt: '74px', px: 8, py: 4 }}>
             <Outlet />

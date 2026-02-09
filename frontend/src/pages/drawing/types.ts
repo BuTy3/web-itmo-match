@@ -1,4 +1,4 @@
-export type ToolType = "pen" | "eraser";
+export type ToolType = 'pen' | 'eraser';
 
 export interface DrawingTopicResponse {
   ok: boolean;

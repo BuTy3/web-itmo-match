@@ -1,5 +1,5 @@
-import Bugsnag from "@bugsnag/js";
-import BugsnagPluginReact from "@bugsnag/plugin-react";
+import Bugsnag from '@bugsnag/js';
+import BugsnagPluginReact from '@bugsnag/plugin-react';
 
 // console.log("BUGSNAG KEY =", import.meta.env.VITE_BUGSNAG_API_KEY);
 

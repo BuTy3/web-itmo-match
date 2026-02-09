@@ -13,11 +13,7 @@ type ThemeToggleButtonProps = {
   menuSx?: SxProps<Theme>;
 };
 
-export const ThemeToggleButton = ({
-  sx,
-  buttonSx,
-  menuSx,
-}: ThemeToggleButtonProps) => {
+export const ThemeToggleButton = ({ sx, buttonSx, menuSx }: ThemeToggleButtonProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
