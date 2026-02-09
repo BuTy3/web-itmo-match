@@ -25,6 +25,13 @@ const getStatusByError = (err) => {
   }
 };
 
+const isSingleCollectionRoom = (room) => {
+  if (room?.result && typeof room.result === "object") {
+    return Number(room.result.type_collections) !== 2;
+  }
+  return room?.type !== "COMBINED";
+};
+
 // [POST] /rooms/create
 export async function handleRoomCreate(req, res) {
   try {
@@ -75,7 +82,7 @@ export async function handleRoomConnect(req, res) {
 
     if (check) {
       await verifyRoomPassword(room, password);
-      if (room.type === "SINGLE") {
+      if (isSingleCollectionRoom(room)) {
         return res.json({ ok: true, collection_choose: false });
       }
       const collections = await getUserCollectionsForRoom(BigInt(req.user.id));
@@ -83,7 +90,7 @@ export async function handleRoomConnect(req, res) {
     }
 
     if (!password && !collection_id) {
-      if (room.type === "SINGLE") {
+      if (isSingleCollectionRoom(room)) {
         if (room.access_mode === "PRIVATE") {
           return res
             .status(403)

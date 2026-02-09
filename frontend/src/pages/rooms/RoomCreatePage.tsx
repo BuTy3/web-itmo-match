@@ -7,7 +7,10 @@ import { METRIKA_GOALS, trackGoal } from '../../shared/lib/analytics/metrika';
 import './rooms.css';
 
 const buildCollectionLabel = (collection: HomeCollection) =>
-  collection.type || collection.description || `Коллекция ${collection.id}`;
+  collection.title ||
+  collection.description ||
+  collection.type ||
+  `Коллекция ${collection.id}`;
 
 export const RoomCreatePage = () => {
   const navigate = useNavigate();
@@ -67,7 +70,8 @@ export const RoomCreatePage = () => {
       window.alert('Введите название комнаты.');
       return;
     }
-    if (!selectedCollectionId) {
+    const normalizedCollectionId = Number(selectedCollectionId);
+    if (!Number.isFinite(normalizedCollectionId) || normalizedCollectionId <= 0) {
       trackGoal(METRIKA_GOALS.RoomCreateFailure, { reason: 'no_collection' });
       window.alert('Выберите коллекцию.');
       return;
@@ -85,7 +89,9 @@ export const RoomCreatePage = () => {
         type_collections: collectionMode === 'single' ? 1 : 2,
         password: password.trim() || undefined,
         collection_id:
-          collectionMode === 'multiple' ? [selectedCollectionId] : selectedCollectionId,
+          collectionMode === 'multiple'
+            ? [normalizedCollectionId]
+            : normalizedCollectionId,
       } as const;
 
       const resp = await createRoom(payload);

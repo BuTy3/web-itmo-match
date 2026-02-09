@@ -35,6 +35,7 @@ describe("home.service", () => {
         id: 1,
         url_image: "https://img",
         type: "DEFAULT",
+        title: null,
         description: "desc",
         items: [
           {

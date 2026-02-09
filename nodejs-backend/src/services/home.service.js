@@ -8,6 +8,7 @@ import { prisma } from "../db.js";
  *   id,
  *   url_image,
  *   type,
+ *   title,
  *   description,
  *   items: [{ item_id, url_image, description }, ...]
  * }
@@ -18,6 +19,7 @@ function mapCollectionDto(c) {
     id: Number(c.id),
     url_image: c.image_url ?? null,
     type: c.type,
+    title: c.title ?? null,
     description: c.description ?? null,
     items: (c.item || []).map((it) => ({
       item_id: Number(it.id),

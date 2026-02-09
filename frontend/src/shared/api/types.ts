@@ -47,6 +47,7 @@ export type HomeCollection = {
   id: number;
   url_image: string | null;
   type: string | null;
+  title?: string | null;
   description: string | null;
   items: HomeCollectionItem[];
 };
