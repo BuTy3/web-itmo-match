@@ -17,6 +17,16 @@ export async function findUserByLogin(login) {
   return user || null;
 }
 
+export async function findUserById(userId) {
+  const idNum = Number(userId);
+  if (!Number.isFinite(idNum) || idNum <= 0) return null;
+  const user = await prisma.users.findUnique({
+    where: { id: BigInt(idNum) },
+  });
+
+  return user || null;
+}
+
 /**
  * Create a new user in database.
  *

@@ -72,8 +72,21 @@ export const RegisterPage = () => {
         setError(resp.message || 'Не удалось зарегистрироваться');
       }
     } catch (error) {
+      const status =
+        typeof error === 'object' && error !== null && 'response' in error
+          ? (error as { response?: { status?: number; data?: { message?: string } } }).response
+              ?.status
+          : undefined;
+      const serverMessage =
+        typeof error === 'object' && error !== null && 'response' in error
+          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+          : undefined;
       trackGoal(METRIKA_GOALS.AuthRegisterFailure, { reason: 'request_failed' });
       console.error('Register request failed', error);
+      if (status === 429) {
+        setError(serverMessage || 'Слишком много попыток. Подождите 10 секунд.');
+        return;
+      }
       setError('Ошибка запроса. Проверьте соединение с сервером.');
     } finally {
       setLoading(false);
