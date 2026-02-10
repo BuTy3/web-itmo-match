@@ -1,8 +1,9 @@
 // Auth middleware
 import { verifyToken } from '../security/jwt.js';
+import { findUserById } from '../repositories/user.repository.js';
 
 // API Middleware (return JSON)
-export function authApiRequired(req, res, next) {
+export async function authApiRequired(req, res, next) {
   const authHeader = req.headers['authorization'];
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -13,6 +14,10 @@ export function authApiRequired(req, res, next) {
 
   try {
     const payload = verifyToken(token);
+    const user = await findUserById(payload.userId);
+    if (!user) {
+      return res.status(401).json({ ok: false, message: 'Invalid token' });
+    }
 
     // Send to next handler
     req.user = {
@@ -21,7 +26,7 @@ export function authApiRequired(req, res, next) {
       ukey: payload.ukey,
     };
 
-    next();
+    return next();
   } catch (err) {
     console.error('JWT error:', err.message);
     return res.status(401).json({ ok: false, message: 'Invalid token' });
@@ -29,7 +34,7 @@ export function authApiRequired(req, res, next) {
 }
 
 // Page middleware (redirect /login)
-export function authPageRequired(req, res, next) {
+export async function authPageRequired(req, res, next) {
   const authHeader = req.headers['authorization'];
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -40,12 +45,16 @@ export function authPageRequired(req, res, next) {
 
   try {
     const payload = verifyToken(token);
+    const user = await findUserById(payload.userId);
+    if (!user) {
+      return res.redirect('/login');
+    }
     req.user = {
       id: payload.userId,
       login: payload.login,
       ukey: payload.ukey,
     };
-    next();
+    return next();
   } catch {
     return res.redirect('/login');
   }

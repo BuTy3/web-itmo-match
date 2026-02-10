@@ -1,13 +1,24 @@
 // Auth api
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import bcrypt from 'bcrypt';
 import { findUserByLogin, saveUser } from '../repositories/user.repository.js';
 import { createToken } from '../security/jwt.js';
 
 const router = Router();
+const authLimiter = rateLimit({
+  windowMs: 10 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    ok: false,
+    message: 'Слишком много попыток. Подождите 10 секунд и попробуйте снова.',
+  },
+});
 
 // [POST] /auth/register
-router.post('/register', async (req, res) => {
+router.post('/register', authLimiter, async (req, res) => {
   try {
     const { token: _token, login, password } = req.body;
 
@@ -68,7 +79,7 @@ router.post('/register', async (req, res) => {
 });
 
 // [POST] /auth/login
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   try {
     const { token: _token, login, password } = req.body;
 

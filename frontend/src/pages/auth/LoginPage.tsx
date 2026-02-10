@@ -71,8 +71,21 @@ export const LoginPage = () => {
         setError(resp.message || 'Неверный логин или пароль');
       }
     } catch (error) {
+      const status =
+        typeof error === 'object' && error !== null && 'response' in error
+          ? (error as { response?: { status?: number; data?: { message?: string } } }).response
+              ?.status
+          : undefined;
+      const serverMessage =
+        typeof error === 'object' && error !== null && 'response' in error
+          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+          : undefined;
       trackGoal(METRIKA_GOALS.AuthLoginFailure, { reason: 'request_failed' });
       console.error('Login request failed', error);
+      if (status === 429) {
+        setError(serverMessage || 'Слишком много попыток. Подождите 10 секунд.');
+        return;
+      }
       setError('Ошибка запроса. Проверьте соединение с сервером.');
     } finally {
       setLoading(false);

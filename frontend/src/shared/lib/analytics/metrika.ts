@@ -93,6 +93,9 @@ const loadMetrikaScript = () => {
 const sendYm = (...args: unknown[]) => {
   if (!isEnabled) return;
   if (typeof window.ym !== 'function') return;
+  if (import.meta.env.DEV) {
+    console.log('[metrika]', counterId, ...args);
+  }
   window.ym(counterId, ...args);
 };
 
