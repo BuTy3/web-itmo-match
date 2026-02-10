@@ -27,6 +27,7 @@ const __dirname = path.dirname(__filename);
 const swaggerDocument = YAML.load(path.join(__dirname, '..', 'openapi.yaml'));
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Bugsnag request handler (if Bugsnag is enabled)
 // This middleware must be added before all other middlewares and routes.
