@@ -5,10 +5,16 @@
   "description": "Backend of vode 2d app",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js",
+    "start": "npx prisma generate --schema=./prisma/schema.prisma && node src/server.js",
+    "bd": "npx prisma migrate dev --name add-room-type",
+    "bd-migrate": "npm i @prisma/adapter-pg",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
+    "prisma:gen": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate deploy",
+    "prisma:choto": "npx prisma migrate diff \\\n  --from-empty \\\n  --to-schema-datamodel prisma/schema.prisma \\\n  --script > prisma/migrations/0001_baseline/migration.sql",
+    "prisma:chhh": "npx prisma migrate resolve --applied 0001_baseline",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest tests/unit --runInBand",
     "e2e": "NODE_OPTIONS=--experimental-vm-modules jest tests/e2e --runInBand"
   },
@@ -26,6 +32,7 @@
   "dependencies": {
     "@bugsnag/js": "^8.6.0",
     "@bugsnag/plugin-express": "^8.6.0",
+    "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "6.19.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.6",
